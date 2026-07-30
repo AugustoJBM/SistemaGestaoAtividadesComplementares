@@ -39,3 +39,35 @@ O sistema deverá permitir que o estudante:
 O objetivo é tornar o gerenciamento das atividades complementares mais simples, eficiente e seguro, reduzindo erros durante a submissão da documentação e facilitando o acompanhamento da integralização da carga horária exigida pelo curso.
 
 ---
+
+## 🛠️ Tecnologias Utilizadas
+
+### Front-end
+* Angular
+* TypeScript
+* Tailwind CSS
+
+### Back-end
+* Java
+* Spring Boot
+
+### Banco de Dados
+* PostgreSQL
+
+### Ferramentas
+* Git & GitHub
+* GitHub Actions
+* Docker
+
+## 💻 Como executar o projeto
+
+### Pré-requisitos
+Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
+* Java 21+
+* Node.js 22+
+* Angular CLI
+* PostgreSQL
+* Docker
+
+
+
