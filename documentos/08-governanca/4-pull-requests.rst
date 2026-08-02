@@ -6,47 +6,43 @@ Pull Requests
    :local:
    :depth: 2
 
-
 Introdução
 ==========
 
-Este documento define o processo de criação, revisão e integração de Pull
-Requests utilizados durante o desenvolvimento do projeto.
+Este documento define o processo oficial de criação, revisão, aprovação e
+integração de Pull Requests do projeto.
 
-Todo código integrado à branch principal deve obrigatoriamente passar por um
+Todo código incorporado à branch principal deve obrigatoriamente passar por um
 Pull Request.
+
+O Pull Request representa a unidade oficial de entrega de uma Sub-Issue,
+servindo como registro técnico da implementação realizada.
 
 
 Objetivos
 =========
 
-O processo de Pull Requests busca:
+O processo de Pull Requests possui os seguintes objetivos:
 
-* manter a estabilidade da branch principal;
-* permitir revisão técnica das alterações;
-* registrar decisões de desenvolvimento;
-* facilitar discussões técnicas;
-* garantir rastreabilidade das entregas.
-
-
-Princípios
-==========
-
-Todo Pull Request deve:
-
-* estar relacionado a uma Sub-Issue;
-* possuir uma única responsabilidade;
-* conter alterações pequenas;
-* ser revisado antes do merge;
-* permanecer aberto apenas pelo tempo necessário.
+* garantir qualidade do código;
+* assegurar rastreabilidade das alterações;
+* permitir revisão técnica colaborativa;
+* preservar a estabilidade da branch principal;
+* registrar as decisões tomadas durante o desenvolvimento.
 
 
 Fluxo Geral
 ===========
 
-O fluxo de integração segue a sequência abaixo.
+Todo Pull Request segue obrigatoriamente o fluxo abaixo.
 
 .. code-block:: text
+
+    Epic
+
+        |
+
+        v
 
     Issue
 
@@ -61,6 +57,12 @@ O fluxo de integração segue a sequência abaixo.
         v
 
     Branch
+
+        |
+
+        v
+
+    Desenvolvimento
 
         |
 
@@ -84,6 +86,12 @@ O fluxo de integração segue a sequência abaixo.
 
         v
 
+    Correções
+
+        |
+
+        v
+
     Aprovação
 
         |
@@ -92,159 +100,246 @@ O fluxo de integração segue a sequência abaixo.
 
     Merge
 
+Cada Pull Request está vinculado a apenas uma Sub-Issue.
 
 
-Quando Criar um Pull Request
-============================
+Criação do Pull Request
+=======================
 
-O Pull Request deve ser criado quando:
+O desenvolvedor responsável pela Sub-Issue deve criar o Pull Request quando:
 
-* a implementação da Sub-Issue estiver concluída;
-* os testes locais tiverem sido executados;
+* toda a implementação estiver concluída;
+* os testes locais forem executados;
 * não existirem conflitos conhecidos;
-* a documentação necessária estiver atualizada.
+* a documentação necessária tiver sido atualizada.
+
+Não é permitido abrir Pull Requests contendo funcionalidades incompletas, salvo
+quando utilizados Draft Pull Requests.
 
 
-Informações Obrigatórias
-========================
+Draft Pull Requests
+===================
 
-Todo Pull Request deve responder às seguintes perguntas.
+Draft Pull Requests podem ser utilizados quando:
 
-Objetivo
----------
+* houver necessidade de discussão técnica;
+* o desenvolvedor desejar revisão antecipada;
+* a implementação ainda não estiver finalizada.
 
-O que foi implementado?
+Draft Pull Requests não podem ser integrados à branch principal.
 
-Motivação
----------
+Antes da aprovação, o Draft deve ser convertido para Pull Request convencional.
 
-Por que essa alteração foi realizada?
 
-Implementação
+Responsabilidades
+=================
+
+Autor
+-----
+
+O autor do Pull Request é responsável por:
+
+* implementar a Sub-Issue;
+* manter a branch atualizada;
+* responder comentários da revisão;
+* realizar as correções solicitadas;
+* atualizar a documentação quando necessário.
+
+O autor não pode aprovar o próprio Pull Request.
+
+
+Revisor Principal
+-----------------
+
+O Revisor Principal é definido durante a Sprint.
+
+Suas responsabilidades são:
+
+* revisar qualidade do código;
+* verificar aderência aos padrões do projeto;
+* identificar defeitos;
+* solicitar alterações quando necessário;
+* aprovar tecnicamente a implementação.
+
+
+Arquiteto da Sprint
+-------------------
+
+O Arquiteto da Sprint participa apenas quando o Pull Request modifica:
+
+* arquitetura;
+* módulos;
+* contratos da API;
+* decisões estruturais.
+
+Compete ao Arquiteto:
+
+* validar impactos arquiteturais;
+* preservar a consistência da arquitetura;
+* rejeitar alterações incompatíveis.
+
+
+Responsável por Testes
+----------------------
+
+Participa quando houver alteração de comportamento do sistema.
+
+Compete a este papel:
+
+* validar os testes executados;
+* verificar necessidade de novos testes;
+* confirmar cobertura adequada.
+
+
+Responsável pela Documentação
+-----------------------------
+
+Participa quando houver impacto na documentação.
+
+Compete a este papel:
+
+* verificar atualização dos documentos;
+* garantir consistência entre implementação e documentação.
+
+
+Product Owner
 -------------
 
-Como a solução foi construída?
+O Product Owner não realiza revisão técnica de código.
 
-Validação
----------
+Sua participação ocorre apenas para:
 
-Como testar a alteração?
-
-Relacionamento
---------------
-
-Qual Issue ou Sub-Issue está sendo atendida?
-
-
-Escopo
-======
-
-Cada Pull Request deve resolver apenas uma Sub-Issue.
-
-Não é permitido misturar funcionalidades independentes em um mesmo Pull
-Request.
-
-
-Exemplo correto:
-
-.. code-block:: text
-
-    Sub-Issue
-
-        Upload de certificado
-
-            |
-
-            v
-
-    Pull Request
-
-
-Exemplo incorreto:
-
-.. code-block:: text
-
-    Upload
-
-    Login
-
-    Dashboard
-
-    Documentação
-
-Tudo no mesmo PR.
+* esclarecer requisitos;
+* validar regras de negócio;
+* responder dúvidas funcionais.
 
 
 Critérios para Aprovação
 ========================
 
-Antes do merge, o Pull Request deve atender aos seguintes critérios:
+Um Pull Request somente poderá ser aprovado quando:
 
-* implementação concluída;
-* código revisado;
-* documentação atualizada quando necessário;
-* ausência de conflitos;
-* comentários resolvidos;
-* aprovação do revisor.
+* a implementação estiver concluída;
+* todos os comentários obrigatórios estiverem resolvidos;
+* não existirem conflitos;
+* a documentação estiver consistente;
+* os revisores obrigatórios tiverem aprovado.
+
+
+Situações que Exigem Solicitação de Alterações
+==============================================
+
+O revisor deve solicitar alterações quando identificar:
+
+* defeitos;
+* violação dos padrões definidos;
+* ausência de testes necessários;
+* documentação inconsistente;
+* implementação incompleta;
+* código duplicado;
+* impacto arquitetural não tratado.
 
 
 Merge
 =====
 
-O merge somente pode ocorrer após:
+Após todas as aprovações obrigatórias, o Pull Request poderá ser integrado à
+branch principal.
 
-* aprovação obrigatória;
-* resolução das conversas;
-* atualização da branch em relação à main, quando necessário.
+O projeto adota como estratégia padrão:
 
+* Squash and Merge.
 
-Estratégia de Merge
-===================
-
-O projeto adota **Squash and Merge** como estratégia padrão.
-
-Justificativa:
-
-* mantém o histórico limpo;
-* reduz commits intermediários;
-* facilita a navegação no histórico;
-* preserva o vínculo entre Pull Request e Issue.
-
-O histórico da branch de desenvolvimento permanece disponível no Pull Request,
-mas a branch principal recebe apenas um commit consolidado.
+Essa estratégia mantém o histórico da branch principal organizado e facilita a
+rastreabilidade das entregas.
 
 
-Relacionamento com GitHub
-=========================
+Fechamento Automático de Issues
+===============================
 
-Todo Pull Request deve:
+Sempre que possível, o Pull Request deve utilizar palavras-chave do GitHub.
 
-* referenciar a Issue correspondente;
-* possuir pelo menos um revisor;
-* estar associado à Milestone da Sprint;
-* utilizar labels adequadas;
-* estar vinculado ao GitHub Project.
+Exemplo:
+
+.. code-block:: text
+
+    Closes #52
+
+    Fixes #81
+
+    Resolves #104
+
+Após o merge, a Issue correspondente será encerrada automaticamente.
 
 
-Boas Práticas
-=============
+Rastreabilidade
+===============
 
-Preferir Pull Requests pequenos.
+Cada Pull Request deve possuir relacionamento com:
 
-Evitar alterações muito extensas.
+* uma Epic;
+* uma Issue;
+* uma Sub-Issue;
+* uma Branch;
+* uma Milestone;
+* um Sprint;
+* um responsável.
 
-Responder comentários de revisão.
+Essa estrutura garante rastreabilidade completa durante todo o ciclo de
+desenvolvimento.
 
-Atualizar a descrição caso o escopo seja alterado.
 
-Não utilizar Pull Requests para discutir requisitos; essas discussões devem
-ocorrer na Issue correspondente.
+Fluxo de Aprovação
+==================
+
+O processo de aprovação segue o fluxo abaixo.
+
+.. code-block:: text
+
+    Desenvolvedor
+
+        |
+
+        v
+
+    Pull Request
+
+        |
+
+        v
+
+    Revisão Técnica
+
+        |
+
+        v
+
+    Ajustes
+
+        |
+
+        v
+
+    Nova Revisão
+
+        |
+
+        v
+
+    Aprovação
+
+        |
+
+        v
+
+    Squash and Merge
 
 
 Resumo
 ======
 
-O Pull Request representa a unidade oficial de entrega do projeto. Ele consolida
-o trabalho realizado em uma Sub-Issue, registra a justificativa técnica da
-implementação e garante que toda alteração seja revisada antes de integrar a
-branch principal.
+O Pull Request representa a entrega oficial de uma Sub-Issue.
+
+Além de integrar código ao projeto, ele registra decisões técnicas,
+possibilita revisão colaborativa, garante qualidade da implementação e mantém
+a rastreabilidade entre requisitos, desenvolvimento e entrega.
