@@ -1,0 +1,44 @@
+@startuml
+
+left to right direction
+
+actor "Estudante" as estudante
+actor "Gestor Institucional" as gestor
+actor "Administrador" as admin
+
+rectangle "Sistema de Gestão de Atividades Complementares" {
+
+    usecase "Autenticar" as UC1
+
+    usecase "Cadastrar atividade" as UC2
+
+    usecase "Enviar certificado" as UC3
+
+    usecase "Acompanhar progresso" as UC4
+
+    usecase "Gerar relatório" as UC5
+
+    usecase "Validar certificado" as UC6
+
+    usecase "Gerenciar usuários" as UC7
+
+}
+
+
+estudante --> UC1
+estudante --> UC2
+estudante --> UC3
+estudante --> UC4
+estudante --> UC5
+
+
+gestor --> UC1
+gestor --> UC6
+gestor --> UC5
+
+
+admin --> UC1
+admin --> UC7
+
+
+@enduml
