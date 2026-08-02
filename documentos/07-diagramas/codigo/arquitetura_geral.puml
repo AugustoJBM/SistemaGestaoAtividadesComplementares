@@ -1,0 +1,66 @@
+@startuml
+
+left to right direction
+
+actor "Usuário" as user
+
+
+package "Frontend" {
+
+    component "Angular\nTypeScript\nTailwind CSS" as angular
+
+}
+
+
+package "Backend - Spring Boot" {
+
+    component "API REST" as api
+
+    package "Módulos" {
+
+        component "Autenticação\nSegurança" as auth
+
+        component "Usuários" as users
+
+        component "Atividades\nComplementares" as activities
+
+        component "Certificados" as certificates
+
+        component "Acompanhamento" as tracking
+
+        component "Relatórios" as reports
+
+        component "Notificações" as notifications
+
+    }
+
+}
+
+
+database "Banco de Dados" as database
+
+
+user --> angular
+
+angular --> api
+
+
+api --> auth
+api --> users
+api --> activities
+api --> certificates
+api --> tracking
+api --> reports
+api --> notifications
+
+
+auth --> database
+users --> database
+activities --> database
+certificates --> database
+tracking --> database
+reports --> database
+notifications --> database
+
+
+@enduml
