@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: Discussões do Projeto
+    about: Utilize as Discussions para dúvidas gerais, ideias e debates técnicos.
+
+  - name: Documentação
+    about: Consulte a documentação antes de abrir uma Issue.
