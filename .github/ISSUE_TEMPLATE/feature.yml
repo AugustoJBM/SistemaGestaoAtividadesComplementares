@@ -1,0 +1,26 @@
+name: Nova Funcionalidade
+
+description: Registrar uma nova funcionalidade.
+
+title: "[Feature]: "
+
+labels:
+  - feature
+
+body:
+
+- type: textarea
+  id: descricao
+  attributes:
+    label: Descrição
+    description: Descreva a funcionalidade desejada.
+  validations:
+    required: true
+
+- type: textarea
+  id: observacoes
+  attributes:
+    label: Observações
+    description: Informações adicionais (opcional).
+  validations:
+    required: false
