@@ -1,0 +1,17 @@
+name: Refatoração
+
+description: Melhorias estruturais.
+
+title: "[Refactor]: "
+
+labels:
+  - refactor
+
+body:
+
+- type: textarea
+  id: descricao
+  attributes:
+    label: O que será refatorado?
+  validations:
+    required: true
