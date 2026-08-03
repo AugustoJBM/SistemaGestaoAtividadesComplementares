@@ -1,0 +1,29 @@
+name: Correção
+
+description: Registrar um defeito encontrado.
+
+title: "[Bug]: "
+
+labels:
+  - bug
+
+body:
+
+- type: textarea
+  id: problema
+  attributes:
+    label: Problema encontrado
+  validations:
+    required: true
+
+- type: textarea
+  id: comportamento
+  attributes:
+    label: Comportamento esperado
+  validations:
+    required: false
+
+- type: textarea
+  id: observacoes
+  attributes:
+    label: Informações adicionais
