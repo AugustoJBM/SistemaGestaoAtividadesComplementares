@@ -1,0 +1,17 @@
+name: Documentação
+
+description: Alterações na documentação.
+
+title: "[Docs]: "
+
+labels:
+  - documentation
+
+body:
+
+- type: textarea
+  id: descricao
+  attributes:
+    label: Descrição
+  validations:
+    required: true
