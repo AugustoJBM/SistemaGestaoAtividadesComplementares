@@ -4,154 +4,245 @@ Sistema de Gestão de Atividades Complementares
 
 Bem-vindo à documentação oficial do **Sistema de Gestão de Atividades Complementares**.
 
-Este projeto está sendo desenvolvido como parte da disciplina de **Engenharia de Software** da **Universidade Federal do Agreste de Pernambuco (UFAPE)**.
+Este projeto está sendo desenvolvido como parte da disciplina de
+**Engenharia de Software** da **Universidade Federal do Agreste de Pernambuco (UFAPE)**.
 
-O objetivo do sistema é oferecer uma plataforma para gerenciamento das Atividades Complementares Curriculares (ACC) e Atividades Curriculares de Extensão (ACEX), permitindo que estudantes acompanhem sua carga horária, realizem o envio de certificados e acompanhem o processo de validação das atividades.
+O sistema tem como objetivo apoiar o gerenciamento das Atividades
+Complementares Curriculares (ACC) e das Atividades Curriculares de Extensão
+(ACEX), permitindo o envio de certificados, o acompanhamento da carga horária
+integralizada e o gerenciamento do processo de validação das atividades pelos
+responsáveis.
 
-A documentação deste diretório tem como finalidade centralizar todas as informações relacionadas ao projeto, incluindo requisitos, arquitetura, organização da equipe, fluxo de desenvolvimento, padrões de código e planejamento das Sprints.
-
-Esta documentação constitui a principal fonte de informação técnica do projeto e deve ser utilizada por todos os integrantes da equipe durante o desenvolvimento.
+Esta documentação reúne todas as informações técnicas, arquiteturais e
+organizacionais do projeto, servindo como principal fonte de consulta para toda
+a equipe durante o ciclo de desenvolvimento.
 
 ::
 
-   Toda decisão arquitetural ou alteração significativa no projeto deve ser refletida nesta documentação.
+   Toda decisão arquitetural, alteração significativa ou definição de processo
+   deverá ser refletida nesta documentação.
 
-====================
+=========================
 Estrutura da Documentação
-====================
+=========================
 
-A documentação está organizada da seguinte forma:
+A documentação está organizada em oito grandes seções.
 
-* a ser feito ...
+::
 
-====================
+    documentos/
+
+    ├── 1-inicial.rst
+    │
+    ├── 01-produto/
+    │   ├── Visão Geral do Produto
+    │   ├── Modelo de Domínio
+    │   └── Requisitos
+    │
+    ├── 02-arquitetura/
+    │   ├── Arquitetura Geral
+    │   ├── Módulos do Sistema
+    │   ├── Estrutura do Projeto
+    │   ├── Decisões Arquiteturais
+    │   ├── Backend
+    │   └── Frontend
+    │
+    ├── 03-qualidade/
+    │   └── Estratégia de Testes
+    │
+    ├── 04-processos/
+    │   ├── Git
+    │   ├── Pull Requests
+    │   ├── Fluxo de Desenvolvimento
+    │   ├── Metodologia Ágil
+    │   └── CI/CD
+    │
+    ├── 05-modulos/
+    │
+    ├── 06-fluxos-de-negocio/
+    │
+    ├── 07-diagramas/
+    │
+    └── 08-governanca/
+        ├── Índice
+        ├── Fluxo de Desenvolvimento
+        ├── Gerenciamento de Trabalho
+        ├── Padrões de Implementação
+        ├── Configuração do Repositório
+        ├── Controle de Qualidade
+        └── Convenções
+
+Cada seção documenta um aspecto específico do projeto, desde os requisitos de
+negócio até a governança do desenvolvimento.
+
+=========================
 Objetivos da Documentação
-====================
+=========================
 
-Esta documentação possui os seguintes objetivos:
+A documentação possui os seguintes objetivos:
 
-* Centralizar todas as decisões técnicas do projeto.
-* Definir os padrões de desenvolvimento utilizados pela equipe.
-* Facilitar a entrada de novos integrantes.
-* Padronizar a comunicação entre os desenvolvedores.
-* Registrar as decisões arquiteturais tomadas durante o desenvolvimento.
-* Auxiliar o planejamento das Sprints e organização das tarefas.
-* Servir como referência durante toda a evolução do projeto.
+* centralizar todas as informações técnicas do projeto;
+* registrar as decisões arquiteturais;
+* documentar os requisitos funcionais e não funcionais;
+* padronizar o processo de desenvolvimento;
+* definir padrões de implementação e organização do código;
+* apoiar o gerenciamento do projeto;
+* facilitar a integração de novos integrantes;
+* servir como referência durante toda a evolução do software.
 
-====================
+=========================
 Público-Alvo
-====================
+=========================
 
 Esta documentação destina-se principalmente a:
 
-* Desenvolvedores do projeto;
 * Product Owners;
-* Professores e monitores responsáveis pela disciplina;
-* Avaliadores do projeto;
-* Novos colaboradores.
+* equipe de desenvolvimento;
+* avaliadores do projeto;
+* futuros colaboradores.
 
-====================
-Organização Geral
-====================
+=========================
+Organização da Equipe
+=========================
 
-O projeto é organizado em torno de três grupos de participantes.
+O projeto é desenvolvido de forma colaborativa entre os Product Owners e a
+Equipe de Desenvolvimento, possuindo responsabilidades distintas e
+complementares.
 
 **Product Owners**
 
-Responsáveis pelo gerenciamento do produto, definição e priorização do backlog.
+Os Product Owners representam os solicitantes das funcionalidades do sistema.
 
-Neste projeto, os Product Owners são:
+Neste projeto, esse papel é desempenhado pelos professores e monitores da
+disciplina.
 
-* Professores e monitores da disciplina.
+Suas responsabilidades são:
 
-Os Product Owners são responsáveis por:
+* criar Issues representando novas demandas;
+* esclarecer dúvidas sobre as funcionalidades solicitadas;
+* validar as funcionalidades entregues pela equipe.
 
-* definir funcionalidades;
-* criar Epics;
-* criar User Stories;
-* priorizar o backlog;
-* validar entregas.
+Os Product Owners possuem liberdade para criar as Issues da forma que julgarem
+mais adequada, não sendo obrigados a seguir modelos, templates ou padrões
+técnicos definidos para a equipe de desenvolvimento.
 
-Os Product Owners **não participam da implementação**.
+Os Product Owners não participam das atividades técnicas do projeto, como
+planejamento da Sprint, refinamento, definição da arquitetura, implementação,
+revisão de código ou integração das alterações.
 
 **Equipe de Desenvolvimento**
 
-A equipe de desenvolvimento é composta por cinco integrantes responsáveis pela implementação do sistema.
+A equipe de desenvolvimento é responsável por todas as atividades técnicas do
+projeto.
 
-Todos os desenvolvedores possuem responsabilidade compartilhada sobre o produto e colaboram durante todas as Sprints.
+Entre suas responsabilidades estão:
 
-Durante cada Sprint poderão existir responsabilidades rotativas, como:
+* analisar as Issues criadas pelos Product Owners;
+* realizar o refinamento técnico;
+* criar as Sub-Issues;
+* definir a arquitetura da solução;
+* organizar e distribuir as atividades da Sprint;
+* implementar funcionalidades;
+* desenvolver testes;
+* revisar Pull Requests;
+* manter a documentação atualizada;
+* integrar as alterações ao repositório principal.
 
-* Coordenação técnica da Sprint;
-* Revisão de Pull Requests;
-* Garantia de qualidade;
-* Documentação técnica;
-* Integração entre módulos.
+A equipe possui responsabilidade compartilhada sobre a qualidade do software e
+pela correta implementação das funcionalidades solicitadas.
 
-Essas responsabilidades não substituem o desenvolvimento de funcionalidades.
+Durante cada Sprint poderão existir papéis rotativos relacionados à revisão de
+código, documentação, qualidade ou coordenação técnica, sem prejuízo das
+atividades de desenvolvimento desempenhadas por todos os integrantes.
 
-Todos os integrantes continuam implementando funcionalidades durante a Sprint.
-
-====================
+=========================
 Fluxo Geral do Projeto
-====================
+=========================
 
-O desenvolvimento segue um fluxo incremental baseado em Metodologia Ágil.
+O projeto segue um processo de desenvolvimento incremental baseado em
+Metodologia Ágil.
 
-O fluxo geral do projeto é representado da seguinte maneira:
+O fluxo geral pode ser resumido da seguinte forma.
 
 ::
 
     Product Backlog
             │
             ▼
-      Sprint Planning
+      Planejamento da Sprint
             │
             ▼
-      Sprint Backlog
+       Refinamento Técnico
             │
             ▼
-     Desenvolvimento
+      Criação das Sub-Issues
             │
             ▼
-      Code Review
+      Desenvolvimento
             │
             ▼
-         Testes
+        Pull Request
             │
             ▼
-        Integração
+      Revisão de Código
             │
             ▼
-      Sprint Review
+          Correções
             │
             ▼
-    Sprint Retrospective
+          Integração
+            │
+            ▼
+      Revisão da Sprint
+            │
+            ▼
+     Retrospectiva
 
-a ser ajustado no futuro
+Os detalhes desse fluxo encontram-se documentados na seção
+``08-governanca``.
 
-====================
+=========================
+Princípios da Documentação
+=========================
+
+Toda documentação deste projeto deve obedecer aos seguintes princípios:
+
+* manter consistência com a implementação;
+* evoluir juntamente com o software;
+* evitar duplicação de informações;
+* registrar decisões arquiteturais relevantes;
+* manter rastreabilidade entre requisitos, implementação e documentação.
+
+A documentação deve sempre representar o estado atual do projeto.
+
+=========================
 Documentação Oficial
-====================
+=========================
 
-Toda documentação oficial deverá permanecer versionada neste repositório.
+Toda a documentação oficial encontra-se versionada neste repositório.
 
-Não serão utilizados documentos externos como fonte principal de informação do projeto.
+Documentos externos poderão ser utilizados como material de apoio, mas não
+substituem esta documentação como fonte oficial de informações do projeto.
 
-Quaisquer alterações na arquitetura, requisitos, padrões ou organização da equipe deverão ser registradas através de Pull Requests juntamente com as alterações de código correspondentes.
+Alterações relevantes na arquitetura, nos requisitos, na organização da equipe
+ou nos processos de desenvolvimento deverão ser registradas juntamente com as
+respectivas alterações no código-fonte.
 
-====================
+=========================
 Controle de Versões
-====================
+=========================
 
-Esta documentação evolui juntamente com o software.
+A documentação evolui em conjunto com o software.
 
-Sempre que uma alteração relevante for realizada no projeto, os documentos impactados deverão ser atualizados.
+Sempre que houver alterações significativas em qualquer módulo do sistema, os
+documentos correspondentes deverão ser revisados e atualizados.
 
-A documentação deve refletir fielmente o estado atual do sistema.
+Essa prática garante que a documentação permaneça consistente, confiável e útil
+durante todo o ciclo de vida do projeto.
 
-====================
+=========================
 Licença
-====================
+=========================
 
-A documentação deste projeto segue a mesma licença adotada pelo repositório principal.
+Esta documentação é distribuída sob a mesma licença adotada pelo repositório
+principal do projeto.
