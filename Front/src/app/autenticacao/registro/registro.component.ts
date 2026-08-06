@@ -31,7 +31,6 @@ export class RegistroComponent {
     {
       fullName: ['', [Validators.required, Validators.minLength(3)]],
       emailOrRegistration: ['', [Validators.required]],
-      role: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     },
@@ -69,16 +68,16 @@ export class RegistroComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { fullName, emailOrRegistration, role, password } = this.registerForm.value;
+    const { fullName, emailOrRegistration, password } = this.registerForm.value;
 
-    this.registroService.register({ fullName, emailOrRegistration, role, password }).subscribe({
+    this.registroService.register({ fullName, emailOrRegistration, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err.error?.message || 'E-mail ou matrícula já cadastrados no sistema.');
+        this.errorMessage.set(typeof err.error === 'string' ? err.error : 'Erro ao cadastrar. Tente novamente.');
       }
     });
   }
