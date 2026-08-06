@@ -49,12 +49,12 @@ public class AuthService {
 
     public void logout(String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return;
+            throw new UnauthorizedException("Token ausente ou inválido");
         }
 
         String token = authorizationHeader.substring(7);
         if (!jwtService.isTokenValid(token)) {
-            return;
+            throw new UnauthorizedException("Token inválido ou expirado");
         }
 
         tokenBlacklistService.blacklistToken(token);
