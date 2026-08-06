@@ -59,7 +59,7 @@ export class LoginComponent {
       error: (err) => {
         this.isLoading.set(false);
         if (err.status === 401) {
-          this.errorMessage.set('Credenciais inválidas. Verifique seu e-mail/matrícula e senha.');
+          this.errorMessage.set('E-mail ou senha incorretos.');
         } else if (err.status === 0) {
           this.errorMessage.set('Não foi possível conectar ao servidor. Verifique sua conexão.');
         } else {
