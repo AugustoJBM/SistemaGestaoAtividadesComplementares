@@ -11,9 +11,11 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const token = authService.getToken();
   const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
+  const isPublicAuthRoute = req.url.includes('/auth/cadastro') || req.url.includes('/auth/login');
+
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
+      if ((error.status === 401 || error.status === 403) && !isPublicAuthRoute) {
         authService.clearToken();
         void router.navigate(['/login']);
       }
