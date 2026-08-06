@@ -8,7 +8,7 @@ import { LoginRequest, LoginResponse } from './autenticacao.model';
 })
 export class AutenticacaoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1/auth';
+  private readonly apiUrl = 'http://localhost:8080/auth';
   private readonly TOKEN_KEY = 'sgac_auth_token';
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -29,8 +29,12 @@ export class AutenticacaoService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  logout(): void {
+  clearToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+  }
+
+  logoutRemote(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/logout`, {});
   }
 
   isAuthenticated(): boolean {

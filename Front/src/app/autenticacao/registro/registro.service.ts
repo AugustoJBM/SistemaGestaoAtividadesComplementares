@@ -8,9 +8,16 @@ import { RegistroRequest, RegistroResponse } from './registro.model';
 })
 export class RegistroService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'https://api.ufape.edu.br/sgac/v1/auth/register';
+  private readonly apiUrl = 'http://localhost:8080/auth';
 
   register(data: RegistroRequest): Observable<RegistroResponse> {
-    return this.http.post<RegistroResponse>(this.apiUrl, data);
+    const payload = {
+      nome: data.fullName,
+      email: data.emailOrRegistration,
+      senha: data.password,
+      role: 'ESTUDANTE'
+    };
+
+    return this.http.post<RegistroResponse>(`${this.apiUrl}/cadastro`, payload);
   }
 }
