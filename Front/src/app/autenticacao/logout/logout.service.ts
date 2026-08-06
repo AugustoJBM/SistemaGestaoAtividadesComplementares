@@ -12,9 +12,9 @@ export interface LogoutResponse {
 })
 export class LogoutService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'https://api.ufape.edu.br/sgac/v1/auth/logout';
+  private readonly apiUrl = 'http://localhost:8080/auth/logout';
 
-  logout(): Observable<LogoutResponse> {
-    return this.http.post<LogoutResponse>(this.apiUrl, {});
+  logout(): Observable<void> {
+    return this.http.post<void>(this.apiUrl, {});
   }
 }

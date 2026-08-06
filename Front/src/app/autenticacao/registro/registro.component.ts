@@ -74,7 +74,7 @@ export class RegistroComponent {
     this.registroService.register({ fullName, emailOrRegistration, role, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/autenticacao/login']);
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading.set(false);

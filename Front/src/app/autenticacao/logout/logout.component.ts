@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { LogoutService } from './logout.service';
+import { AutenticacaoService } from '../autenticacao.service';
 
 @Component({
   selector: 'app-logout',
@@ -11,6 +12,7 @@ import { LogoutService } from './logout.service';
 })
 export class LogoutComponent {
   private readonly logoutService = inject(LogoutService);
+  private readonly authService = inject(AutenticacaoService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
 
@@ -35,9 +37,9 @@ export class LogoutComponent {
   }
 
   private clearSessionAndRedirect(): void {
-    localStorage.removeItem('auth_token');
+    this.authService.clearToken();
     sessionStorage.clear();
     this.isLoading.set(false);
-    this.router.navigate(['/autenticacao/login']);
+    this.router.navigate(['/login']);
   }
 }

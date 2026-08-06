@@ -17,4 +17,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> tratarEmailDuplicado(EmailJaCadastradoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<String> tratarUnauthorized(UnauthorizedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
 }
