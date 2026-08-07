@@ -41,13 +41,22 @@ export class AutenticacaoService {
     return localStorage.getItem(this.TOKEN_TYPE_KEY) ?? TIPO_TOKEN_PADRAO;
   }
 
-  clearToken(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.TOKEN_TYPE_KEY);
+  // Fonte unica do encerramento de sessao: usada tanto no logout manual
+  // quanto na expiracao de token detectada pelo interceptor.
+  encerrarSessao(): void {
+    this.limparToken();
+    // A aplicacao nao grava nada em sessionStorage hoje; limpar tudo garante
+    // que nenhum residuo de sessao sobreviva a saida.
+    sessionStorage.clear();
   }
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  private limparToken(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.TOKEN_TYPE_KEY);
   }
 
   private salvarSessao(response: LoginResponse): void {

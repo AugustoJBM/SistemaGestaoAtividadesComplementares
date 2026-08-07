@@ -27,11 +27,13 @@ describe('AuthInterceptor', () => {
     authService = TestBed.inject(AutenticacaoService);
     router = TestBed.inject(Router);
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('deve anexar o header Authorization usando o tipo de token salvo', () => {
@@ -57,6 +59,7 @@ describe('AuthInterceptor', () => {
 
     const spyRouter = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     authService.saveToken('token-expirado', 'Bearer');
+    sessionStorage.setItem('user-data', JSON.stringify({ nome: 'Teste' }));
 
 
     http.get('http://localhost:8080/atividades').subscribe({
@@ -66,7 +69,8 @@ describe('AuthInterceptor', () => {
     req.flush({ message: 'expirado' }, { status: 401, statusText: 'Unauthorized' });
 
 
-    expect(authService.getToken()).toBeNull();
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
     expect(spyRouter).toHaveBeenCalledWith(['/login']);
   });
 

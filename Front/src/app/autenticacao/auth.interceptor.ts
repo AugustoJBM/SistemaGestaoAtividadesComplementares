@@ -18,7 +18,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if ((error.status === 401 || error.status === 403) && !isPublicAuthRoute) {
-        authService.clearToken();
+        authService.encerrarSessao();
         void router.navigate(['/login']);
       }
       return throwError(() => error);

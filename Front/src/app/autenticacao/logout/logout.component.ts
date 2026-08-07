@@ -37,9 +37,9 @@ export class LogoutComponent {
   }
 
   private clearSessionAndRedirect(): void {
-    this.authService.clearToken();
-    sessionStorage.clear();
+    this.authService.encerrarSessao();
     this.isLoading.set(false);
-    this.router.navigate(['/login']);
+    // replaceUrl evita que o botao Voltar retorne a tela de confirmacao de saida.
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 }

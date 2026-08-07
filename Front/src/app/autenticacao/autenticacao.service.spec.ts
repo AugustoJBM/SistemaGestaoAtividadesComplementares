@@ -23,11 +23,13 @@ describe('AutenticacaoService', () => {
     service = TestBed.inject(AutenticacaoService);
     httpMock = TestBed.inject(HttpTestingController);
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('deve ser criado', () => {
@@ -54,9 +56,14 @@ describe('AutenticacaoService', () => {
     expect(service.isAuthenticated()).toBeTruthy();
   });
 
-  it('deve limpar token e tipo ao encerrar a sessão', () => {
+  it('não deve deixar resíduo de autenticação no navegador ao encerrar a sessão', () => {
     service.saveToken('token-valido', 'Bearer');
-    service.clearToken();
+    sessionStorage.setItem('user-data', JSON.stringify({ nome: 'Teste' }));
+
+    service.encerrarSessao();
+
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
     expect(service.getToken()).toBeNull();
     expect(service.isAuthenticated()).toBeFalsy();
   });
