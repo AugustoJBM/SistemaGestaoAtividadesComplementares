@@ -57,11 +57,11 @@ describe('LoginComponent', () => {
   });
 
   it('deve realizar o login com sucesso e navegar para o dashboard', () => {
-    const spyAuth = vi.spyOn(authService, 'login').mockReturnValue(of({ token: 'fake-token' }));
+    const spyAuth = vi.spyOn(authService, 'login').mockReturnValue(of({ token: 'fake-token', tipo: 'Bearer' }));
     const spyRouter = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.loginForm.setValue({
-      login: '2023000123',
+      login: 'aluno@ufape.edu.br',
       password: 'password123',
       rememberMe: false
     });
@@ -69,17 +69,17 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(spyAuth).toHaveBeenCalledWith({
-      usuario: '2023000123',
+      email: 'aluno@ufape.edu.br',
       senha: 'password123'
     });
     expect(component.isLoading()).toBeFalsy();
     expect(spyRouter).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('deve definir mensagem de erro amigável quando receber status 401 (Credenciais inválidas)', () => {
-    const errorResponse = { status: 401 };
-    vi.spyOn(authService, 'login').mockReturnValue(throwError(() => errorResponse));
-
+  it('deve exibir a mensagem de erro fornecida pelo service', () => {
+    vi.spyOn(authService, 'login').mockReturnValue(
+      throwError(() => new Error('Credenciais inválidas.'))
+    );
     component.loginForm.setValue({
       login: 'errado@ufape.edu.br',
       password: 'wrongpassword',
@@ -89,22 +89,7 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(component.isLoading()).toBeFalsy();
-    expect(component.errorMessage()).toContain('Credenciais inválidas');
+    expect(component.errorMessage()).toBe('Credenciais inválidas.');
   });
 
-  it('deve definir mensagem de erro de conexão quando receber status 0', () => {
-    const errorResponse = { status: 0 };
-    vi.spyOn(authService, 'login').mockReturnValue(throwError(() => errorResponse));
-
-    component.loginForm.setValue({
-      login: 'teste@ufape.edu.br',
-      password: 'password123',
-      rememberMe: false
-    });
-
-    component.onSubmit();
-
-    expect(component.isLoading()).toBeFalsy();
-    expect(component.errorMessage()).toContain('Não foi possível conectar ao servidor');
-  });
 });
