@@ -9,7 +9,9 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const authService = inject(AutenticacaoService);
   const router = inject(Router);
   const token = authService.getToken();
-  const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+  const authReq = token
+    ? req.clone({ setHeaders: { Authorization: `${authService.getTokenType()} ${token}` } })
+    : req;
 
   const isPublicAuthRoute = req.url.includes('/auth/cadastro') || req.url.includes('/auth/login');
 

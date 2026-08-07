@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../api.config';
 
 export interface LogoutResponse {
   message: string;
@@ -12,7 +13,7 @@ export interface LogoutResponse {
 })
 export class LogoutService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/auth/logout';
+  private readonly apiUrl = `${API_BASE_URL}/auth/logout`;
 
   logout(): Observable<void> {
     return this.http.post<void>(this.apiUrl, {});

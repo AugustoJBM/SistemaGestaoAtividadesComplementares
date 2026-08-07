@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AutenticacaoService } from '../autenticacao.service';
+import { Credenciais } from '../autenticacao.model';
 
 @Component({
   selector: 'app-login',
@@ -46,25 +47,19 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const credentials = {
-      usuario: this.loginForm.value.login,
+    const credenciais: Credenciais = {
+      email: this.loginForm.value.login,
       senha: this.loginForm.value.password
     };
 
-    this.authService.login(credentials).subscribe({
+    this.authService.login(credenciais).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
+      error: (erro: Error) => {
         this.isLoading.set(false);
-        if (err.status === 401) {
-          this.errorMessage.set('E-mail ou senha incorretos.');
-        } else if (err.status === 0) {
-          this.errorMessage.set('Não foi possível conectar ao servidor. Verifique sua conexão.');
-        } else {
-          this.errorMessage.set(err.error?.message || 'Ocorreu um erro ao realizar o login. Tente novamente.');
-        }
+        this.errorMessage.set(erro.message);
       }
     });
   }

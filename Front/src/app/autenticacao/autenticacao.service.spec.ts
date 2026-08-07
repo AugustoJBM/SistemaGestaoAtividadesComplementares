@@ -1,9 +1,11 @@
-import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { AutenticacaoService } from './autenticacao.service';
+
+const LOGIN_URL = 'http://localhost:8080/auth/login';
 
 describe('AutenticacaoService', () => {
   let service: AutenticacaoService;
@@ -32,36 +34,57 @@ describe('AutenticacaoService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('deve realizar o login com sucesso e salvar o token', () => {
-    const mockCredentials = { usuario: '2023000123', senha: 'password123' };
-    const mockResponse = { token: 'fake-jwt-token' };
+  it('deve converter as credenciais de domínio para o contrato do backend', () => {
+    const credenciais = { email: 'aluno@ufape.edu.br', senha: 'password123' };
 
-    service.login(mockCredentials).subscribe((response) => {
-      expect(response).toEqual(mockResponse);
-      expect(service.getToken()).toBe('fake-jwt-token');
-      expect(service.isAuthenticated()).toBeTruthy();
-    });
+    service.login(credenciais).subscribe();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/v1/auth/login');
+    const req = httpMock.expectOne(LOGIN_URL);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(mockCredentials);
-    req.flush(mockResponse);
+    expect(req.request.body).toEqual({ usuario: 'aluno@ufape.edu.br', senha: 'password123' });
+    req.flush({ token: 'fake-jwt-token', tipo: 'Bearer' });
   });
 
-  it('deve verificar o estado de autenticação corretamente', () => {
+  it('deve salvar o token e o tipo devolvidos pelo backend', () => {
+    const credenciais = { email: 'aluno@ufape.edu.br', senha: 'password123' };
+    service.login(credenciais).subscribe();
+    httpMock.expectOne(LOGIN_URL).flush({ token: 'fake-jwt-token', tipo: 'Bearer' });
+    expect(service.getToken()).toBe('fake-jwt-token');
+    expect(service.getTokenType()).toBe('Bearer');
+    expect(service.isAuthenticated()).toBeTruthy();
+  });
+
+  it('deve limpar token e tipo ao encerrar a sessão', () => {
+    service.saveToken('token-valido', 'Bearer');
+    service.clearToken();
+    expect(service.getToken()).toBeNull();
     expect(service.isAuthenticated()).toBeFalsy();
+  });
 
-    // Utilizando o método de login simulado ou definindo o token pelo fluxo do serviço
-    const mockCredentials = { usuario: '2023000123', senha: 'password123' };
-    const mockResponse = { token: 'token-valido' };
-
-    service.login(mockCredentials).subscribe(() => {
-      expect(service.isAuthenticated()).toBeTruthy();
-      service.logout();
-      expect(service.isAuthenticated()).toBeFalsy();
+  it('deve traduzir o status 401 para mensagem de credenciais inválidas', () => {
+    let mensagem = '';
+    service.login({ email: 'errado@ufape.edu.br', senha: 'wrongpassword' }).subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
     });
+    httpMock.expectOne(LOGIN_URL).flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(mensagem).toBe('Credenciais inválidas.');
+  });
 
-    const req = httpMock.expectOne('http://localhost:8080/api/v1/auth/login');
-    req.flush(mockResponse);
+  it('deve traduzir o status 0 para mensagem de falha de conexão', () => {
+    let mensagem = '';
+    service.login({ email: 'aluno@ufape.edu.br', senha: 'password123' }).subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+    httpMock.expectOne(LOGIN_URL).error(new ProgressEvent('error'), { status: 0 });
+    expect(mensagem).toContain('Não foi possível conectar ao servidor');
+  });
+
+  it('deve usar mensagem genérica quando o backend não informar detalhe', () => {
+    let mensagem = '';
+    service.login({ email: 'aluno@ufape.edu.br', senha: 'password123' }).subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+    httpMock.expectOne(LOGIN_URL).flush({}, { status: 500, statusText: 'Server Error' });
+    expect(mensagem).toBe('Ocorreu um erro ao realizar o login. Tente novamente.');
   });
 });
