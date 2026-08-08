@@ -12,8 +12,8 @@ import br.edu.ufape.backend.dto.CadastroUsuarioRequest;
 import br.edu.ufape.backend.dto.LoginRequest;
 import br.edu.ufape.backend.dto.LoginResponse;
 import br.edu.ufape.backend.dto.UsuarioResponse;
-import br.edu.ufape.backend.model.Usuario;
 import br.edu.ufape.backend.service.AuthService;
+import br.edu.ufape.backend.usuario.model.Usuario;
 import jakarta.validation.Valid;
 
 @RestController
