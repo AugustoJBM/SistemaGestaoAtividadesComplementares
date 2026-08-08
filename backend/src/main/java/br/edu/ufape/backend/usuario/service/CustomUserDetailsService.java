@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.service;
+package br.edu.ufape.backend.usuario.service;
 
 import java.util.Collections;
 
@@ -8,21 +8,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import br.edu.ufape.backend.model.Usuario;
-import br.edu.ufape.backend.repository.UsuarioRepository;
+import br.edu.ufape.backend.usuario.model.Usuario;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
-    public CustomUserDetailsService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public CustomUserDetailsService(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioService.buscarPorEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + email));
 
         return User.withUsername(usuario.getEmail())

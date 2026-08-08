@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.model;
+package br.edu.ufape.backend.usuario.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,12 +7,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,15 +34,19 @@ public class Usuario {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     protected Usuario() {
 
     }
 
-    public Usuario(String nome, String email, String senhaHash, Role role) {
+    protected Usuario(String nome, String email, String senhaHash, Role role) {
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
         this.role = role;
+        this.isActive = true;
     }
 
     public Long getId() {
@@ -50,16 +57,39 @@ public class Usuario {
         return nome;
     }
 
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getSenhaHash() {
         return senhaHash;
     }
 
+    public void setSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
     public Role getRole() {
         return role;
     }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
 }

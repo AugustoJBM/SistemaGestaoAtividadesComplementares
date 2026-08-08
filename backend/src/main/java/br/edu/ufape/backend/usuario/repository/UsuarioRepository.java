@@ -1,8 +1,9 @@
-package br.edu.ufape.backend.repository;
+package br.edu.ufape.backend.usuario.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import br.edu.ufape.backend.model.Usuario;
+
+import br.edu.ufape.backend.usuario.model.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 

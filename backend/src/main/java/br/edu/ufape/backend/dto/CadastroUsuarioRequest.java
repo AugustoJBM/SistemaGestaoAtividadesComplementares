@@ -1,8 +1,8 @@
 package br.edu.ufape.backend.dto;
 
+import br.edu.ufape.backend.usuario.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import br.edu.ufape.backend.model.Role;
 import jakarta.validation.constraints.Size;
 
 public class CadastroUsuarioRequest {

@@ -1,7 +1,7 @@
 package br.edu.ufape.backend.dto;
 
-import br.edu.ufape.backend.model.Usuario;
-import br.edu.ufape.backend.model.Role;
+import br.edu.ufape.backend.usuario.model.Role;
+import br.edu.ufape.backend.usuario.model.Usuario;
 
 public class UsuarioResponse {
     
