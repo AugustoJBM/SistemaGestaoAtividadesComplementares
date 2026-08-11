@@ -23,28 +23,26 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final UserDetailsService userDetailsService;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/cadastro", "/auth/login", "/h2-console/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-            .anonymous(anonymous -> anonymous.disable())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .httpBasic(httpBasic -> httpBasic.disable());
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/cadastro", "/auth/login", "/h2-console/**").permitAll()
+                        .anyRequest().authenticated())
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .anonymous(anonymous -> anonymous.disable())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
