@@ -17,7 +17,7 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     
     private final AuthFacade authFacade;
