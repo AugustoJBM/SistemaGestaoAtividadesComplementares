@@ -12,7 +12,7 @@ import br.edu.ufape.backend.autenticacao.dto.CadastroUsuarioRequest;
 import br.edu.ufape.backend.autenticacao.dto.LoginRequest;
 import br.edu.ufape.backend.autenticacao.dto.LoginResponse;
 import br.edu.ufape.backend.autenticacao.dto.UsuarioResponse;
-import br.edu.ufape.backend.autenticacao.service.AuthService;
+import br.edu.ufape.backend.autenticacao.facade.AuthFacade;
 import br.edu.ufape.backend.usuario.model.Usuario;
 import jakarta.validation.Valid;
 
@@ -20,27 +20,27 @@ import jakarta.validation.Valid;
 @RequestMapping("/auth")
 public class AuthController {
     
-    private final AuthService authService;
+    private final AuthFacade authFacade;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthFacade authFacade) {
+        this.authFacade = authFacade;
     }
 
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastrar(@Valid @RequestBody CadastroUsuarioRequest request) {
-        Usuario usuario = authService.cadastrarUsuario(request);
+        Usuario usuario = authFacade.cadastrarUsuario(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(usuario));
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse loginResponse = authService.login(request);
+        LoginResponse loginResponse = authFacade.login(request);
         return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader(name = "Authorization", required = false) String authorization) {
-        authService.logout(authorization);
+        authFacade.logout(authorization);
         return ResponseEntity.ok().build();
     }
 }
