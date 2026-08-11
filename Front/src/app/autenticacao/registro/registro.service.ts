@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegistroRequest, RegistroResponse } from './registro.model';
+import { API_BASE_URL } from '../../api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RegistroService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/auth';
+  private readonly apiUrl = `${API_BASE_URL}/auth`;
 
   register(data: RegistroRequest): Observable<RegistroResponse> {
     const payload = {

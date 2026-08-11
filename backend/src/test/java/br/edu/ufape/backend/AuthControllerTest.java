@@ -42,7 +42,7 @@ public class AuthControllerTest {
 
     @Test
     void deveRetornarUnauthorizedQuandoAcessoAoEndpointProtegidoSemHeaderDeAutorizacao() throws Exception {
-        mockMvc.perform(post("/auth/logout"))
+        mockMvc.perform(post("/api/v1/auth/logout"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -50,7 +50,7 @@ public class AuthControllerTest {
     void deveRetornarUnauthorizedQuandoTokenBlacklistForReutilizado() throws Exception {
         tokenBlacklistService.blacklistToken(validToken);
 
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken))
                 .andExpect(status().isUnauthorized());
     }

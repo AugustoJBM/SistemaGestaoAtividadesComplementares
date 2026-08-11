@@ -35,7 +35,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/cadastro", "/auth/login", "/h2-console/**").permitAll()
+                        .requestMatchers(
+                            "/api/v1/auth/cadastro",
+                            "/api/v1/auth/login",
+                            "/api/v1/auth/logout",
+                            "/h2-console/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .exceptionHandling(exception -> exception
