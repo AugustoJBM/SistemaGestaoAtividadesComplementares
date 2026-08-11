@@ -66,7 +66,7 @@ class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("🔴 Negativo: Deve retornar 400 Bad Request quando senha tiver menos de 8 caracteres")
+        @DisplayName("Negativo: Deve retornar 400 Bad Request quando senha tiver menos de 8 caracteres")
         void deveRetornarBadRequestQuandoSenhaForInvalida() throws Exception {
                 CadastroUsuarioRequest request = new CadastroUsuarioRequest();
                 request.setNome("Estudante Teste");
@@ -81,7 +81,7 @@ class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("🔴 Negativo: Deve retornar 409 Conflict quando e-mail ja estiver cadastrado")
+        @DisplayName("Negativo: Deve retornar 409 Conflict quando e-mail ja estiver cadastrado")
         void deveRetornarConflictQuandoEmailJaExistir() throws Exception {
                 CadastroUsuarioRequest request = new CadastroUsuarioRequest();
                 request.setNome("Estudante Duplicado");
@@ -128,7 +128,7 @@ class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("🔴 Negativo: Deve retornar 401 Unauthorized quando credenciais de login forem incorretas")
+        @DisplayName("Negativo: Deve retornar 401 Unauthorized quando credenciais de login forem incorretas")
         void deveRetornarUnauthorizedQuandoCredenciaisIncorretas() throws Exception {
                 LoginRequest login = new LoginRequest();
                 login.setUsuario("inexistente@ufape.edu.br");
@@ -162,14 +162,14 @@ class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("🔴 Negativo: Deve retornar 401 Unauthorized ao acessar logout sem header Authorization")
+        @DisplayName("Negativo: Deve retornar 401 Unauthorized ao acessar logout sem header Authorization")
         void deveRetornarUnauthorizedQuandoAcessoAoEndpointProtegidoSemHeaderDeAutorizacao() throws Exception {
                 mockMvc.perform(post("/api/v1/auth/logout"))
                                 .andExpect(status().isUnauthorized());
         }
 
         @Test
-        @DisplayName("🔴 Negativo: Deve retornar 401 Unauthorized quando token revogado/blacklist for reutilizado no logout")
+        @DisplayName("Negativo: Deve retornar 401 Unauthorized quando token revogado/blacklist for reutilizado no logout")
         void deveRetornarUnauthorizedQuandoTokenBlacklistForReutilizado() throws Exception {
                 CadastroUsuarioRequest cadastro = new CadastroUsuarioRequest();
                 cadastro.setNome("Usuario Blacklist");
