@@ -1,39 +1,39 @@
-package br.edu.ufape.backend.service;
+package br.edu.ufape.backend.autenticacao.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import br.edu.ufape.backend.dto.CadastroUsuarioRequest;
-import br.edu.ufape.backend.dto.LoginRequest;
-import br.edu.ufape.backend.dto.LoginResponse;
-import br.edu.ufape.backend.exception.EmailJaCadastradoException;
-import br.edu.ufape.backend.exception.PerfilNaoPermitidoException;
-import br.edu.ufape.backend.exception.UnauthorizedException;
+import br.edu.ufape.backend.autenticacao.dto.CadastroUsuarioRequest;
+import br.edu.ufape.backend.autenticacao.dto.LoginRequest;
+import br.edu.ufape.backend.autenticacao.dto.LoginResponse;
+import br.edu.ufape.backend.autenticacao.exception.EmailJaCadastradoException;
+import br.edu.ufape.backend.autenticacao.exception.PerfilNaoPermitidoException;
+import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
+import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Role;
 import br.edu.ufape.backend.usuario.model.Usuario;
-import br.edu.ufape.backend.usuario.service.UsuarioService;
 
 @Service
 public class AuthService {
 
-    private final UsuarioService usuarioService;
+    private final UsuarioContrato usuarioContrato;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final TokenBlacklistService tokenBlacklistService;
 
-    public AuthService(UsuarioService usuarioService,
+    public AuthService(UsuarioContrato usuarioContrato,
             JwtService jwtService,
             PasswordEncoder passwordEncoder,
             TokenBlacklistService tokenBlacklistService) {
-        this.usuarioService = usuarioService;
+        this.usuarioContrato = usuarioContrato;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.tokenBlacklistService = tokenBlacklistService;
     }
 
     public Usuario cadastrarUsuario(CadastroUsuarioRequest request) {
-        if (usuarioService.existePorEmail(request.getEmail())) {
+        if (usuarioContrato.existePorEmail(request.getEmail())) {
             throw new EmailJaCadastradoException(request.getEmail());
         }
 
@@ -45,11 +45,11 @@ public class AuthService {
 
         Estudante estudante = new Estudante(request.getNome(), request.getEmail(), senhaHash);
 
-        return usuarioService.salvar(estudante);
+        return usuarioContrato.salvar(estudante);
     }
 
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioService.buscarPorEmail(request.getUsuario())
+        Usuario usuario = usuarioContrato.buscarPorEmail(request.getUsuario())
                 .orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
 
         if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {

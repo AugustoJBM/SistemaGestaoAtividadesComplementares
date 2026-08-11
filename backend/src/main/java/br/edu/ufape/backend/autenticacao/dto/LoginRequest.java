@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.dto;
+package br.edu.ufape.backend.autenticacao.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
