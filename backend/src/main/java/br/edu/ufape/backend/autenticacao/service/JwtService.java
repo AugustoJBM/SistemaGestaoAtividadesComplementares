@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.service;
+package br.edu.ufape.backend.autenticacao.service;
 
 import java.security.Key;
 import java.util.Date;

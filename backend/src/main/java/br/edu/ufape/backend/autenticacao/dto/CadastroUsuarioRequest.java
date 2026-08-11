@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.dto;
+package br.edu.ufape.backend.autenticacao.dto;
 
 import br.edu.ufape.backend.usuario.model.Role;
 import jakarta.validation.constraints.Email;

@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.security;
+package br.edu.ufape.backend.autenticacao.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

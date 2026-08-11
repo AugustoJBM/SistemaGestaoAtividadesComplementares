@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.exception;
+package br.edu.ufape.backend.autenticacao.exception;
 
 public class EmailJaCadastradoException extends RuntimeException{
 

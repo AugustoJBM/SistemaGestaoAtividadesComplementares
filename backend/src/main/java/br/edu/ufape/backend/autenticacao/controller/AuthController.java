@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.controller;
+package br.edu.ufape.backend.autenticacao.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.edu.ufape.backend.dto.CadastroUsuarioRequest;
-import br.edu.ufape.backend.dto.LoginRequest;
-import br.edu.ufape.backend.dto.LoginResponse;
-import br.edu.ufape.backend.dto.UsuarioResponse;
-import br.edu.ufape.backend.service.AuthService;
+import br.edu.ufape.backend.autenticacao.dto.CadastroUsuarioRequest;
+import br.edu.ufape.backend.autenticacao.dto.LoginRequest;
+import br.edu.ufape.backend.autenticacao.dto.LoginResponse;
+import br.edu.ufape.backend.autenticacao.dto.UsuarioResponse;
+import br.edu.ufape.backend.autenticacao.service.AuthService;
 import br.edu.ufape.backend.usuario.model.Usuario;
 import jakarta.validation.Valid;
 

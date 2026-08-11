@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.security;
+package br.edu.ufape.backend.autenticacao.security;
 
 import java.io.IOException;
 
@@ -15,8 +15,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import br.edu.ufape.backend.service.JwtService;
-import br.edu.ufape.backend.service.TokenBlacklistService;
+import br.edu.ufape.backend.autenticacao.service.JwtService;
+import br.edu.ufape.backend.autenticacao.service.TokenBlacklistService;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

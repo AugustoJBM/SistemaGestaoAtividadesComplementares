@@ -1,4 +1,4 @@
-package br.edu.ufape.backend.service;
+package br.edu.ufape.backend.autenticacao.service;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
