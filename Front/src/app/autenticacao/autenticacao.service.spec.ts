@@ -4,14 +4,30 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { AutenticacaoService } from './autenticacao.service';
+import { API_BASE_URL } from '../api.config';
 
-const LOGIN_URL = 'http://localhost:8080/auth/login';
+const LOGIN_URL = `${API_BASE_URL}/auth/login`;
+
+const createStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = String(value); },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+    get length() { return Object.keys(store).length; }
+  };
+};
 
 describe('AutenticacaoService', () => {
   let service: AutenticacaoService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
+    vi.stubGlobal('localStorage', createStorageMock());
+    vi.stubGlobal('sessionStorage', createStorageMock());
+
     TestBed.configureTestingModule({
       providers: [
         AutenticacaoService,
@@ -19,11 +35,8 @@ describe('AutenticacaoService', () => {
         provideHttpClientTesting()
       ]
     });
-
     service = TestBed.inject(AutenticacaoService);
     httpMock = TestBed.inject(HttpTestingController);
-    localStorage.clear();
-    sessionStorage.clear();
   });
 
   afterEach(() => {
