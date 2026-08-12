@@ -101,6 +101,65 @@ describe('ProgressoService', () => {
     expect(mensagem).toContain('Não foi possível conectar ao servidor');
   });
 
+
+  it('deve traduzir o status 403 usando a mensagem de texto puro do backend', () => {
+    let mensagem = '';
+
+    service.obterProgresso().subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+
+    httpMock
+      .expectOne(PROGRESSO_URL)
+      .flush('Apenas estudantes podem consultar o progresso de atividades.', {
+        status: 403,
+        statusText: 'Forbidden'
+      });
+
+    expect(mensagem).toBe('Apenas estudantes podem consultar o progresso de atividades.');
+  });
+
+  it('deve usar mensagem própria no 403 quando o backend não informar motivo', () => {
+    let mensagem = '';
+
+    service.obterProgresso().subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+
+    httpMock.expectOne(PROGRESSO_URL).flush('', { status: 403, statusText: 'Forbidden' });
+
+    expect(mensagem).toBe('Apenas estudantes podem consultar o progresso de atividades.');
+  });
+
+  it('deve aproveitar a mensagem de erro em texto puro do backend', () => {
+    let mensagem = '';
+
+    service.obterProgresso().subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+
+    httpMock
+      .expectOne(PROGRESSO_URL)
+      .flush('Falha ao consultar progresso.', { status: 500, statusText: 'Server Error' });
+
+    expect(mensagem).toBe('Falha ao consultar progresso.');
+  });
+
+  it('não deve exibir corpo de erro em formato inesperado como mensagem', () => {
+    let mensagem = '';
+
+    service.obterProgresso().subscribe({
+      error: (erro: Error) => (mensagem = erro.message)
+    });
+
+    httpMock
+      .expectOne(PROGRESSO_URL)
+      .flush({ detalhe: { codigo: 42 } }, { status: 500, statusText: 'Server Error' });
+
+    expect(mensagem).toBe('Não foi possível carregar seu progresso. Tente novamente.');
+    expect(mensagem).not.toContain('object');
+  });
+
   it('deve usar mensagem genérica quando o backend não informar detalhe', () => {
     let mensagem = '';
 

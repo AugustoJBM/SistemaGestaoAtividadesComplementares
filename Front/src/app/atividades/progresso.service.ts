@@ -1,14 +1,14 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API_BASE_URL } from '../api.config';
 import {
   ProgressoCargaHoraria,
   ProgressoCargaHorariaDTO,
   ProgressoModalidade,
   ProgressoModalidadeDTO
 } from './progresso.model';
-import { API_BASE_URL } from '../api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -53,6 +53,27 @@ export class ProgressoService {
       return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
     }
 
-    return error.error?.message || 'Não foi possível carregar seu progresso. Tente novamente.';
+
+    if (error.status === 403) {
+      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar o progresso de atividades.';
+    }
+
+    return this.mensagemDoBackend(error) ?? 'Não foi possível carregar seu progresso. Tente novamente.';
+  }
+
+
+  private mensagemDoBackend(error: HttpErrorResponse): string | null {
+    const corpo: unknown = error.error;
+
+    if (typeof corpo === 'string' && corpo.trim().length > 0) {
+      return corpo.trim();
+    }
+
+    const mensagem = (corpo as { message?: unknown } | null)?.message;
+    if (typeof mensagem === 'string' && mensagem.trim().length > 0) {
+      return mensagem.trim();
+    }
+
+    return null;
   }
 }
