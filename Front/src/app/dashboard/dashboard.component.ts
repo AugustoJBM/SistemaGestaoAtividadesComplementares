@@ -12,7 +12,10 @@ import { RouterLink } from '@angular/router';
     <main class="p-8">
       <h1 class="text-2xl font-bold">Dashboard</h1>
       <p>Autenticação concluída com sucesso.</p>
-      <a routerLink="/logout">Sair</a>
+      <nav class="mt-4 flex gap-4">
+        <a routerLink="/progresso">Acompanhar carga horária</a>
+        <a routerLink="/logout">Sair</a>
+      </nav>
     </main>
   `
 })
