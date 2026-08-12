@@ -1,0 +1,50 @@
+package br.edu.ufape.backend.certificados.service;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
+import br.edu.ufape.backend.certificados.model.Certificado;
+
+@Service
+public class ArmazenamentoCertificadoService {
+
+    private final Path diretorioRaiz;
+
+    public ArmazenamentoCertificadoService(@Value("${sgac.certificados.diretorio:certificados}") String diretorio) {
+        this.diretorioRaiz = Path.of(diretorio).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(this.diretorioRaiz);
+        } catch (IOException ex) {
+            throw new RuntimeException("Não foi possível criar o diretório de certificados", ex);
+        }
+    }
+
+    public Certificado armazenar(MultipartFile arquivo) {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new CertificadoInvalidoException("Arquivo de certificado não pode ser vazio");
+        }
+
+        String nomeOriginal = arquivo.getOriginalFilename();
+        if (nomeOriginal == null || nomeOriginal.isBlank()) {
+            throw new CertificadoInvalidoException("Nome de arquivo inválido");
+        }
+
+        String nomeArquivoSeguro = System.currentTimeMillis() + "-" + nomeOriginal.replaceAll("[^a-zA-Z0-9._-]", "_");
+        Path destino = this.diretorioRaiz.resolve(nomeArquivoSeguro);
+
+        try {
+            Files.copy(arquivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            throw new RuntimeException("Falha ao gravar arquivo de certificado", ex);
+        }
+
+        return new Certificado(nomeOriginal, arquivo.getContentType(), arquivo.getSize(), destino.toString());
+    }
+}
