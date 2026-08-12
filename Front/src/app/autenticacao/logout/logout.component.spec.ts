@@ -10,6 +10,17 @@ import { AutenticacaoService } from '../autenticacao.service';
 import { LogoutService } from './logout.service';
 import { LogoutComponent } from './logout.component';
 
+const createStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = String(value); },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+    get length() { return Object.keys(store).length; }
+  };
+};
+
 describe('Componente de Logout', () => {
   let component: LogoutComponent;
   let fixture: ComponentFixture<LogoutComponent>;
@@ -41,8 +52,8 @@ describe('Componente de Logout', () => {
   };
 
   beforeEach(async () => {
-    localStorage.clear();
-    sessionStorage.clear();
+    vi.stubGlobal('localStorage', createStorageMock());
+    vi.stubGlobal('sessionStorage', createStorageMock());
     logoutServiceSpy = { logout: vi.fn(() => of(void 0)) };
     await configurar();
   });
