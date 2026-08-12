@@ -7,6 +7,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AutenticacaoService } from './autenticacao.service';
 import { AuthInterceptor } from './auth.interceptor';
 
+const createStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = String(value); },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+    get length() { return Object.keys(store).length; }
+  };
+};
+
 describe('AuthInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
@@ -14,6 +25,9 @@ describe('AuthInterceptor', () => {
   let router: Router;
 
   beforeEach(() => {
+    vi.stubGlobal('localStorage', createStorageMock());
+    vi.stubGlobal('sessionStorage', createStorageMock());
+
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([AuthInterceptor])),
@@ -21,13 +35,11 @@ describe('AuthInterceptor', () => {
         provideRouter([])
       ]
     });
-
+    
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AutenticacaoService);
     router = TestBed.inject(Router);
-    localStorage.clear();
-    sessionStorage.clear();
   });
 
   afterEach(() => {
