@@ -5,8 +5,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AcessoNegadoAtividadeException.class)
+    public ResponseEntity<String> tratarAcessoNegadoAtividade(AcessoNegadoAtividadeException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
 
     @ExceptionHandler(PerfilNaoPermitidoException.class)
     public ResponseEntity<String> tratarPerfilNaoPermitido(PerfilNaoPermitidoException ex) {
