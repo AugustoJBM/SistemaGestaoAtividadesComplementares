@@ -1,5 +1,7 @@
 package br.edu.ufape.backend.autenticacao.security;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -35,12 +37,13 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(
-                            "/api/v1/auth/cadastro",
-                            "/api/v1/auth/login",
-                            "/api/v1/auth/logout",
-                            "/h2-console/**"
-                        ).permitAll()
+                                "/api/v1/auth/cadastro",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/logout",
+                                "/h2-console/**")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .exceptionHandling(exception -> exception

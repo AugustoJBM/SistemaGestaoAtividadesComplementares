@@ -1,0 +1,102 @@
+<div class="bg-[#f8f9fa] min-h-screen flex flex-col font-sans text-[#191c1d] antialiased">
+  <!-- Header Institucional UFAPE -->
+  <header class="bg-white border-b border-[#c0c9c3] shadow-sm sticky top-0 z-50">
+    <div class="flex justify-between items-center px-4 md:px-8 w-full max-w-[1280px] mx-auto h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-lg md:text-xl font-bold text-[#003629] tracking-tight">
+          SGAC - Gestão de Atividades Complementares
+        </span>
+      </div>
+      <a routerLink="/dashboard" class="text-sm font-medium text-[#003629] hover:underline">
+        Voltar ao painel
+      </a>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <main class="flex-grow p-4 md:p-8">
+    <div class="w-full max-w-3xl mx-auto">
+
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-[#191c1d] tracking-tight mb-1">Acompanhamento da Carga Horária</h1>
+        <p class="text-sm text-[#404945]">Progresso das suas atividades complementares</p>
+      </div>
+
+      @if (carregando()) {
+        <div class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-[#404945]">
+          <svg class="animate-spin h-8 w-8 text-[#003629]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-sm">Carregando seu progresso...</p>
+        </div>
+      } @else if (mensagemErro()) {
+        <div role="alert" class="mb-6 p-4 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-start gap-3 border border-[#ba1a1a]/20 text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-[#ba1a1a] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p>{{ mensagemErro() }}</p>
+        </div>
+      } @else {
+
+        @if (semAtividades()) {
+          <div class="mb-6 p-4 bg-[#f3f4f5] text-[#404945] rounded-lg border border-[#c0c9c3]/40 text-sm">
+            Você ainda não possui atividades registradas. Assim que suas atividades forem cadastradas, seu progresso aparecerá aqui.
+          </div>
+        }
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          @for (card of cards(); track card.titulo) {
+            <div class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-6">
+              <h2 class="text-lg font-bold text-[#191c1d] mb-1">{{ card.titulo }}</h2>
+              <p class="text-xs text-[#404945] mb-4">{{ card.descricao }}</p>
+
+              <div class="grid grid-cols-3 gap-2 text-center mb-4">
+                <div>
+                  <p class="text-lg font-bold text-[#003629]">{{ card.dados.horasAcumuladas }}h</p>
+                  <p class="text-[10px] uppercase tracking-wider text-[#707974]">Acumuladas</p>
+                </div>
+                <div>
+                  <p class="text-lg font-bold text-[#191c1d]">{{ card.dados.horasExigidas }}h</p>
+                  <p class="text-[10px] uppercase tracking-wider text-[#707974]">Exigidas</p>
+                </div>
+                <div>
+                  <p class="text-lg font-bold text-[#191c1d]">{{ card.dados.horasRestantes }}h</p>
+                  <p class="text-[10px] uppercase tracking-wider text-[#707974]">Restantes</p>
+                </div>
+              </div>
+
+              <div
+                class="w-full h-3 bg-[#f3f4f5] rounded-full overflow-hidden"
+                role="progressbar"
+                [attr.aria-valuenow]="percentualExibido(card.dados)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div
+                  class="h-full bg-[#003629] rounded-full transition-all"
+                  [style.width.%]="percentualExibido(card.dados)"
+                ></div>
+              </div>
+              <p class="text-xs text-[#404945] mt-2 text-right">{{ percentualExibido(card.dados) }}% concluído</p>
+            </div>
+          }
+        </div>
+
+      }
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="bg-[#e1e3e4] border-t border-[#c0c9c3] mt-auto">
+    <div class="w-full py-6 px-4 md:px-8 max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#404945]">
+      <div class="flex items-center gap-2 font-bold text-[#003629]">
+        <span>SGAC</span>
+      </div>
+      <p class="text-center">
+        © 2026 SGAC - Universidade Federal do Agreste de Pernambuco. Todos os direitos reservados.
+      </p>
+    </div>
+  </footer>
+</div>
