@@ -5,8 +5,10 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.usuario.model.Usuario;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -50,6 +52,9 @@ public class AtividadeComplementar {
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
+    @Embedded
+    private Certificado certificado;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario estudante;
@@ -58,13 +63,15 @@ public class AtividadeComplementar {
     }
 
     public AtividadeComplementar(String titulo, String instituicaoResponsavel, LocalDate dataRealizacao,
-            Integer cargaHorariaEmHoras, Natureza natureza, Categoria categoria, Usuario estudante) {
+            Integer cargaHorariaEmHoras, Natureza natureza, Categoria categoria, Certificado certificado,
+            Usuario estudante) {
         this.titulo = titulo;
         this.instituicaoResponsavel = instituicaoResponsavel;
         this.dataRealizacao = dataRealizacao;
         this.cargaHorariaEmHoras = cargaHorariaEmHoras;
         this.natureza = natureza;
         this.categoria = categoria;
+        this.certificado = certificado;
         this.estudante = estudante;
     }
 
@@ -130,5 +137,13 @@ public class AtividadeComplementar {
 
     public void setEstudante(Usuario estudante) {
         this.estudante = estudante;
+    }
+
+    public Certificado getCertificado() {
+        return certificado;
+    }
+
+    public void setCertificado(Certificado certificado) {
+        this.certificado = certificado;
     }
 }
