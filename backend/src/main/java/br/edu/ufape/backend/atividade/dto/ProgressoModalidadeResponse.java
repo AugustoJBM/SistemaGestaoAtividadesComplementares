@@ -3,11 +3,13 @@ package br.edu.ufape.backend.atividade.dto;
 public class ProgressoModalidadeResponse {
 
     private final int horasAcumuladas;
+    private final int horasPendentes;
     private final int horasExigidas;
     private final int percentualConcluido;
 
-    public ProgressoModalidadeResponse(int horasAcumuladas, int horasExigidas) {
+    public ProgressoModalidadeResponse(int horasAcumuladas, int horasPendentes, int horasExigidas) {
         this.horasAcumuladas = horasAcumuladas;
+        this.horasPendentes = horasPendentes;
         this.horasExigidas = horasExigidas;
         this.percentualConcluido = calcularPercentual(horasAcumuladas, horasExigidas);
     }
@@ -22,6 +24,10 @@ public class ProgressoModalidadeResponse {
 
     public int getHorasAcumuladas() {
         return horasAcumuladas;
+    }
+
+    public int getHorasPendentes() {
+        return horasPendentes;
     }
 
     public int getHorasExigidas() {

@@ -1,7 +1,5 @@
 package br.edu.ufape.backend.atividade.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,8 +7,6 @@ import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
 import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
-import br.edu.ufape.backend.atividade.model.Categoria;
-import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;

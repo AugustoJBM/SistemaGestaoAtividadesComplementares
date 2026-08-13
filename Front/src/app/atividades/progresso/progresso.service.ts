@@ -30,11 +30,13 @@ export class ProgressoService {
   // Modalidade ausente/nula (estudante sem atividades) vira zeros, nunca undefined/NaN.
   private paraProgressoModalidade(modalidade: ProgressoModalidadeDTO | null | undefined): ProgressoModalidade {
     const horasAcumuladas = modalidade?.horasAcumuladas ?? 0;
+    const horasPendentes = modalidade?.horasPendentes ?? 0;
     const horasExigidas = modalidade?.horasExigidas ?? 0;
     const percentualConcluido = modalidade?.percentualConcluido ?? 0;
 
     return {
       horasAcumuladas,
+      horasPendentes,
       horasExigidas,
       horasRestantes: Math.max(0, horasExigidas - horasAcumuladas),
       percentualConcluido
