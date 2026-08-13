@@ -12,19 +12,22 @@ export enum Categoria {
 
 export interface AtividadeRequest {
   titulo: string;
-  descricao?: string;
+  instituicaoResponsavel: string;
+  dataRealizacao: string;
+  cargaHoraria: number;
   natureza: Natureza;
   categoria: Categoria;
-  quantidadeHoras: number;
-  comprovante: File;
+  arquivo: File;
 }
 
 export interface AtividadeResponse {
   id: number;
   titulo: string;
-  descricao?: string;
+  instituicaoResponsavel: string;
+  dataRealizacao: string;
+  cargaHorariaEmHoras: number;
   natureza: string;
   categoria: string;
-  quantidadeHoras: number;
-  status: string;
+  dataCadastro?: string;
+  estudanteEmail?: string;
 }
