@@ -1,9 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ProgressoModalidade, ProgressoCargaHoraria } from './progresso.model';
+import { ProgressoService } from './progresso.service';
 
-import { ProgressoService } from '../progresso.service';
-import { ProgressoCargaHoraria, ProgressoModalidade } from '../progresso.model';
 
 interface CardProgresso {
   titulo: string;

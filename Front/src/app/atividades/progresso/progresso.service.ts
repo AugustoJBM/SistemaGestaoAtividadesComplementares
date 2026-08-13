@@ -2,13 +2,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { API_BASE_URL } from '../api.config';
 import {
   ProgressoCargaHoraria,
   ProgressoCargaHorariaDTO,
   ProgressoModalidade,
   ProgressoModalidadeDTO
 } from './progresso.model';
+import { API_BASE_URL } from '../../api.config';
 
 @Injectable({
   providedIn: 'root'

@@ -14,16 +14,12 @@ export class AtividadeService {
   cadastrar(request: AtividadeRequest): Observable<AtividadeResponse> {
     const formData = new FormData();
     formData.append('titulo', request.titulo);
-    if (request.descricao) {
-      formData.append('descricao', request.descricao);
-    }
+    formData.append('instituicaoResponsavel', request.instituicaoResponsavel);
+    formData.append('dataRealizacao', request.dataRealizacao);
+    formData.append('cargaHoraria', request.cargaHoraria.toString());
     formData.append('natureza', request.natureza);
     formData.append('categoria', request.categoria);
-    formData.append('quantidadeHoras', request.quantidadeHoras.toString());
-
-    if (request.comprovante) {
-      formData.append('comprovante', request.comprovante);
-    }
+    formData.append('arquivo', request.arquivo);
 
     return this.http.post<AtividadeResponse>(this.apiUrl, formData);
   }

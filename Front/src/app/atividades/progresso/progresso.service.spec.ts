@@ -3,8 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { API_BASE_URL } from '../api.config';
 import { ProgressoService } from './progresso.service';
+import { API_BASE_URL } from '../../api.config';
 
 const PROGRESSO_URL = `${API_BASE_URL}/atividades/progresso`;
 
