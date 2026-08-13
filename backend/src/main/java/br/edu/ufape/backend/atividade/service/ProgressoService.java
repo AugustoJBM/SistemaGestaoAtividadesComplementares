@@ -1,13 +1,11 @@
 package br.edu.ufape.backend.atividade.service;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import br.edu.ufape.backend.atividade.config.ProgressoProperties;
 import br.edu.ufape.backend.atividade.dto.ProgressoModalidadeResponse;
 import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
-import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
@@ -20,19 +18,16 @@ public class ProgressoService {
             "Apenas estudantes podem consultar o progresso de atividades.";
 
     private final UsuarioContrato usuarioContrato;
-    private final AtividadeComplementarRepository atividadeRepository;
-    private final int horasExigidasAcc;
-    private final int horasExigidasAcex;
+    private final AtividadeComplementarRepository atividadeComplementarRepository;
+    private final ProgressoProperties progressoProperties;
 
     public ProgressoService(
             UsuarioContrato usuarioContrato,
-            AtividadeComplementarRepository atividadeRepository,
-            @Value("${sgac.progresso.acc.horas-exigidas:200}") int horasExigidasAcc,
-            @Value("${sgac.progresso.acex.horas-exigidas:100}") int horasExigidasAcex) {
+            AtividadeComplementarRepository atividadeComplementarRepository,
+            ProgressoProperties progressoProperties) {
         this.usuarioContrato = usuarioContrato;
-        this.atividadeRepository = atividadeRepository;
-        this.horasExigidasAcc = horasExigidasAcc;
-        this.horasExigidasAcex = horasExigidasAcex;
+        this.atividadeComplementarRepository = atividadeComplementarRepository;
+        this.progressoProperties = progressoProperties;
     }
 
     public ProgressoResponse obterProgresso(String emailEstudante) {
@@ -58,34 +53,23 @@ public class ProgressoService {
         return estudante;
     }
 
-    private ProgressoModalidadeResponse criarProgresso(
-            List<AtividadeComplementar> atividades,
-            Natureza natureza,
-            int horasExigidas) {
-        // Soma as horas reais das atividades cadastradas pelo aluno no banco de dados
-        int horasCadastradas = calcularHoras(atividades, natureza);
+        ProgressoModalidadeResponse acc = new ProgressoModalidadeResponse(
+                calcularHorasAcumuladas(estudante, Natureza.ACC),
+                progressoProperties.getAcc().getHorasExigidas());
+
+        ProgressoModalidadeResponse acex = new ProgressoModalidadeResponse(
+                calcularHorasAcumuladas(estudante, Natureza.ACEX),
+                progressoProperties.getAcex().getHorasExigidas());
 
         // Enquanto não houver fluxo de aprovação/deferimento por um avaliador,
         // as horas cadastradas ficam em "horasPendentes" (Em Análise)
         int horasAcumuladas = 0; // Horas efetivamente homologadas/aprovadas
         int horasPendentes = horasCadastradas; // Horas reais enviadas pelo aluno
 
-        return new ProgressoModalidadeResponse(
-                horasAcumuladas,
-                horasPendentes,
-                horasExigidas
-        );
-    }
-
-    private int calcularHoras(
-            List<AtividadeComplementar> atividades,
-            Natureza natureza) {
-        if (atividades == null || atividades.isEmpty()) {
-            return 0;
-        }
-        return atividades.stream()
-                .filter(atividade -> atividade.getNatureza() == natureza)
-                .mapToInt(atividade -> atividade != null ? atividade.getCargaHorariaEmHoras() : 0)
+    private int calcularHorasAcumuladas(Estudante estudante, Natureza natureza) {
+        return atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, natureza).stream()
+                .filter(RegraAtividadeValida::isValida)
+                .mapToInt(atividade -> atividade.getCargaHorariaEmHoras())
                 .sum();
     }
 }

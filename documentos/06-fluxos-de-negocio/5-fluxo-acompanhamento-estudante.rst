@@ -371,6 +371,55 @@ Exemplo:
     75%
 
 
+Estado Atual da Implementação
+==============================
+
+Esta seção documenta como as regras acima estão implementadas hoje
+(issue #65/#66), e onde a implementação real ainda diverge do fluxo
+conceitual descrito nas seções anteriores.
+
+
+Carga horária exigida (RN-ACO-04)
+----------------------------------
+
+Os valores de horas exigidas são centralizados em
+``application.properties`` e mapeados pela classe
+``ProgressoProperties`` (pacote ``atividade.config``), evitando
+números mágicos espalhados pelo código.
+
+.. code-block:: text
+
+    ACC:  90h  (sgac.progresso.acc.horas-exigidas)
+    ACEX: 320h (sgac.progresso.acex.horas-exigidas)
+
+Valores confirmados com o grupo em 12/08/2026.
+
+
+Atividade válida (RN-ACO-01) — divergência com o plano
+--------------------------------------------------------
+
+O plano descrito acima prevê que certificados rejeitados não
+contabilizem carga horária (RN-ACO-02). Porém, o modelo atual de
+``AtividadeComplementar`` e de ``Certificado`` **ainda não possui**
+um campo de status/situação (rascunho, pendente, aprovado,
+rejeitado).
+
+**Decisão atual:** enquanto esse conceito não existir no modelo,
+toda atividade cadastrada é considerada válida. Essa regra está
+implementada em um único ponto — ``RegraAtividadeValida.isValida``
+(pacote ``atividade.service``) — para que, quando um fluxo de
+aprovação por avaliador/coordenador for implementado, apenas essa
+classe precise ser ajustada.
+
+
+Cálculo de horas (RN-ACO-03)
+------------------------------
+
+Implementado em ``ProgressoService.calcularHorasAcumuladas``, que
+soma ``cargaHorariaEmHoras`` das atividades do estudante filtradas
+pela natureza (ACC/ACEX) e pela regra de validade acima. O
+percentual (limitado a 100%) é calculado em
+``ProgressoModalidadeResponse``.
 
 Critérios de Aceitação
 ======================
