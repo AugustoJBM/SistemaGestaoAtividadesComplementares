@@ -1,11 +1,13 @@
 package br.edu.ufape.backend.atividade.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import br.edu.ufape.backend.atividade.config.ProgressoProperties;
 import br.edu.ufape.backend.atividade.dto.ProgressoModalidadeResponse;
 import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
+import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Usuario;
@@ -16,17 +18,16 @@ public class ProgressoService {
     private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem consultar o progresso de atividades.";
 
     private final UsuarioContrato usuarioContrato;
-
-    private final int horasExigidasAcc;
-    private final int horasExigidasAcex;
+    private final AtividadeComplementarRepository atividadeComplementarRepository;
+    private final ProgressoProperties progressoProperties;
 
     public ProgressoService(
             UsuarioContrato usuarioContrato,
-            @Value("${sgac.progresso.acc.horas-exigidas:200}") int horasExigidasAcc,
-            @Value("${sgac.progresso.acex.horas-exigidas:100}") int horasExigidasAcex) {
+            AtividadeComplementarRepository atividadeComplementarRepository,
+            ProgressoProperties progressoProperties) {
         this.usuarioContrato = usuarioContrato;
-        this.horasExigidasAcc = horasExigidasAcc;
-        this.horasExigidasAcex = horasExigidasAcex;
+        this.atividadeComplementarRepository = atividadeComplementarRepository;
+        this.progressoProperties = progressoProperties;
     }
 
     public ProgressoResponse obterProgresso(String emailEstudante) {
@@ -38,18 +39,20 @@ public class ProgressoService {
         }
 
         ProgressoModalidadeResponse acc = new ProgressoModalidadeResponse(
-                calcularHorasAcumuladasAcc(estudante), horasExigidasAcc);
+                calcularHorasAcumuladas(estudante, Natureza.ACC),
+                progressoProperties.getAcc().getHorasExigidas());
+
         ProgressoModalidadeResponse acex = new ProgressoModalidadeResponse(
-                calcularHorasAcumuladasAcex(estudante), horasExigidasAcex);
+                calcularHorasAcumuladas(estudante, Natureza.ACEX),
+                progressoProperties.getAcex().getHorasExigidas());
 
         return new ProgressoResponse(acc, acex);
     }
 
-    private int calcularHorasAcumuladasAcc(Estudante estudante) {
-        return 0;
-    }
-
-    private int calcularHorasAcumuladasAcex(Estudante estudante) {
-        return 0;
+    private int calcularHorasAcumuladas(Estudante estudante, Natureza natureza) {
+        return atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, natureza).stream()
+                .filter(RegraAtividadeValida::isValida)
+                .mapToInt(atividade -> atividade.getCargaHorariaEmHoras())
+                .sum();
     }
 }
