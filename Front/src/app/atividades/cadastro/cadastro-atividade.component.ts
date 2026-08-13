@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AtividadeService } from '../atividade.service';
+import { AtividadeRequest } from '../atividade.model';
 
 const FORMATOS_PERMITIDOS = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
 const TAMANHO_MAXIMO_BYTES = 5 * 1024 * 1024; // 5MB
@@ -93,14 +94,14 @@ export class CadastroAtividadeComponent {
         this.mensagemErro.set(null);
 
         const formValues = this.activityForm.value;
-        const dados = {
+        const dados: AtividadeRequest = {
             titulo: formValues.titulo,
-            instituicao: formValues.instituicao,
-            data: formValues.data,
+            instituicaoResponsavel: formValues.instituicao,
+            dataRealizacao: formValues.data,
             natureza: formValues.natureza,
             categoria: formValues.categoria,
             cargaHoraria: Number(formValues.cargaHoraria),
-            comprovante: this.arquivoAnexado()!
+            arquivo: this.arquivoAnexado()!
         };
 
         this.atividadeService.cadastrar(dados).subscribe({
@@ -109,7 +110,6 @@ export class CadastroAtividadeComponent {
                 this.mensagemSucesso.set(true);
                 this.resetarFormulario();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-
                 setTimeout(() => {
                     this.mensagemSucesso.set(false);
                 }, 4000);
