@@ -4,8 +4,8 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { describe, it, expect } from 'vitest';
 
 import { ProgressoComponent } from './progresso.component';
-import { ProgressoService } from '../progresso.service';
-import { ProgressoCargaHoraria } from '../progresso.model';
+import { ProgressoCargaHoraria } from './progresso.model';
+import { ProgressoService } from './progresso.service';
 
 const progressoComAtividades: ProgressoCargaHoraria = {
   acc: { horasAcumuladas: 30, horasExigidas: 60, horasRestantes: 30, percentualConcluido: 50 },
