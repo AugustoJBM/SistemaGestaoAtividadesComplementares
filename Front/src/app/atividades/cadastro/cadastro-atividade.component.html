@@ -1,0 +1,298 @@
+<div class="bg-background min-h-screen flex flex-col font-body-md text-body-md text-on-surface">
+    <header class="bg-white border-b border-[#c0c9c3] shadow-sm sticky top-0 z-50">
+        <div class="flex justify-between items-center px-4 md:px-8 w-full max-w-[1280px] mx-auto h-16">
+            <div class="flex items-center gap-3">
+                <span class="text-lg md:text-xl font-bold text-[#003629] tracking-tight">
+                    SGAC - Gestão de Atividades Complementares
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main
+        class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 flex flex-col items-center justify-start">
+
+        <!-- System Error Banner -->
+        @if (mensagemErro()) {
+        <div class="w-full max-w-3xl mb-6 bg-error-container text-on-error-container p-4 rounded-lg flex items-center justify-between shadow-sm"
+            id="error-banner" role="alert">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error">error</span>
+                <span class="font-body-md text-body-md">{{ mensagemErro() }}</span>
+            </div>
+            <button aria-label="Fechar alerta" class="p-1 hover:bg-error/10 rounded-full transition-colors"
+                type="button" (click)="mensagemErro.set(null)">
+                <span class="material-symbols-outlined text-on-error-container">close</span>
+            </button>
+        </div>
+        }
+
+        <!-- Success Toast -->
+        @if (mensagemSucesso()) {
+        <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-surface border-l-4 border-primary-container shadow-lg rounded-r-lg p-4 z-50 flex items-center gap-3"
+            id="success-toast">
+            <span class="material-symbols-outlined text-primary-container">check_circle</span>
+            <span class="font-body-md text-body-md font-medium">Atividade cadastrada com sucesso!</span>
+        </div>
+        }
+
+        <div class="w-full max-w-3xl">
+            <!-- Header Section -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1
+                        class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-2">
+                        Cadastrar Atividade Complementar</h1>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Preencha os dados abaixo para registrar
+                        sua atividade (ACC ou ACEX).</p>
+                </div>
+                <a class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-label-sm text-label-sm self-start md:self-auto px-4 py-2 border border-outline-variant rounded-lg hover:border-primary"
+                    routerLink="/dashboard">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Voltar ao Dashboard
+                </a>
+            </div>
+
+            <!-- Main Form Card -->
+            <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" aria-label="Formulário de Cadastro de Atividade"
+                class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant p-6 md:p-8 space-y-8"
+                id="activity-form">
+
+                <!-- Section 1: Basic Info -->
+                <div class="space-y-6">
+                    <h2 class="font-title-md text-title-md text-on-surface border-b border-surface-variant pb-2">
+                        Informações Gerais</h2>
+
+                    <div class="space-y-2">
+                        <label class="block font-label-sm text-label-sm text-on-surface" for="titulo">
+                            Título da Atividade <span aria-hidden="true" class="text-error">*</span>
+                        </label>
+                        <input id="titulo" type="text" formControlName="titulo"
+                            placeholder="Ex: Minicurso de Python para Análise de Dados"
+                            class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all"
+                            [ngClass]="{ 'border-error': isCampoInvalido('titulo') }" />
+                        @if (isCampoInvalido('titulo')) {
+                        <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1"
+                            id="titulo-error">
+                            <span class="material-symbols-outlined text-[16px]">error</span> O título é obrigatório.
+                        </p>
+                        }
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block font-label-sm text-label-sm text-on-surface"
+                                for="instituicao">Instituição Responsável</label>
+                            <input id="instituicao" type="text" formControlName="instituicao"
+                                placeholder="Ex: UFAPE, Sebrae, etc."
+                                class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block font-label-sm text-label-sm text-on-surface" for="data">
+                                Data de Realização <span aria-hidden="true" class="text-error">*</span>
+                            </label>
+                            <input id="data" type="date" formControlName="data"
+                                class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all"
+                                [ngClass]="{ 'border-error': isCampoInvalido('data') }" />
+                            @if (isCampoInvalido('data')) {
+                            <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">error</span> A data de realização é
+                                obrigatória.
+                            </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Classification -->
+                <div class="space-y-6">
+                    <h2 class="font-title-md text-title-md text-on-surface border-b border-surface-variant pb-2">
+                        Classificação</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <span class="block font-label-sm text-label-sm text-on-surface mb-1">
+                                Natureza da Atividade <span aria-hidden="true" class="text-error">*</span>
+                            </span>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" formControlName="natureza" value="ACC" class="peer sr-only" />
+                                    <div
+                                        class="border border-outline-variant rounded-lg p-4 text-center peer-checked:bg-primary-container/10 peer-checked:border-primary-container peer-checked:text-primary-container hover:bg-surface-container-low transition-all">
+                                        <span class="font-body-md text-body-md font-medium">ACC</span>
+                                        <span
+                                            class="block font-label-sm text-label-sm text-on-surface-variant mt-1">Curricular</span>
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" formControlName="natureza" value="ACEX" class="peer sr-only" />
+                                    <div
+                                        class="border border-outline-variant rounded-lg p-4 text-center peer-checked:bg-primary-container/10 peer-checked:border-primary-container peer-checked:text-primary-container hover:bg-surface-container-low transition-all">
+                                        <span class="font-body-md text-body-md font-medium">ACEX</span>
+                                        <span
+                                            class="block font-label-sm text-label-sm text-on-surface-variant mt-1">Extensão</span>
+                                    </div>
+                                </label>
+                            </div>
+                            @if (isCampoInvalido('natureza')) {
+                            <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">error</span> A natureza da atividade
+                                é obrigatória.
+                            </p>
+                            }
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="block font-label-sm text-label-sm text-on-surface" for="categoria">
+                                    Categoria <span aria-hidden="true" class="text-error">*</span>
+                                </label>
+                                <div class="relative">
+                                    <select id="categoria" formControlName="categoria"
+                                        class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-4 pr-10 py-3 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all"
+                                        [ngClass]="{ 'border-error': isCampoInvalido('categoria') }">
+                                        <option value="" disabled selected>Selecione uma categoria...</option>
+                                        <option value="cursos">Cursos</option>
+                                        <option value="palestras">Palestras e Eventos</option>
+                                        <option value="projetos">Projetos</option>
+                                        <option value="pesquisa">Pesquisa</option>
+                                        <option value="monitoria">Monitoria</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface-variant">
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                </div>
+                                @if (isCampoInvalido('categoria')) {
+                                <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">error</span> A categoria é
+                                    obrigatória.
+                                </p>
+                                }
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block font-label-sm text-label-sm text-on-surface" for="carga-horaria">
+                                    Carga Horária (horas) <span aria-hidden="true" class="text-error">*</span>
+                                </label>
+                                <input id="carga-horaria" type="number" min="1" formControlName="cargaHoraria"
+                                    placeholder="0"
+                                    class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all"
+                                    [ngClass]="{ 'border-error': isCampoInvalido('cargaHoraria') }" />
+                                @if (isCampoInvalido('cargaHoraria')) {
+                                <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">error</span> A carga horária é
+                                    obrigatória.
+                                </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Document Upload -->
+                <div class="space-y-4">
+                    <h2 class="font-title-md text-title-md text-on-surface border-b border-surface-variant pb-2">
+                        Comprovante</h2>
+                    <div id="drop-zone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+                        (drop)="onDrop($event)"
+                        class="border-2 border-dashed border-outline-variant bg-surface-container-lowest rounded-xl p-8 text-center hover:bg-surface-container-low hover:border-primary-container transition-all cursor-pointer relative"
+                        [ngClass]="{
+              'border-primary-container bg-primary-fixed/5': arquivoAnexado(),
+              'border-error': erroArquivo()
+            }">
+                        @if (!arquivoAnexado()) {
+                        <input id="comprovante" type="file" accept=".pdf,.png,.jpg,.jpeg"
+                            (change)="onFileSelected($event)" aria-label="Fazer upload de comprovante"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                        <div class="flex flex-col items-center gap-3" id="upload-prompt">
+                            <span class="material-symbols-outlined text-4xl text-primary-container">cloud_upload</span>
+                            <div>
+                                <p class="font-body-md text-body-md text-on-surface font-medium">Arraste e solte seu
+                                    arquivo aqui</p>
+                                <p class="font-label-sm text-label-sm text-on-surface-variant mt-1">ou clique para
+                                    procurar no computador</p>
+                            </div>
+                            <p
+                                class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full mt-2">
+                                Aceita apenas PDF, PNG ou JPEG (Máx 5MB)
+                            </p>
+                        </div>
+                        } @else {
+                        <!-- Upload Success State -->
+                        <div class="flex items-center justify-between bg-surface-container p-4 rounded-lg z-20 relative"
+                            id="upload-success">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-container"
+                                    id="file-icon">description</span>
+                                <div class="text-left">
+                                    <p class="font-body-md text-body-md font-medium text-on-surface truncate max-w-[200px] sm:max-w-xs"
+                                        id="file-name">
+                                        {{ arquivoAnexado()?.name }}
+                                    </p>
+                                    <p class="font-label-sm text-label-sm text-on-surface-variant" id="file-size">
+                                        {{ formatarTamanhoArquivo(arquivoAnexado()?.size || 0) }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button id="remove-file" type="button" aria-label="Remover arquivo"
+                                (click)="removerArquivo()"
+                                class="p-2 text-error hover:bg-error-container rounded-full transition-colors flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                            </button>
+                        </div>
+                        }
+                    </div>
+                    @if (erroArquivo()) {
+                    <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">error</span>
+                        {{ erroArquivo() }}
+                    </p>
+                    }
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-6 border-t border-surface-variant flex flex-col sm:flex-row justify-end gap-4">
+                    <button type="button" routerLink="/dashboard"
+                        class="px-6 py-3 border border-outline rounded-lg font-label-sm text-label-sm text-on-surface font-medium hover:bg-surface-container-low transition-colors">
+                        Cancelar
+                    </button>
+                    <button id="submit-btn" type="submit" [disabled]="isFormularioInvalido()"
+                        class="px-8 py-3 bg-primary-container text-on-primary-container rounded-lg font-label-sm text-label-sm font-medium hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        @if (carregando()) {
+                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Enviando...</span>
+                        } @else {
+                        <span>Enviar Atividade</span>
+                        <span class="material-symbols-outlined text-[18px]">send</span>
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+        class="bg-surface-container-highest w-full py-8 px-margin-mobile md:px-margin-desktop border-t border-outline-variant mt-auto">
+        <div
+            class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div>
+                <span class="font-title-md text-title-md font-bold text-primary block mb-2">UFAPE</span>
+                <p class="font-body-md text-body-md text-on-surface">
+                    © 2026 UFAPE - Universidade Federal do Agreste de Pernambuco. Todos os direitos reservados.
+                </p>
+            </div>
+            <div class="flex flex-wrap justify-center md:justify-end gap-6">
+                <a class="font-body-md text-body-md text-on-surface-variant hover:underline hover:text-primary opacity-90 hover:opacity-100 transition-all"
+                    href="#">Portal UFAPE</a>
+                <a class="font-body-md text-body-md text-on-surface-variant hover:underline hover:text-primary opacity-90 hover:opacity-100 transition-all"
+                    href="#">Suporte Técnico</a>
+                <a class="font-body-md text-body-md text-on-surface-variant hover:underline hover:text-primary opacity-90 hover:opacity-100 transition-all"
+                    href="#">Privacidade</a>
+                <a class="font-body-md text-body-md text-on-surface-variant hover:underline hover:text-primary opacity-90 hover:opacity-100 transition-all"
+                    href="#">Termos de Uso</a>
+            </div>
+        </div>
+    </footer>
+</div>
