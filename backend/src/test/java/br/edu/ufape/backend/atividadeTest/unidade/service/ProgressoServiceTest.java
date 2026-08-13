@@ -29,7 +29,7 @@ class ProgressoServiceTest {
     private UsuarioContrato usuarioContrato;
 
     private ProgressoService criarService() {
-        return new ProgressoService(usuarioContrato, 200, 100);
+        return new ProgressoService(usuarioContrato, null, 200, 100);
     }
 
     @Test

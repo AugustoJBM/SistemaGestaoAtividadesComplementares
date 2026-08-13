@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
-import br.edu.ufape.backend.usuario.model.Usuario;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 
 public class AtividadeResponse {
