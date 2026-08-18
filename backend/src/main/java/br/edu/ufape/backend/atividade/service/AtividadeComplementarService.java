@@ -1,20 +1,28 @@
 package br.edu.ufape.backend.atividade.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
-import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
+import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
+import br.edu.ufape.backend.atividade.model.Categoria;
+import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
+import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Usuario;
 
 @Service
 public class AtividadeComplementarService {
+
+    private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem listar atividades complementares.";
 
     private final AtividadeComplementarRepository atividadeRepository;
     private final UsuarioContrato usuarioContrato;
@@ -27,6 +35,12 @@ public class AtividadeComplementarService {
         this.atividadeRepository = atividadeRepository;
         this.usuarioContrato = usuarioContrato;
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
+    }
+
+    public List<AtividadeComplementar> listarAtividadesDoEstudante(
+            String emailEstudante, Natureza natureza, Categoria categoria) {
+        Estudante estudante = obterEstudante(emailEstudante);
+        return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria);
     }
 
     public AtividadeResponse cadastrarAtividade(CadastroAtividadeRequest request, MultipartFile arquivo,
@@ -50,6 +64,17 @@ public class AtividadeComplementarService {
 
         AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
         return new AtividadeResponse(atividadeSalva);
+    }
+
+    private Estudante obterEstudante(String email) {
+        Usuario usuario = usuarioContrato.buscarPorEmail(email)
+                .orElseThrow(() -> new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO));
+
+        if (!(usuario instanceof Estudante estudante)) {
+            throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO);
+        }
+
+        return estudante;
     }
 
     private void validarTipoArquivo(MultipartFile arquivo) {
