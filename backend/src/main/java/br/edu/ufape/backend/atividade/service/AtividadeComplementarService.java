@@ -10,22 +10,22 @@ import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;
+import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Usuario;
-import br.edu.ufape.backend.usuario.repository.UsuarioRepository;
 
 @Service
 public class AtividadeComplementarService {
 
     private final AtividadeComplementarRepository atividadeRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioContrato usuarioContrato;
     private final ArmazenamentoCertificadoService armazenamentoCertificadoService;
 
     public AtividadeComplementarService(
             AtividadeComplementarRepository atividadeRepository,
-            UsuarioRepository usuarioRepository,
+            UsuarioContrato usuarioContrato,
             ArmazenamentoCertificadoService armazenamentoCertificadoService) {
         this.atividadeRepository = atividadeRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioContrato = usuarioContrato;
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
     }
 
@@ -33,8 +33,8 @@ public class AtividadeComplementarService {
             String emailEstudante) {
         validarTipoArquivo(arquivo);
 
-        Usuario estudante = usuarioRepository.findByEmail(emailEstudante)
-                .orElseThrow(() -> new CertificadoInvalidoException("Estudante não encontrado para o email autenticado"));
+        Usuario estudante = usuarioContrato.buscarPorEmail(emailEstudante)
+            .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
 
         Certificado certificado = armazenamentoCertificadoService.armazenar(arquivo);
 
