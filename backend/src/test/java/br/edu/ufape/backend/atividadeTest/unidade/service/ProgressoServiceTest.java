@@ -74,14 +74,19 @@ class ProgressoServiceTest {
         ProgressoResponse progresso = criarService(200, 100).obterProgresso(EMAIL);
 
         assertEquals(0, progresso.getAcc().getHorasAcumuladas());
+        assertEquals(0, progresso.getAcc().getHorasPendentes());
         assertEquals(0, progresso.getAcc().getPercentualConcluido());
+        assertEquals(200, progresso.getAcc().getHorasExigidas());
+
         assertEquals(0, progresso.getAcex().getHorasAcumuladas());
+        assertEquals(0, progresso.getAcex().getHorasPendentes());
         assertEquals(0, progresso.getAcex().getPercentualConcluido());
+        assertEquals(100, progresso.getAcex().getHorasExigidas());
     }
 
     @Test
-    @DisplayName("Deve somar as horas das atividades e calcular percentual parcial")
-    void deveCalcularProgressoParcial() {
+    @DisplayName("Estudante com atividades ACC e ACEX deve ter horas em horasPendentes e horasAcumuladas igual a zero")
+    void deveCalcularProgressoComHorasPendentesEHorasAcumuladasZero() {
         Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
         when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC))
@@ -93,26 +98,15 @@ class ProgressoServiceTest {
 
         ProgressoResponse progresso = criarService(200, 100).obterProgresso(EMAIL);
 
-        assertEquals(50, progresso.getAcc().getHorasAcumuladas());
-        assertEquals(25, progresso.getAcc().getPercentualConcluido());
-        assertEquals(10, progresso.getAcex().getHorasAcumuladas());
-        assertEquals(10, progresso.getAcex().getPercentualConcluido());
-    }
+        assertEquals(0, progresso.getAcc().getHorasAcumuladas());
+        assertEquals(50, progresso.getAcc().getHorasPendentes());
+        assertEquals(0, progresso.getAcc().getPercentualConcluido());
+        assertEquals(200, progresso.getAcc().getHorasExigidas());
 
-    @Test
-    @DisplayName("Percentual deve ficar limitado a 100% quando o estudante ultrapassa o exigido")
-    void deveLimitarPercentualA100QuandoUltrapassarExigido() {
-        Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
-        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC))
-                .thenReturn(List.of(criarAtividade(Natureza.ACC, 250, estudante)));
-        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
-                .thenReturn(List.of());
-
-        ProgressoResponse progresso = criarService(200, 100).obterProgresso(EMAIL);
-
-        assertEquals(250, progresso.getAcc().getHorasAcumuladas());
-        assertEquals(100, progresso.getAcc().getPercentualConcluido());
+        assertEquals(0, progresso.getAcex().getHorasAcumuladas());
+        assertEquals(10, progresso.getAcex().getHorasPendentes());
+        assertEquals(0, progresso.getAcex().getPercentualConcluido());
+        assertEquals(100, progresso.getAcex().getHorasExigidas());
     }
 
     @Test
@@ -126,7 +120,7 @@ class ProgressoServiceTest {
                 () -> criarService(200, 100).obterProgresso(EMAIL));
 
         assertEquals("Apenas estudantes podem consultar o progresso de atividades.", excecao.getMessage());
-        assertFalse(excecao.getMessage().contains("cadastro público"));
+        assertFalse(excecao.getMessage().contains("cadastro p blico"));
     }
 
     @Test
