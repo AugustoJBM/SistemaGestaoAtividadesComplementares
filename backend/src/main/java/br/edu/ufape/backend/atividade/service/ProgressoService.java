@@ -11,65 +11,64 @@ import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Usuario;
+import java.util.Objects;
 
 @Service
 public class ProgressoService {
-    private static final String MENSAGEM_ACESSO_NEGADO =
-            "Apenas estudantes podem consultar o progresso de atividades.";
 
-    private final UsuarioContrato usuarioContrato;
-    private final AtividadeComplementarRepository atividadeComplementarRepository;
-    private final ProgressoProperties progressoProperties;
+        private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem consultar o progresso de atividades.";
 
-    public ProgressoService(
-            UsuarioContrato usuarioContrato,
-            AtividadeComplementarRepository atividadeComplementarRepository,
-            ProgressoProperties progressoProperties) {
-        this.usuarioContrato = usuarioContrato;
-        this.atividadeComplementarRepository = atividadeComplementarRepository;
-        this.progressoProperties = progressoProperties;
-    }
+        private final UsuarioContrato usuarioContrato;
+        private final AtividadeComplementarRepository atividadeComplementarRepository;
+        private final ProgressoProperties progressoProperties;
 
-    public ProgressoResponse obterProgresso(String emailEstudante) {
-        Estudante estudante = obterEstudante(emailEstudante);
-        List<AtividadeComplementar> atividades =
-                atividadeRepository.findByEstudante(estudante);
-
-        ProgressoModalidadeResponse acc =
-                criarProgresso(atividades, Natureza.ACC, horasExigidasAcc);
-        ProgressoModalidadeResponse acex =
-                criarProgresso(atividades, Natureza.ACEX, horasExigidasAcex);
-
-        return new ProgressoResponse(acc, acex);
-    }
-
-    private Estudante obterEstudante(String email) {
-        Usuario usuario = usuarioContrato.buscarPorEmail(email)
-                .orElseThrow(() ->
-                        new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO));
-        if (!(usuario instanceof Estudante estudante)) {
-            throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO);
+        public ProgressoService(
+                        UsuarioContrato usuarioContrato,
+                        AtividadeComplementarRepository atividadeComplementarRepository,
+                        ProgressoProperties progressoProperties) {
+                this.usuarioContrato = usuarioContrato;
+                this.atividadeComplementarRepository = atividadeComplementarRepository;
+                this.progressoProperties = progressoProperties;
         }
-        return estudante;
-    }
 
-        ProgressoModalidadeResponse acc = new ProgressoModalidadeResponse(
-                calcularHorasAcumuladas(estudante, Natureza.ACC),
-                progressoProperties.getAcc().getHorasExigidas());
+        public ProgressoResponse obterProgresso(String emailEstudante) {
+                Estudante estudante = obterEstudante(emailEstudante);
 
-        ProgressoModalidadeResponse acex = new ProgressoModalidadeResponse(
-                calcularHorasAcumuladas(estudante, Natureza.ACEX),
-                progressoProperties.getAcex().getHorasExigidas());
+                // Enquanto não houver fluxo de aprovação/deferimento por um avaliador,
+                // as horas cadastradas ficam em "horasPendentes" (Em Análise) e horasAcumuladas
+                // permanece 0.
+                int horasCadastradasAcc = calcularHorasCadastradas(estudante, Natureza.ACC);
+                int horasCadastradasAcex = calcularHorasCadastradas(estudante, Natureza.ACEX);
 
-        // Enquanto não houver fluxo de aprovação/deferimento por um avaliador,
-        // as horas cadastradas ficam em "horasPendentes" (Em Análise)
-        int horasAcumuladas = 0; // Horas efetivamente homologadas/aprovadas
-        int horasPendentes = horasCadastradas; // Horas reais enviadas pelo aluno
+                ProgressoModalidadeResponse acc = new ProgressoModalidadeResponse(
+                                0,
+                                horasCadastradasAcc,
+                                progressoProperties.getAcc().getHorasExigidas());
 
-    private int calcularHorasAcumuladas(Estudante estudante, Natureza natureza) {
-        return atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, natureza).stream()
-                .filter(RegraAtividadeValida::isValida)
-                .mapToInt(atividade -> atividade.getCargaHorariaEmHoras())
-                .sum();
-    }
+                ProgressoModalidadeResponse acex = new ProgressoModalidadeResponse(
+                                0,
+                                horasCadastradasAcex,
+                                progressoProperties.getAcex().getHorasExigidas());
+
+                return new ProgressoResponse(acc, acex);
+        }
+
+        private Estudante obterEstudante(String email) {
+                Usuario usuario = usuarioContrato.buscarPorEmail(email)
+                                .orElseThrow(() -> new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO));
+
+                if (!(usuario instanceof Estudante estudante)) {
+                        throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO);
+                }
+
+                return estudante;
+        }
+
+        private int calcularHorasCadastradas(Estudante estudante, Natureza natureza) {
+                return atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, natureza).stream()
+                                .filter(RegraAtividadeValida::isValida)
+                                .filter(Objects::nonNull)
+                                .mapToInt(a -> a.getCargaHorariaEmHoras())
+                                .sum();
+        }
 }
