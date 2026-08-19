@@ -28,7 +28,9 @@ export class AtividadeService {
     formData.append('categoria', request.categoria);
     formData.append('arquivo', request.arquivo);
 
-    return this.http.post<AtividadeResponse>(this.apiUrl, formData);
+    return this.http.post<AtividadeResponse>(this.apiUrl, formData).pipe(
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroCadastro(error))))
+    );
   }
 
   listar(filtro: FiltroAtividades = {}): Observable<Atividade[]> {
@@ -42,11 +44,10 @@ export class AtividadeService {
 
     return this.http.get<AtividadeListagemDTO[]>(this.apiUrl, { params }).pipe(
       map((dtos) => (dtos ?? []).map((dto) => this.paraAtividade(dto))),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErro(error))))
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroListagem(error))))
     );
   }
 
-  // Campo ausente/nulo vira valor default seguro, nunca undefined/NaN na tela.
   private paraAtividade(dto: AtividadeListagemDTO): Atividade {
     return {
       id: dto?.id ?? 0,
@@ -60,37 +61,41 @@ export class AtividadeService {
     };
   }
 
-  // Traduz o erro de transporte para uma mensagem de dominio, para que os
-  // componentes visuais nao precisem conhecer status HTTP.
-  private traduzirErro(error: HttpErrorResponse): string {
+  private traduzirErroCadastro(error: HttpErrorResponse): string {
     if (error.status === 401) {
       return 'Sessão expirada. Faça login novamente.';
     }
-
-    // status 0 indica que a requisicao nao chegou ao servidor.
     if (error.status === 0) {
       return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
     }
+    if (error.status === 403) {
+      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem cadastrar atividades.';
+    }
+    return this.mensagemDoBackend(error) ?? 'Não foi possível cadastrar a atividade. Tente novamente.';
+  }
 
+  private traduzirErroListagem(error: HttpErrorResponse): string {
+    if (error.status === 401) {
+      return 'Sessão expirada. Faça login novamente.';
+    }
+    if (error.status === 0) {
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    }
     if (error.status === 403) {
       return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar suas atividades.';
     }
-
     return this.mensagemDoBackend(error) ?? 'Não foi possível carregar suas atividades. Tente novamente.';
   }
 
   private mensagemDoBackend(error: HttpErrorResponse): string | null {
     const corpo: unknown = error.error;
-
     if (typeof corpo === 'string' && corpo.trim().length > 0) {
       return corpo.trim();
     }
-
     const mensagem = (corpo as { message?: unknown } | null)?.message;
     if (typeof mensagem === 'string' && mensagem.trim().length > 0) {
       return mensagem.trim();
     }
-
     return null;
   }
 }
