@@ -23,7 +23,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -235,5 +237,37 @@ class AtividadeComplementarServiceTest {
                 () -> service.excluirAtividade(ID_ATIVIDADE, EMAIL));
         verify(atividadeRepository, never()).delete(any());
         assertFalse(Files.notExists(diretorioNaoVazio), "O diretorio nao deveria ter sido removido");
+    }
+
+    @Test
+    @DisplayName("Falha ao salvar atividade remove o certificado gravado em disco (rollback manual)")
+    void falhaAoSalvarAtividadeRemoveCertificadoGravadoEmDisco() throws IOException {
+        Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Path arquivoCertificado = tempDir.resolve("certificado.pdf");
+        Files.createFile(arquivoCertificado);
+        Certificado certificado = new Certificado(
+                "certificado.pdf", "application/pdf", 100L, arquivoCertificado.toString());
+
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                "Atividade de teste",
+                "Instituicao",
+                LocalDate.now(),
+                10,
+                Natureza.ACC,
+                Categoria.PESQUISA);
+
+        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
+        when(armazenamentoCertificadoService.armazenar(arquivo)).thenReturn(certificado);
+        when(atividadeRepository.save(any())).thenThrow(new RuntimeException("Falha ao persistir atividade"));
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.cadastrarAtividade(request, arquivo, EMAIL));
+
+        assertTrue(Files.notExists(arquivoCertificado),
+                "O certificado gravado em disco deveria ter sido removido apos falha no cadastro");
+        verify(armazenamentoCertificadoService).armazenar(arquivo);
     }
 }

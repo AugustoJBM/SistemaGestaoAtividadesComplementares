@@ -3,6 +3,7 @@ package br.edu.ufape.backend.atividade.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -56,6 +57,7 @@ public class AtividadeComplementarService {
         return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria);
     }
 
+    @Transactional
     public AtividadeResponse cadastrarAtividade(CadastroAtividadeRequest request, MultipartFile arquivo,
             String emailEstudante) {
         validarTipoArquivo(arquivo);
@@ -75,8 +77,18 @@ public class AtividadeComplementarService {
                 certificado,
                 estudante);
 
-        AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
-        return new AtividadeResponse(atividadeSalva);
+        try {
+            AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
+            return new AtividadeResponse(atividadeSalva);
+        } catch (RuntimeException e) {
+            // compensa a gravação em disco já feita, evitando certificado órfão
+            try {
+                Files.deleteIfExists(Paths.get(certificado.getReferencia()));
+            } catch (IOException ioException) {
+                e.addSuppressed(ioException);
+            }
+            throw e;
+        }
     }
 
     @Transactional
