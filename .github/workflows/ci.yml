@@ -50,8 +50,17 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Testes
-        run: npm test
+      - name: Testes e cobertura
+        run: npm run test:coverage
+
+      - name: Publicar relatorio de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: Front/coverage/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Build
         run: npm run build
