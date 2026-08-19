@@ -1,10 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { describe, it, expect } from 'vitest';
-
+import { describe, it, expect, vi } from 'vitest';
 import { ListagemAtividadesComponent } from './listagem-atividades.component';
-import { Atividade } from '../atividade.model';
+import { Atividade, Categoria, FiltroAtividades, Natureza } from '../atividade.model';
 import { AtividadeService } from '../atividade.service';
 
 const atividades: Atividade[] = [
@@ -32,7 +31,7 @@ const atividades: Atividade[] = [
 
 describe('ListagemAtividadesComponent', () => {
   let fixture: ComponentFixture<ListagemAtividadesComponent>;
-  let atividadeServiceDuble: { listar: () => Observable<Atividade[]> };
+  let atividadeServiceDuble: { listar: (filtro?: FiltroAtividades) => Observable<Atividade[]> };
 
   const configurarComponente = async (): Promise<void> => {
     await TestBed.configureTestingModule({
@@ -42,7 +41,6 @@ describe('ListagemAtividadesComponent', () => {
         { provide: AtividadeService, useValue: atividadeServiceDuble }
       ]
     }).compileComponents();
-
     fixture = TestBed.createComponent(ListagemAtividadesComponent);
   };
 
@@ -50,7 +48,6 @@ describe('ListagemAtividadesComponent', () => {
     const listagemNaoResolvida = new Subject<Atividade[]>();
     atividadeServiceDuble = { listar: () => listagemNaoResolvida.asObservable() };
     await configurarComponente();
-
     fixture.detectChanges();
 
     const texto = fixture.nativeElement.textContent as string;
@@ -61,7 +58,6 @@ describe('ListagemAtividadesComponent', () => {
   it('deve renderizar as atividades retornadas pelo service', async () => {
     atividadeServiceDuble = { listar: () => of(atividades) };
     await configurarComponente();
-
     fixture.detectChanges();
 
     const itens = fixture.nativeElement.querySelectorAll('li');
@@ -77,10 +73,9 @@ describe('ListagemAtividadesComponent', () => {
     expect(texto).toContain('Extensão');
   });
 
-  it('deve exibir o empty state quando o estudante não possui atividades', async () => {
+  it('deve exibir o empty state quando o estudante não possui atividades e não há filtro ativo', async () => {
     atividadeServiceDuble = { listar: () => of([]) };
     await configurarComponente();
-
     fixture.detectChanges();
 
     const itens = fixture.nativeElement.querySelectorAll('li');
@@ -95,7 +90,6 @@ describe('ListagemAtividadesComponent', () => {
       listar: () => throwError(() => new Error('Não foi possível carregar suas atividades. Tente novamente.'))
     };
     await configurarComponente();
-
     fixture.detectChanges();
 
     const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
@@ -124,5 +118,91 @@ describe('ListagemAtividadesComponent', () => {
     expect(tentativas).toBe(2);
     expect(fixture.componentInstance.mensagemErro()).toBeNull();
     expect(texto).toContain('Monitoria de Algoritmos');
+  });
+
+  it('deve filtrar por natureza chamando o service com o parâmetro correto', async () => {
+    const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
+    atividadeServiceDuble = { listar: spyListar };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    selectNatureza.value = Natureza.ACC;
+    selectNatureza.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(spyListar).toHaveBeenLastCalledWith({ natureza: Natureza.ACC });
+    expect(fixture.componentInstance.filtroNatureza()).toBe(Natureza.ACC);
+  });
+
+  it('deve filtrar por categoria chamando o service com o parâmetro correto', async () => {
+    const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
+    atividadeServiceDuble = { listar: spyListar };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
+    selectCategoria.value = Categoria.ENSINO;
+    selectCategoria.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(spyListar).toHaveBeenLastCalledWith({ categoria: Categoria.ENSINO });
+    expect(fixture.componentInstance.filtroCategoria()).toBe(Categoria.ENSINO);
+  });
+
+  it('deve combinar os filtros de natureza e categoria na mesma busca', async () => {
+    const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
+    atividadeServiceDuble = { listar: spyListar };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    selectNatureza.value = Natureza.ACC;
+    selectNatureza.dispatchEvent(new Event('change'));
+
+    const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
+    selectCategoria.value = Categoria.ENSINO;
+    selectCategoria.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(spyListar).toHaveBeenLastCalledWith({
+      natureza: Natureza.ACC,
+      categoria: Categoria.ENSINO
+    });
+  });
+
+  it('deve limpar os filtros e retornar para a busca sem parâmetros', async () => {
+    const spyListar = vi.fn().mockReturnValue(of(atividades));
+    atividadeServiceDuble = { listar: spyListar };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    fixture.componentInstance.filtroNatureza.set(Natureza.ACC);
+    fixture.componentInstance.filtroCategoria.set(Categoria.ENSINO);
+    fixture.detectChanges();
+
+    const botaoLimpar = fixture.nativeElement.querySelector('#btn-limpar-filtros') as HTMLButtonElement;
+    expect(botaoLimpar).toBeTruthy();
+    botaoLimpar.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.filtroNatureza()).toBe('');
+    expect(fixture.componentInstance.filtroCategoria()).toBe('');
+    expect(spyListar).toHaveBeenLastCalledWith({});
+  });
+
+  it('deve exibir mensagem de empty state específica quando o filtro não retornar resultados', async () => {
+    atividadeServiceDuble = { listar: () => of([]) };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    selectNatureza.value = Natureza.ACEX;
+    selectNatureza.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    const texto = fixture.nativeElement.textContent as string;
+    expect(texto).toContain('Nenhuma atividade encontrada com os filtros selecionados');
+    expect(texto).toContain('Tente alterar ou limpar os filtros');
   });
 });
