@@ -1,8 +1,15 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { API_BASE_URL } from '../api.config';
-import { AtividadeRequest, AtividadeResponse } from './atividade.model';
+import {
+  Atividade,
+  AtividadeListagemDTO,
+  AtividadeRequest,
+  AtividadeResponse,
+  FiltroAtividades
+} from './atividade.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,5 +29,68 @@ export class AtividadeService {
     formData.append('arquivo', request.arquivo);
 
     return this.http.post<AtividadeResponse>(this.apiUrl, formData);
+  }
+
+  listar(filtro: FiltroAtividades = {}): Observable<Atividade[]> {
+    let params = new HttpParams();
+    if (filtro.natureza) {
+      params = params.set('natureza', filtro.natureza);
+    }
+    if (filtro.categoria) {
+      params = params.set('categoria', filtro.categoria);
+    }
+
+    return this.http.get<AtividadeListagemDTO[]>(this.apiUrl, { params }).pipe(
+      map((dtos) => (dtos ?? []).map((dto) => this.paraAtividade(dto))),
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErro(error))))
+    );
+  }
+
+  // Campo ausente/nulo vira valor default seguro, nunca undefined/NaN na tela.
+  private paraAtividade(dto: AtividadeListagemDTO): Atividade {
+    return {
+      id: dto?.id ?? 0,
+      titulo: dto?.titulo ?? '',
+      instituicaoResponsavel: dto?.instituicaoResponsavel ?? '',
+      dataRealizacao: dto?.dataRealizacao ?? '',
+      cargaHorariaEmHoras: dto?.cargaHorariaEmHoras ?? 0,
+      natureza: dto?.natureza ?? '',
+      categoria: dto?.categoria ?? '',
+      dataCadastro: dto?.dataCadastro ?? null
+    };
+  }
+
+  // Traduz o erro de transporte para uma mensagem de dominio, para que os
+  // componentes visuais nao precisem conhecer status HTTP.
+  private traduzirErro(error: HttpErrorResponse): string {
+    if (error.status === 401) {
+      return 'Sessão expirada. Faça login novamente.';
+    }
+
+    // status 0 indica que a requisicao nao chegou ao servidor.
+    if (error.status === 0) {
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    }
+
+    if (error.status === 403) {
+      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar suas atividades.';
+    }
+
+    return this.mensagemDoBackend(error) ?? 'Não foi possível carregar suas atividades. Tente novamente.';
+  }
+
+  private mensagemDoBackend(error: HttpErrorResponse): string | null {
+    const corpo: unknown = error.error;
+
+    if (typeof corpo === 'string' && corpo.trim().length > 0) {
+      return corpo.trim();
+    }
+
+    const mensagem = (corpo as { message?: unknown } | null)?.message;
+    if (typeof mensagem === 'string' && mensagem.trim().length > 0) {
+      return mensagem.trim();
+    }
+
+    return null;
   }
 }
