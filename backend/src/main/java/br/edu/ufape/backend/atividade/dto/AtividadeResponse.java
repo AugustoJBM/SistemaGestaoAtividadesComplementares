@@ -15,7 +15,8 @@ public record AtividadeResponse(
         Integer cargaHorariaEmHoras,
         Natureza natureza,
         Categoria categoria,
-        LocalDateTime dataCadastro) {
+        LocalDateTime dataCadastro,
+        String estudanteEmail) {
 
     public AtividadeResponse(AtividadeComplementar atividade) {
         this(
@@ -26,6 +27,7 @@ public record AtividadeResponse(
                 atividade.getCargaHorariaEmHoras(),
                 atividade.getNatureza(),
                 atividade.getCategoria(),
-                atividade.getDataCadastro());
+                atividade.getDataCadastro(),
+                atividade.getEstudante().getEmail());
     }
 }

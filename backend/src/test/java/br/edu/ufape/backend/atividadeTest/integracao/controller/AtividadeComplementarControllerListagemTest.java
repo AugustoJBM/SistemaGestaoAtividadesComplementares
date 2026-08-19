@@ -109,7 +109,7 @@ class AtividadeComplementarControllerListagemTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").isEmpty())
-                .andExpect(jsonPath("$.totalElements").value(0));
+                .andExpect(jsonPath("$.page.totalElements").value(0));
     }
 
     @Test
@@ -120,9 +120,9 @@ class AtividadeComplementarControllerListagemTest {
         String token = cadastrarEstudanteERetornarToken(email);
         List<AtividadeResponse> atividades = List.of(
                 new AtividadeResponse(1L, "Minicurso de Testes", "UFAPE", LocalDate.of(2025, 6, 10),
-                        8, Natureza.ACC, Categoria.EXTENSAO, LocalDateTime.of(2025, 6, 11, 10, 0)),
+                        8, Natureza.ACC, Categoria.EXTENSAO, LocalDateTime.of(2025, 6, 11, 10, 0), email),
                 new AtividadeResponse(2L, "Workshop de Spring", "UFAPE", LocalDate.of(2025, 7, 15),
-                        12, Natureza.ACEX, Categoria.EVENTOS, LocalDateTime.of(2025, 7, 16, 14, 30)));
+                        12, Natureza.ACEX, Categoria.EVENTOS, LocalDateTime.of(2025, 7, 16, 14, 30), email));
         doReturn(new PageImpl<>(atividades, PageRequest.of(0, 20), atividades.size()))
                 .when(atividadeFacade)
                 .listarAtividadesDoEstudante(eq(email), isNull(), isNull(), any(Pageable.class));
@@ -135,9 +135,10 @@ class AtividadeComplementarControllerListagemTest {
                 .andExpect(jsonPath("$.content.length()").value(2))
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].titulo").value("Minicurso de Testes"))
+                .andExpect(jsonPath("$.content[0].estudanteEmail").value(email))
                 .andExpect(jsonPath("$.content[1].id").value(2))
                 .andExpect(jsonPath("$.content[1].natureza").value("ACEX"))
-                .andExpect(jsonPath("$.totalElements").value(2));
+                .andExpect(jsonPath("$.page.totalElements").value(2));
 
         verify(atividadeFacade).listarAtividadesDoEstudante(eq(email), isNull(), isNull(), any(Pageable.class));
     }
@@ -150,7 +151,7 @@ class AtividadeComplementarControllerListagemTest {
         String token = cadastrarEstudanteERetornarToken(email);
         List<AtividadeResponse> atividadesFiltradas = List.of(
                 new AtividadeResponse(1L, "Atividade ACC", "UFAPE", LocalDate.of(2025, 5, 1),
-                        10, Natureza.ACC, Categoria.PESQUISA, LocalDateTime.of(2025, 5, 2, 9, 0)));
+                        10, Natureza.ACC, Categoria.PESQUISA, LocalDateTime.of(2025, 5, 2, 9, 0), email));
         doReturn(new PageImpl<>(atividadesFiltradas, PageRequest.of(0, 20), 1))
                 .when(atividadeFacade)
                 .listarAtividadesDoEstudante(eq(email), eq(Natureza.ACC), isNull(), any(Pageable.class));
@@ -162,9 +163,23 @@ class AtividadeComplementarControllerListagemTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].natureza").value("ACC"))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.page.totalElements").value(1));
 
         verify(atividadeFacade).listarAtividadesDoEstudante(eq(email), eq(Natureza.ACC), isNull(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Natureza invalida na query param retorna 400")
+    void naturezaInvalidaRetorna400() throws Exception {
+        // Arrange
+        String email = "listagem.natureza.invalida@ufape.edu.br";
+        String token = cadastrarEstudanteERetornarToken(email);
+
+        // Act & Assert
+        mockMvc.perform(get(URL_LISTAGEM)
+                .param("natureza", "XPTO")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -16,6 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
@@ -62,15 +66,17 @@ class AtividadeComplementarServiceTest {
     void estudanteSemAtividadesRetornaListaVazia() {
         // Arrange
         Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Pageable pageable = PageRequest.of(0, 20);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-        when(atividadeRepository.findByEstudanteComFiltros(estudante, null, null)).thenReturn(List.of());
+        when(atividadeRepository.findByEstudanteComFiltros(estudante, null, null, pageable))
+                .thenReturn(new PageImpl<>(List.of()));
 
         // Act
-        List<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(EMAIL, null, null);
+        Page<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(EMAIL, null, null, pageable);
 
         // Assert
         assertTrue(resultado.isEmpty());
-        verify(atividadeRepository).findByEstudanteComFiltros(estudante, null, null);
+        verify(atividadeRepository).findByEstudanteComFiltros(estudante, null, null, pageable);
     }
 
     @Test
@@ -78,18 +84,19 @@ class AtividadeComplementarServiceTest {
     void estudanteComAtividadesRetornaApenasAtividadesDele() {
         // Arrange
         Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Pageable pageable = PageRequest.of(0, 20);
         AtividadeComplementar atividade1 = criarAtividade(Natureza.ACC, Categoria.PESQUISA, estudante);
         AtividadeComplementar atividade2 = criarAtividade(Natureza.ACEX, Categoria.EXTENSAO, estudante);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-        when(atividadeRepository.findByEstudanteComFiltros(estudante, null, null))
-                .thenReturn(List.of(atividade1, atividade2));
+        when(atividadeRepository.findByEstudanteComFiltros(estudante, null, null, pageable))
+                .thenReturn(new PageImpl<>(List.of(atividade1, atividade2)));
 
         // Act
-        List<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(EMAIL, null, null);
+        Page<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(EMAIL, null, null, pageable);
 
         // Assert
-        assertEquals(2, resultado.size());
-        verify(atividadeRepository).findByEstudanteComFiltros(estudante, null, null);
+        assertEquals(2, resultado.getContent().size());
+        verify(atividadeRepository).findByEstudanteComFiltros(estudante, null, null, pageable);
     }
 
     @Test
@@ -97,18 +104,20 @@ class AtividadeComplementarServiceTest {
     void filtroApenasPorNaturezaFuncionaCorretamente() {
         // Arrange
         Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Pageable pageable = PageRequest.of(0, 20);
         AtividadeComplementar atividadeAcc = criarAtividade(Natureza.ACC, Categoria.PESQUISA, estudante);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-        when(atividadeRepository.findByEstudanteComFiltros(estudante, Natureza.ACC, null))
-                .thenReturn(List.of(atividadeAcc));
+        when(atividadeRepository.findByEstudanteComFiltros(estudante, Natureza.ACC, null, pageable))
+                .thenReturn(new PageImpl<>(List.of(atividadeAcc)));
 
         // Act
-        List<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
+        Page<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(
+                EMAIL, Natureza.ACC, null, pageable);
 
         // Assert
-        assertEquals(1, resultado.size());
-        assertEquals(Natureza.ACC, resultado.get(0).getNatureza());
-        verify(atividadeRepository).findByEstudanteComFiltros(estudante, Natureza.ACC, null);
+        assertEquals(1, resultado.getContent().size());
+        assertEquals(Natureza.ACC, resultado.getContent().get(0).getNatureza());
+        verify(atividadeRepository).findByEstudanteComFiltros(estudante, Natureza.ACC, null, pageable);
     }
 
     @Test
@@ -116,20 +125,21 @@ class AtividadeComplementarServiceTest {
     void filtroPorNaturezaECategoriaFuncionaCorretamente() {
         // Arrange
         Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Pageable pageable = PageRequest.of(0, 20);
         AtividadeComplementar atividade = criarAtividade(Natureza.ACC, Categoria.PESQUISA, estudante);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-        when(atividadeRepository.findByEstudanteComFiltros(estudante, Natureza.ACC, Categoria.PESQUISA))
-                .thenReturn(List.of(atividade));
+        when(atividadeRepository.findByEstudanteComFiltros(estudante, Natureza.ACC, Categoria.PESQUISA, pageable))
+                .thenReturn(new PageImpl<>(List.of(atividade)));
 
         // Act
-        List<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(
-                EMAIL, Natureza.ACC, Categoria.PESQUISA);
+        Page<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(
+                EMAIL, Natureza.ACC, Categoria.PESQUISA, pageable);
 
         // Assert
-        assertEquals(1, resultado.size());
-        assertEquals(Natureza.ACC, resultado.get(0).getNatureza());
-        assertEquals(Categoria.PESQUISA, resultado.get(0).getCategoria());
-        verify(atividadeRepository).findByEstudanteComFiltros(estudante, Natureza.ACC, Categoria.PESQUISA);
+        assertEquals(1, resultado.getContent().size());
+        assertEquals(Natureza.ACC, resultado.getContent().get(0).getNatureza());
+        assertEquals(Categoria.PESQUISA, resultado.getContent().get(0).getCategoria());
+        verify(atividadeRepository).findByEstudanteComFiltros(estudante, Natureza.ACC, Categoria.PESQUISA, pageable);
     }
 
     @Test
@@ -137,23 +147,25 @@ class AtividadeComplementarServiceTest {
     void usuarioAvaliadorLancaAcessoNegadoAtividadeException() {
         // Arrange
         Avaliador avaliador = new Avaliador("Avaliador", EMAIL, "hash", "REG-1", "Extensao");
+        Pageable pageable = PageRequest.of(0, 20);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(avaliador));
 
         // Act & Assert
         assertThrows(
                 AcessoNegadoAtividadeException.class,
-                () -> service.listarAtividadesDoEstudante(EMAIL, null, null));
+                () -> service.listarAtividadesDoEstudante(EMAIL, null, null, pageable));
     }
 
     @Test
     @DisplayName("E-mail inexistente lanca AcessoNegadoAtividadeException")
     void emailInexistenteLancaAcessoNegadoAtividadeException() {
         // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
         when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(
                 AcessoNegadoAtividadeException.class,
-                () -> service.listarAtividadesDoEstudante(EMAIL, null, null));
+                () -> service.listarAtividadesDoEstudante(EMAIL, null, null, pageable));
     }
 }

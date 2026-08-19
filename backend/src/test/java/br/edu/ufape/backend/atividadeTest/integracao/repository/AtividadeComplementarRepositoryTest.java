@@ -11,9 +11,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,9 +56,10 @@ class AtividadeComplementarRepositoryTest {
     void estudanteSemAtividadesRetornaListaVazia() {
         // Arrange
         Estudante estudante = salvarEstudante("sem.atividades@ufape.edu.br");
+        Pageable pageable = PageRequest.of(0, 20);
 
         // Act
-        List<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(estudante, null, null);
+        Page<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(estudante, null, null, pageable);
 
         // Assert
         assertTrue(resultado.isEmpty());
@@ -70,12 +73,13 @@ class AtividadeComplementarRepositoryTest {
         salvarAtividade(estudante, Natureza.ACC, Categoria.PESQUISA);
         salvarAtividade(estudante, Natureza.ACEX, Categoria.EXTENSAO);
         salvarAtividade(estudante, Natureza.ACC, Categoria.EVENTOS);
+        Pageable pageable = PageRequest.of(0, 20);
 
         // Act
-        List<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(estudante, null, null);
+        Page<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(estudante, null, null, pageable);
 
         // Assert
-        assertEquals(3, resultado.size());
+        assertEquals(3, resultado.getTotalElements());
     }
 
     @Test
@@ -86,13 +90,15 @@ class AtividadeComplementarRepositoryTest {
         salvarAtividade(estudante, Natureza.ACC, Categoria.PESQUISA);
         salvarAtividade(estudante, Natureza.ACC, Categoria.EXTENSAO);
         salvarAtividade(estudante, Natureza.ACEX, Categoria.ENSINO);
+        Pageable pageable = PageRequest.of(0, 20);
 
         // Act
-        List<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(estudante, Natureza.ACC, null);
+        Page<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(
+                estudante, Natureza.ACC, null, pageable);
 
         // Assert
-        assertEquals(2, resultado.size());
-        assertTrue(resultado.stream().allMatch(a -> a.getNatureza() == Natureza.ACC));
+        assertEquals(2, resultado.getTotalElements());
+        assertTrue(resultado.getContent().stream().allMatch(a -> a.getNatureza() == Natureza.ACC));
     }
 
     @Test
@@ -103,15 +109,16 @@ class AtividadeComplementarRepositoryTest {
         salvarAtividade(estudante, Natureza.ACC, Categoria.PESQUISA);
         salvarAtividade(estudante, Natureza.ACC, Categoria.EXTENSAO);
         salvarAtividade(estudante, Natureza.ACEX, Categoria.PESQUISA);
+        Pageable pageable = PageRequest.of(0, 20);
 
         // Act
-        List<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(
-                estudante, Natureza.ACC, Categoria.PESQUISA);
+        Page<AtividadeComplementar> resultado = repository.findByEstudanteComFiltros(
+                estudante, Natureza.ACC, Categoria.PESQUISA, pageable);
 
         // Assert
-        assertEquals(1, resultado.size());
-        assertEquals(Natureza.ACC, resultado.get(0).getNatureza());
-        assertEquals(Categoria.PESQUISA, resultado.get(0).getCategoria());
+        assertEquals(1, resultado.getTotalElements());
+        assertEquals(Natureza.ACC, resultado.getContent().get(0).getNatureza());
+        assertEquals(Categoria.PESQUISA, resultado.getContent().get(0).getCategoria());
     }
 
     @Test
