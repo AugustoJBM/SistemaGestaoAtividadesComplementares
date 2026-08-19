@@ -148,7 +148,9 @@
                                     Categoria <span aria-hidden="true" class="text-error">*</span>
                                 </label>
                                 <div class="relative">
-                                    <select id="categoria" formControlName="categoria" ...>
+                                    <select id="categoria" formControlName="categoria"
+                                        class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg px-4 py-3 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-container/50 focus:border-primary-container transition-all"
+                                        [ngClass]="{ 'border-error': isCampoInvalido('categoria') }">
                                         <option value="" disabled selected>Selecione uma categoria...</option>
                                         <option value="PESQUISA">Pesquisa</option>
                                         <option value="EXTENSAO">Extensão</option>

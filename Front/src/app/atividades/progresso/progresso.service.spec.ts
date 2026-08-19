@@ -48,32 +48,32 @@ describe('ProgressoService', () => {
     });
   });
 
+  // src/app/atividades/progresso/progresso.service.spec.ts
+
   it('deve mapear o payload da API para o objeto de domínio e derivar horasRestantes', () => {
     let progresso: unknown;
-
     service.obterProgresso().subscribe((resultado) => (progresso = resultado));
 
     httpMock.expectOne(PROGRESSO_URL).flush({
-      acc: { horasAcumuladas: 10, horasExigidas: 20, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasExigidas: 15, percentualConcluido: 33 }
+      acc: { horasAcumuladas: 10, horasPendentes: 0, horasExigidas: 20, percentualConcluido: 50 },
+      acex: { horasAcumuladas: 5, horasPendentes: 0, horasExigidas: 15, percentualConcluido: 33 }
     });
 
     expect(progresso).toEqual({
-      acc: { horasAcumuladas: 10, horasExigidas: 20, horasRestantes: 10, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasExigidas: 15, horasRestantes: 10, percentualConcluido: 33 }
+      acc: { horasAcumuladas: 10, horasPendentes: 0, horasExigidas: 20, horasRestantes: 10, percentualConcluido: 50 },
+      acex: { horasAcumuladas: 5, horasPendentes: 0, horasExigidas: 15, horasRestantes: 10, percentualConcluido: 33 }
     });
   });
 
   it('deve retornar zeros para um estudante sem atividades', () => {
     let progresso: unknown;
-
     service.obterProgresso().subscribe((resultado) => (progresso = resultado));
 
     httpMock.expectOne(PROGRESSO_URL).flush({ acc: null, acex: null });
 
     expect(progresso).toEqual({
-      acc: { horasAcumuladas: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 },
-      acex: { horasAcumuladas: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 }
+      acc: { horasAcumuladas: 0, horasPendentes: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 },
+      acex: { horasAcumuladas: 0, horasPendentes: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 }
     });
   });
 
