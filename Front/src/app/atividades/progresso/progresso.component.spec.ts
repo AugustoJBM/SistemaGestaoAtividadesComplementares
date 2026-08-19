@@ -8,13 +8,37 @@ import { ProgressoCargaHoraria } from './progresso.model';
 import { ProgressoService } from './progresso.service';
 
 const progressoComAtividades: ProgressoCargaHoraria = {
-  acc: { horasAcumuladas: 30, horasExigidas: 60, horasRestantes: 30, percentualConcluido: 50 },
-  acex: { horasAcumuladas: 20, horasExigidas: 40, horasRestantes: 20, percentualConcluido: 50 }
+  acc: {
+    horasAcumuladas: 30,
+    horasPendentes: 0,
+    horasExigidas: 60,
+    horasRestantes: 30,
+    percentualConcluido: 50
+  },
+  acex: {
+    horasAcumuladas: 20,
+    horasPendentes: 0,
+    horasExigidas: 40,
+    horasRestantes: 20,
+    percentualConcluido: 50
+  }
 };
 
 const progressoSemAtividades: ProgressoCargaHoraria = {
-  acc: { horasAcumuladas: 0, horasExigidas: 60, horasRestantes: 60, percentualConcluido: 0 },
-  acex: { horasAcumuladas: 0, horasExigidas: 40, horasRestantes: 40, percentualConcluido: 0 }
+  acc: {
+    horasAcumuladas: 0,
+    horasPendentes: 0,
+    horasExigidas: 60,
+    horasRestantes: 60,
+    percentualConcluido: 0
+  },
+  acex: {
+    horasAcumuladas: 0,
+    horasPendentes: 0,
+    horasExigidas: 40,
+    horasRestantes: 40,
+    percentualConcluido: 0
+  }
 };
 
 describe('ProgressoComponent', () => {
