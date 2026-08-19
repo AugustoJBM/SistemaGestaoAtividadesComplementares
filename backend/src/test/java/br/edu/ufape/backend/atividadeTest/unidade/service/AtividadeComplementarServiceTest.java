@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
+import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
@@ -32,6 +33,7 @@ import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.atividade.service.AtividadeComplementarService;
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
@@ -269,5 +271,104 @@ class AtividadeComplementarServiceTest {
         assertTrue(Files.notExists(arquivoCertificado),
                 "O certificado gravado em disco deveria ter sido removido apos falha no cadastro");
         verify(armazenamentoCertificadoService).armazenar(arquivo);
+    }
+
+    @Test
+    @DisplayName("Cadastro de atividade com dados validos retorna atividade salva (caminho feliz)")
+    void cadastroDeAtividadeComDadosValidosRetornaAtividadeSalva() {
+        Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        Certificado certificado = new Certificado("certificado.pdf", "application/pdf", 100L, "/tmp/certificado.pdf");
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                "Atividade de teste",
+                "Instituicao",
+                LocalDate.now(),
+                10,
+                Natureza.ACC,
+                Categoria.PESQUISA);
+        AtividadeComplementar atividadeSalva = new AtividadeComplementar(
+                request.titulo(),
+                request.instituicaoResponsavel(),
+                request.dataRealizacao(),
+                request.cargaHoraria(),
+                request.natureza(),
+                request.categoria(),
+                certificado,
+                estudante);
+
+        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
+        when(armazenamentoCertificadoService.armazenar(arquivo)).thenReturn(certificado);
+        when(atividadeRepository.save(any())).thenReturn(atividadeSalva);
+
+        AtividadeResponse resposta = service.cadastrarAtividade(request, arquivo, EMAIL);
+
+        assertEquals(request.titulo(), resposta.titulo());
+        assertEquals(request.natureza(), resposta.natureza());
+        assertEquals(request.categoria(), resposta.categoria());
+        assertEquals(EMAIL, resposta.estudanteEmail());
+        verify(atividadeRepository).save(any());
+    }
+
+    @Test
+    @DisplayName("Cadastro com estudante inexistente lanca RuntimeException e nao grava certificado")
+    void cadastroComEstudanteInexistenteLancaRuntimeException() {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                "Atividade de teste",
+                "Instituicao",
+                LocalDate.now(),
+                10,
+                Natureza.ACC,
+                Categoria.PESQUISA);
+
+        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.cadastrarAtividade(request, arquivo, EMAIL));
+        verify(armazenamentoCertificadoService, never()).armazenar(any());
+        verify(atividadeRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Cadastro com arquivo vazio lanca CertificadoInvalidoException")
+    void cadastroComArquivoVazioLancaCertificadoInvalidoException() {
+        MockMultipartFile arquivoVazio = new MockMultipartFile(
+                "arquivo", "certificado.pdf", "application/pdf", new byte[0]);
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                "Atividade de teste",
+                "Instituicao",
+                LocalDate.now(),
+                10,
+                Natureza.ACC,
+                Categoria.PESQUISA);
+
+        assertThrows(
+                CertificadoInvalidoException.class,
+                () -> service.cadastrarAtividade(request, arquivoVazio, EMAIL));
+        verify(usuarioContrato, never()).buscarPorEmail(any());
+        verify(atividadeRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Cadastro com tipo de arquivo nao suportado lanca CertificadoInvalidoException")
+    void cadastroComTipoDeArquivoNaoSuportadoLancaCertificadoInvalidoException() {
+        MockMultipartFile arquivoInvalido = new MockMultipartFile(
+                "arquivo", "certificado.txt", "text/plain", "conteudo".getBytes());
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                "Atividade de teste",
+                "Instituicao",
+                LocalDate.now(),
+                10,
+                Natureza.ACC,
+                Categoria.PESQUISA);
+
+        assertThrows(
+                CertificadoInvalidoException.class,
+                () -> service.cadastrarAtividade(request, arquivoInvalido, EMAIL));
+        verify(usuarioContrato, never()).buscarPorEmail(any());
+        verify(atividadeRepository, never()).save(any());
     }
 }
