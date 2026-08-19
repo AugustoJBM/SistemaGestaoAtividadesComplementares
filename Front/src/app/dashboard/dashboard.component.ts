@@ -1,29 +1,77 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ProgressoCargaHoraria, ProgressoModalidade } from '../atividades/progresso/progresso.model';
+import { ProgressoService } from '../atividades/progresso/progresso.service';
 
-// PLACEHOLDER: destino pos-login. Existe para que o fluxo de autenticacao
-// termine em uma rota real; a tela definitiva ainda sera implementada.
+interface ResumoModalidade {
+  titulo: string;
+  descricao: string;
+  dados: ProgressoModalidade;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  template: `
-    <main class="p-8">
-      <h1 class="text-2xl font-bold mb-2">Dashboard</h1>
-      <p class="text-gray-600">Autenticação concluída com sucesso.</p>
-      <nav class="mt-6 flex flex-wrap gap-4">
-        <a routerLink="/atividades/cadastro" class="px-4 py-2 bg-[#003629] text-white rounded-lg hover:bg-[#1b4d3e] transition-colors">
-          Cadastrar nova atividade
-        </a>
-        <a routerLink="/progresso" class="px-4 py-2 border border-[#003629] text-[#003629] rounded-lg hover:bg-[#f3f4f5] transition-colors">
-          Acompanhar carga horária
-        </a>
-        <a routerLink="/logout" class="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
-          Sair
-        </a>
-      </nav>
-    </main>
-  `
+  templateUrl: './dashboard.component.html'
 })
-export class DashboardComponent { }
+export class DashboardComponent implements OnInit {
+  private readonly progressoService = inject(ProgressoService);
+
+  readonly carregando = signal(true);
+  readonly mensagemErro = signal<string | null>(null);
+  readonly progresso = signal<ProgressoCargaHoraria | null>(null);
+
+  readonly resumos = computed<ResumoModalidade[]>(() => {
+    const progresso = this.progresso();
+    if (!progresso) {
+      return [];
+    }
+    return [
+      { titulo: 'ACC', descricao: 'Atividades Complementares de Curso', dados: progresso.acc },
+      { titulo: 'ACEX', descricao: 'Atividades de Extensão', dados: progresso.acex }
+    ];
+  });
+
+  readonly semAtividades = computed<boolean>(() => {
+    const progresso = this.progresso();
+    if (!progresso) {
+      return false;
+    }
+    return (
+      progresso.acc.horasAcumuladas +
+      progresso.acc.horasPendentes +
+      progresso.acex.horasAcumuladas +
+      progresso.acex.horasPendentes === 0
+    );
+  });
+
+  ngOnInit(): void {
+    this.buscarProgresso();
+  }
+
+  percentualExibido(dados: ProgressoModalidade): number {
+    return Math.min(100, Math.max(0, dados.percentualConcluido));
+  }
+
+  tentarNovamente(): void {
+    this.buscarProgresso();
+  }
+
+  private buscarProgresso(): void {
+    this.carregando.set(true);
+    this.mensagemErro.set(null);
+
+    this.progressoService.obterProgresso().subscribe({
+      next: (progresso) => {
+        this.progresso.set(progresso);
+        this.carregando.set(false);
+      },
+      error: (erro: Error) => {
+        this.mensagemErro.set(erro.message);
+        this.carregando.set(false);
+      }
+    });
+  }
+}
