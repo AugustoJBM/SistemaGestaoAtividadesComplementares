@@ -1,6 +1,7 @@
 package br.edu.ufape.backend.atividade.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +37,17 @@ public class AtividadeController {
         String emailEstudante = authentication.getName();
         ProgressoResponse progressoResponse = atividadeFacade.obterProgresso(emailEstudante);
         return ResponseEntity.ok(progressoResponse);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AtividadeResponse>> listar(
+            @RequestParam(required = false) Natureza natureza,
+            @RequestParam(required = false) Categoria categoria,
+            Authentication authentication) {
+        String emailEstudante = authentication.getName();
+        List<AtividadeResponse> atividades = atividadeFacade.listarAtividadesDoEstudante(
+                emailEstudante, natureza, categoria);
+        return ResponseEntity.ok(atividades);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
