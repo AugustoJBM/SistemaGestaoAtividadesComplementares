@@ -1,8 +1,12 @@
 package br.edu.ufape.backend.atividade.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
@@ -23,6 +27,15 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 public class AtividadeComplementarService {
 
     private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem listar atividades complementares.";
+
+    /*
+     * Mesma mensagem/exceção usada tanto para "atividade não existe" quanto para
+     * "atividade pertence a outro estudante". É proposital: distinguir os dois
+     * casos permitiria a um usuário mal-intencionado descobrir quais IDs existem
+     * no banco só testando exclusões (enumeração de recursos).
+     */
+    private static final String MENSAGEM_ACESSO_NEGADO_EXCLUSAO =
+            "Atividade não encontrada ou não pertence ao estudante autenticado.";
 
     private final AtividadeComplementarRepository atividadeRepository;
     private final UsuarioContrato usuarioContrato;
@@ -64,6 +77,30 @@ public class AtividadeComplementarService {
 
         AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
         return new AtividadeResponse(atividadeSalva);
+    }
+
+    @Transactional
+    public void excluirAtividade(Long id, String emailEstudante) {
+        Estudante estudante = obterEstudante(emailEstudante);
+
+        AtividadeComplementar atividade = atividadeRepository.findByIdAndEstudante(id, estudante)
+                .orElseThrow(() -> new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO_EXCLUSAO));
+
+        removerArquivoCertificado(atividade.getCertificado());
+
+        atividadeRepository.delete(atividade);
+    }
+
+    private void removerArquivoCertificado(Certificado certificado) {
+        if (certificado == null || certificado.getReferencia() == null) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(Path.of(certificado.getReferencia()));
+        } catch (IOException ex) {
+            throw new RuntimeException("Falha ao remover arquivo do certificado", ex);
+        }
     }
 
     private Estudante obterEstudante(String email) {
