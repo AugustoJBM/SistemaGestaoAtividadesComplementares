@@ -151,16 +151,12 @@ class AtividadeControllerTest {
     @DisplayName("Negativo: 403 deve trazer mensagem do contexto de progresso, nunca a mensagem do cadastro publico")
     void deveResponderComMensagemCoerenteComOContextoDeProgresso() throws Exception {
         String token = criarAvaliadorERetornarToken("progresso.avaliador.mensagem@ufape.edu.br");
-
-        String corpo = mockMvc.perform(get(URL_PROGRESSO)
+        mockMvc.perform(get(URL_PROGRESSO)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString();
-
-        org.junit.jupiter.api.Assertions.assertEquals(
-                "Apenas estudantes podem consultar o progresso de atividades.", corpo);
-        org.junit.jupiter.api.Assertions.assertFalse(corpo.contains("cadastro"),
-                "A mensagem do cadastro publico nao pode vazar pelo endpoint de progresso");
+                .andExpect(jsonPath("$.mensagem").value("Apenas estudantes podem consultar o progresso de atividades."))
+                .andExpect(jsonPath("$.mensagem",
+                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("cadastro"))));
     }
 
     // Constraint: no-student-id-param
