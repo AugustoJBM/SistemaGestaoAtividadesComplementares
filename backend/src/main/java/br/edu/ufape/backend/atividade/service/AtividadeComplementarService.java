@@ -2,8 +2,6 @@ package br.edu.ufape.backend.atividade.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,10 +37,10 @@ public class AtividadeComplementarService {
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
     }
 
-    public Page<AtividadeComplementar> listarAtividadesDoEstudante(
-            String emailEstudante, Natureza natureza, Categoria categoria, Pageable pageable) {
+    public List<AtividadeComplementar> listarAtividadesDoEstudante(
+            String emailEstudante, Natureza natureza, Categoria categoria) {
         Estudante estudante = obterEstudante(emailEstudante);
-        return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria, pageable);
+        return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria);
     }
 
     public AtividadeResponse cadastrarAtividade(CadastroAtividadeRequest request, MultipartFile arquivo,

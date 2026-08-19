@@ -1,14 +1,13 @@
 package br.edu.ufape.backend.atividade.facade;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
 import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
-import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.service.AtividadeComplementarService;
@@ -31,11 +30,13 @@ public class AtividadeFacade {
         return progressoService.obterProgresso(emailEstudante);
     }
 
-    public Page<AtividadeResponse> listarAtividadesDoEstudante(
-            String emailEstudante, Natureza natureza, Categoria categoria, Pageable pageable) {
-        Page<AtividadeComplementar> page = atividadeComplementarService
-                .listarAtividadesDoEstudante(emailEstudante, natureza, categoria, pageable);
-        return page.map(AtividadeResponse::new);
+    public List<AtividadeResponse> listarAtividadesDoEstudante(
+            String emailEstudante, Natureza natureza, Categoria categoria) {
+        return atividadeComplementarService
+                .listarAtividadesDoEstudante(emailEstudante, natureza, categoria)
+                .stream()
+                .map(AtividadeResponse::new)
+                .toList();
     }
 
     public AtividadeResponse cadastrarAtividade(

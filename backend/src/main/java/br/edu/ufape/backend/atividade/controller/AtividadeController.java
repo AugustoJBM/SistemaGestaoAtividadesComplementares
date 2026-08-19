@@ -1,9 +1,8 @@
 package br.edu.ufape.backend.atividade.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,14 +40,13 @@ public class AtividadeController {
     }
 
     @GetMapping
-    public ResponseEntity<PagedModel<AtividadeResponse>> listar(
+    public ResponseEntity<List<AtividadeResponse>> listar(
             @RequestParam(required = false) Natureza natureza,
             @RequestParam(required = false) Categoria categoria,
-            Pageable pageable,
             Authentication authentication) {
         String emailEstudante = authentication.getName();
-        PagedModel<AtividadeResponse> atividades = new PagedModel<>(atividadeFacade.listarAtividadesDoEstudante(
-                emailEstudante, natureza, categoria, pageable));
+        List<AtividadeResponse> atividades = atividadeFacade.listarAtividadesDoEstudante(
+                emailEstudante, natureza, categoria);
         return ResponseEntity.ok(atividades);
     }
 

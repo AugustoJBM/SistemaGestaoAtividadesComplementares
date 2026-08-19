@@ -1,31 +1,25 @@
 package br.edu.ufape.backend.atividadeTest.integracao.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +27,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.facade.AtividadeFacade;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.autenticacao.dto.CadastroUsuarioRequest;
@@ -57,9 +49,6 @@ class AtividadeComplementarControllerListagemTest {
 
     @Autowired
     private UsuarioContrato usuarioContrato;
-
-    @MockitoSpyBean
-    private AtividadeFacade atividadeFacade;
 
     private MockMvc mockMvc;
 
@@ -93,54 +82,59 @@ class AtividadeComplementarControllerListagemTest {
         return jwtService.generateToken(email);
     }
 
+    private void cadastrarAtividade(String token, String titulo, Natureza natureza, Categoria categoria)
+            throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_LISTAGEM)
+                .file(arquivo)
+                .param("titulo", titulo)
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", natureza.name())
+                .param("categoria", categoria.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isCreated());
+    }
+
     @Test
-    @DisplayName("Estudante autenticado sem atividades retorna 200 com content vazio")
+    @DisplayName("Estudante autenticado sem atividades retorna 200 com array vazio")
     void estudanteAutenticadoSemAtividadesRetorna200ComArrayVazio() throws Exception {
         // Arrange
         String email = "listagem.vazia@ufape.edu.br";
         String token = cadastrarEstudanteERetornarToken(email);
-        doReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0))
-                .when(atividadeFacade)
-                .listarAtividadesDoEstudante(eq(email), isNull(), isNull(), any(Pageable.class));
 
         // Act & Assert
         mockMvc.perform(get(URL_LISTAGEM)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content").isEmpty())
-                .andExpect(jsonPath("$.page.totalElements").value(0));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 
     @Test
     @DisplayName("Estudante com atividades retorna 200 e apenas as atividades dele")
     void estudanteComAtividadesRetorna200ComAtividadesDele() throws Exception {
         // Arrange
-        String email = "listagem.com.atividades@ufape.edu.br";
-        String token = cadastrarEstudanteERetornarToken(email);
-        List<AtividadeResponse> atividades = List.of(
-                new AtividadeResponse(1L, "Minicurso de Testes", "UFAPE", LocalDate.of(2025, 6, 10),
-                        8, Natureza.ACC, Categoria.EXTENSAO, LocalDateTime.of(2025, 6, 11, 10, 0), email),
-                new AtividadeResponse(2L, "Workshop de Spring", "UFAPE", LocalDate.of(2025, 7, 15),
-                        12, Natureza.ACEX, Categoria.EVENTOS, LocalDateTime.of(2025, 7, 16, 14, 30), email));
-        doReturn(new PageImpl<>(atividades, PageRequest.of(0, 20), atividades.size()))
-                .when(atividadeFacade)
-                .listarAtividadesDoEstudante(eq(email), isNull(), isNull(), any(Pageable.class));
+        String emailDono = "listagem.dono@ufape.edu.br";
+        String tokenDono = cadastrarEstudanteERetornarToken(emailDono);
+        String emailOutro = "listagem.outro.estudante@ufape.edu.br";
+        String tokenOutro = cadastrarEstudanteERetornarToken(emailOutro);
 
-        // Act & Assert
+        cadastrarAtividade(tokenDono, "Minicurso de Testes", Natureza.ACC, Categoria.EXTENSAO);
+        cadastrarAtividade(tokenDono, "Workshop de Spring", Natureza.ACEX, Categoria.EVENTOS);
+        cadastrarAtividade(tokenOutro, "Atividade de outro estudante", Natureza.ACC, Categoria.PESQUISA);
+
+        // Act & Assert: garante isolamento por identidade do JWT, nao por stub artificial
         mockMvc.perform(get(URL_LISTAGEM)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDono))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].titulo").value("Minicurso de Testes"))
-                .andExpect(jsonPath("$.content[0].estudanteEmail").value(email))
-                .andExpect(jsonPath("$.content[1].id").value(2))
-                .andExpect(jsonPath("$.content[1].natureza").value("ACEX"))
-                .andExpect(jsonPath("$.page.totalElements").value(2));
-
-        verify(atividadeFacade).listarAtividadesDoEstudante(eq(email), isNull(), isNull(), any(Pageable.class));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[*].estudanteEmail", everyItem(is(emailDono))))
+                .andExpect(jsonPath("$[*].titulo", containsInAnyOrder("Minicurso de Testes", "Workshop de Spring")));
     }
 
     @Test
@@ -149,23 +143,38 @@ class AtividadeComplementarControllerListagemTest {
         // Arrange
         String email = "listagem.filtro.natureza@ufape.edu.br";
         String token = cadastrarEstudanteERetornarToken(email);
-        List<AtividadeResponse> atividadesFiltradas = List.of(
-                new AtividadeResponse(1L, "Atividade ACC", "UFAPE", LocalDate.of(2025, 5, 1),
-                        10, Natureza.ACC, Categoria.PESQUISA, LocalDateTime.of(2025, 5, 2, 9, 0), email));
-        doReturn(new PageImpl<>(atividadesFiltradas, PageRequest.of(0, 20), 1))
-                .when(atividadeFacade)
-                .listarAtividadesDoEstudante(eq(email), eq(Natureza.ACC), isNull(), any(Pageable.class));
+
+        cadastrarAtividade(token, "Atividade ACC", Natureza.ACC, Categoria.PESQUISA);
+        cadastrarAtividade(token, "Atividade ACEX", Natureza.ACEX, Categoria.PESQUISA);
 
         // Act & Assert
         mockMvc.perform(get(URL_LISTAGEM)
                 .param("natureza", "ACC")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].natureza").value("ACC"))
-                .andExpect(jsonPath("$.page.totalElements").value(1));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].titulo").value("Atividade ACC"))
+                .andExpect(jsonPath("$[0].natureza").value("ACC"));
+    }
 
-        verify(atividadeFacade).listarAtividadesDoEstudante(eq(email), eq(Natureza.ACC), isNull(), any(Pageable.class));
+    @Test
+    @DisplayName("Filtro por categoria funciona via query param")
+    void filtroPorCategoriaFuncionaViaQueryParam() throws Exception {
+        // Arrange
+        String email = "listagem.filtro.categoria@ufape.edu.br";
+        String token = cadastrarEstudanteERetornarToken(email);
+
+        cadastrarAtividade(token, "Atividade Extensao", Natureza.ACC, Categoria.EXTENSAO);
+        cadastrarAtividade(token, "Atividade Pesquisa", Natureza.ACC, Categoria.PESQUISA);
+
+        // Act & Assert
+        mockMvc.perform(get(URL_LISTAGEM)
+                .param("categoria", "PESQUISA")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].titulo").value("Atividade Pesquisa"))
+                .andExpect(jsonPath("$[0].categoria").value("PESQUISA"));
     }
 
     @Test

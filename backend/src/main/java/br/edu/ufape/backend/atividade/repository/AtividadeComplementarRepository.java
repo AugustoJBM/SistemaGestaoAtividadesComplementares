@@ -3,8 +3,6 @@ package br.edu.ufape.backend.atividade.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,23 +18,16 @@ public interface AtividadeComplementarRepository extends JpaRepository<Atividade
 
     List<AtividadeComplementar> findByEstudanteAndNatureza(Usuario estudante, Natureza natureza);
 
-    @Query(value = """
+    @Query("""
             SELECT a FROM AtividadeComplementar a
             WHERE a.estudante = :estudante
             AND (:natureza IS NULL OR a.natureza = :natureza)
             AND (:categoria IS NULL OR a.categoria = :categoria)
-            """,
-            countQuery = """
-            SELECT COUNT(a) FROM AtividadeComplementar a
-            WHERE a.estudante = :estudante
-            AND (:natureza IS NULL OR a.natureza = :natureza)
-            AND (:categoria IS NULL OR a.categoria = :categoria)
             """)
-    Page<AtividadeComplementar> findByEstudanteComFiltros(
+    List<AtividadeComplementar> findByEstudanteComFiltros(
             @Param("estudante") Usuario estudante,
             @Param("natureza") Natureza natureza,
-            @Param("categoria") Categoria categoria,
-            Pageable pageable);
+            @Param("categoria") Categoria categoria);
 
     Optional<AtividadeComplementar> findByIdAndEstudante(Long id, Usuario estudante);
 }
