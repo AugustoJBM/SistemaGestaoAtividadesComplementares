@@ -1,29 +1,38 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CadastroAtividadeComponent } from './cadastro-atividade.component';
 import { AtividadeService } from '../atividade.service';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { API_BASE_URL } from '../../api.config';
+
+const ATIVIDADES_URL = `${API_BASE_URL}/atividades`;
 
 describe('CadastroAtividadeComponent', () => {
     let component: CadastroAtividadeComponent;
     let fixture: ComponentFixture<CadastroAtividadeComponent>;
-    let atividadeServiceSpy: { cadastrar: ReturnType<typeof vi.fn> };
+    let httpMock: HttpTestingController;
 
     beforeEach(async () => {
-        atividadeServiceSpy = { cadastrar: vi.fn(() => of({})) };
-
+        TestBed.resetTestingModule();
         await TestBed.configureTestingModule({
             imports: [CadastroAtividadeComponent],
             providers: [
-                provideRouter([]),
-                { provide: AtividadeService, useValue: atividadeServiceSpy }
+                AtividadeService,
+                provideHttpClient(),
+                provideHttpClientTesting(),
+                provideRouter([])
             ]
         }).compileComponents();
-
         fixture = TestBed.createComponent(CadastroAtividadeComponent);
         component = fixture.componentInstance;
+        httpMock = TestBed.inject(HttpTestingController);
         fixture.detectChanges();
+    });
+
+    afterEach(() => {
+        httpMock.verify();
     });
 
     it('deve criar o componente', () => {
@@ -38,19 +47,15 @@ describe('CadastroAtividadeComponent', () => {
     it('deve rejeitar arquivos com formato não permitido', () => {
         const arquivoInvalido = new File(['dummy content'], 'teste.exe', { type: 'application/x-msdownload' });
         const event = { target: { files: [arquivoInvalido] } } as unknown as Event;
-
         component.onFileSelected(event);
-
         expect(component.arquivoAnexado()).toBeNull();
-        expect(component.erroArquivo()).toContain('Tipo de arquivo inválido');
+        expect(component.erroArquivo()).toContain('Tipo de arquivo');
     });
 
     it('deve aceitar arquivo PDF dentro do limite de tamanho', () => {
         const arquivoValido = new File(['dummy content'], 'certificado.pdf', { type: 'application/pdf' });
         const event = { target: { files: [arquivoValido] } } as unknown as Event;
-
         component.onFileSelected(event);
-
         expect(component.arquivoAnexado()).toEqual(arquivoValido);
         expect(component.erroArquivo()).toBeNull();
     });
@@ -61,13 +66,11 @@ describe('CadastroAtividadeComponent', () => {
             instituicao: 'UFAPE',
             data: '2026-05-10',
             natureza: 'ACC',
-            categoria: 'cursos',
+            categoria: 'PESQUISA',
             cargaHoraria: '20'
         });
-
         const arquivoValido = new File(['dummy content'], 'certificado.png', { type: 'image/png' });
         component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
-
         expect(component.activityForm.valid).toBeTruthy();
         expect(component.isFormularioInvalido()).toBeFalsy();
     });
@@ -78,41 +81,95 @@ describe('CadastroAtividadeComponent', () => {
             instituicao: 'Sebrae',
             data: '2026-06-01',
             natureza: 'ACEX',
-            categoria: 'palestras',
+            categoria: 'EXTENSAO',
             cargaHoraria: '10'
         });
-
         const arquivoValido = new File(['dummy content'], 'certificado.jpg', { type: 'image/jpeg' });
         component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
 
         component.onSubmit();
 
-        expect(atividadeServiceSpy.cadastrar).toHaveBeenCalled();
+        const req = httpMock.expectOne(ATIVIDADES_URL);
+        expect(req.request.method).toBe('POST');
+        req.flush({
+            id: 1,
+            titulo: 'Minicurso Python',
+            instituicaoResponsavel: 'Sebrae',
+            dataRealizacao: '2026-06-01',
+            cargaHorariaEmHoras: 10,
+            natureza: 'ACEX',
+            categoria: 'EXTENSAO'
+        });
+
         expect(component.mensagemSucesso()).toBeTruthy();
         expect(component.activityForm.get('titulo')?.value).toBeNull();
         expect(component.arquivoAnexado()).toBeNull();
+        expect(component.carregando()).toBeFalsy();
     });
 
-    it('deve exibir mensagem de erro devolvida pela API em caso de falha', () => {
-        atividadeServiceSpy.cadastrar.mockReturnValue(
-            throwError(() => new Error('A carga horária informada excede o limite da categoria.'))
-        );
-
+    it('deve exibir mensagem de erro devolvida pela API em caso de falha 400', () => {
         component.activityForm.setValue({
             titulo: 'Projeto de Pesquisa',
             instituicao: 'UFAPE',
             data: '2026-01-15',
             natureza: 'ACC',
-            categoria: 'pesquisa',
+            categoria: 'PESQUISA',
             cargaHoraria: '100'
         });
-
         const arquivoValido = new File(['dummy content'], 'comprovante.pdf', { type: 'application/pdf' });
         component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
 
         component.onSubmit();
 
-        expect(component.mensagemErro()).toBe('A carga horária informada excede o limite da categoria.');
+        const req = httpMock.expectOne(ATIVIDADES_URL);
+        req.flush('Certificado inválido. Aceitos: PDF, PNG ou JPEG', {
+            status: 400,
+            statusText: 'Bad Request'
+        });
+
+        expect(component.mensagemErro()).toBe('Certificado inválido. Aceitos: PDF, PNG ou JPEG');
+        expect(component.carregando()).toBeFalsy();
+    });
+
+    it('deve exibir mensagem genérica amigável em caso de erro 500 do servidor', () => {
+        component.activityForm.setValue({
+            titulo: 'Projeto de Pesquisa',
+            instituicao: 'UFAPE',
+            data: '2026-01-15',
+            natureza: 'ACC',
+            categoria: 'PESQUISA',
+            cargaHoraria: '20'
+        });
+        const arquivoValido = new File(['dummy content'], 'comprovante.pdf', { type: 'application/pdf' });
+        component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
+
+        component.onSubmit();
+
+        const req = httpMock.expectOne(ATIVIDADES_URL);
+        req.flush('', { status: 500, statusText: 'Internal Server Error' });
+
+        expect(component.mensagemErro()).toBe('Não foi possível cadastrar a atividade. Tente novamente.');
+        expect(component.carregando()).toBeFalsy();
+    });
+
+    it('deve exibir mensagem de indisponibilidade quando houver erro de rede (status 0)', () => {
+        component.activityForm.setValue({
+            titulo: 'Projeto de Pesquisa',
+            instituicao: 'UFAPE',
+            data: '2026-01-15',
+            natureza: 'ACC',
+            categoria: 'PESQUISA',
+            cargaHoraria: '20'
+        });
+        const arquivoValido = new File(['dummy content'], 'comprovante.pdf', { type: 'application/pdf' });
+        component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
+
+        component.onSubmit();
+
+        const req = httpMock.expectOne(ATIVIDADES_URL);
+        req.error(new ProgressEvent('error'), { status: 0 });
+
+        expect(component.mensagemErro()).toBe('Não foi possível conectar ao servidor. Verifique sua conexão.');
         expect(component.carregando()).toBeFalsy();
     });
 });

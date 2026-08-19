@@ -40,6 +40,7 @@ export class RegistroComponent {
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
+
     if (password && confirmPassword && password !== confirmPassword) {
       return { passwordMismatch: true };
     }
@@ -75,9 +76,9 @@ export class RegistroComponent {
         this.isLoading.set(false);
         this.router.navigate(['/login']);
       },
-      error: (err) => {
+      error: (erro: Error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(typeof err.error === 'string' ? err.error : 'Erro ao cadastrar. Tente novamente.');
+        this.errorMessage.set(erro?.message || (erro as unknown as { error?: string })?.error || 'Erro ao cadastrar. Tente novamente.');
       }
     });
   }
