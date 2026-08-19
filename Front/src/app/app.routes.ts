@@ -6,6 +6,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProgressoComponent } from './atividades/progresso/progresso.component';
 import { authGuard } from './autenticacao/auth.guard';
 import { CadastroAtividadeComponent } from './atividades/cadastro/cadastro-atividade.component';
+import { ListagemAtividadesComponent } from './atividades/listagem/listagem-atividades.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -14,6 +15,7 @@ export const routes: Routes = [
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
     { path: 'progresso', component: ProgressoComponent, canActivate: [authGuard] },
     { path: 'atividades/cadastro', component: CadastroAtividadeComponent, canActivate: [authGuard] },
+    { path: 'atividades', component: ListagemAtividadesComponent, canActivate: [authGuard] },
     { path: 'logout', component: LogoutComponent, canActivate: [authGuard] },
     { path: '**', redirectTo: 'login' }
 ];

@@ -6,9 +6,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CertificadoInvalidoException.class)
+    public ResponseEntity<String> tratarCertificadoInvalido(CertificadoInvalidoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 
     @ExceptionHandler(AcessoNegadoAtividadeException.class)
     public ResponseEntity<String> tratarAcessoNegadoAtividade(AcessoNegadoAtividadeException ex) {
