@@ -48,6 +48,21 @@ describe('routes', () => {
     expect(progresso?.canActivate).toContain(authGuard);
   });
 
+  it('deve proteger a rota de listagem de atividades com authGuard', () => {
+    const listagem = routes.find((rota: Route) => rota.path === 'atividades');
+
+    expect(listagem).toBeTruthy();
+    expect(listagem?.canActivate).toContain(authGuard);
+  });
+
+  it('deve declarar a rota de cadastro antes da listagem para não capturar o segmento extra', () => {
+    const indiceCadastro = routes.findIndex((rota: Route) => rota.path === 'atividades/cadastro');
+    const indiceListagem = routes.findIndex((rota: Route) => rota.path === 'atividades');
+
+    expect(indiceCadastro).toBeGreaterThanOrEqual(0);
+    expect(indiceCadastro).toBeLessThan(indiceListagem);
+  });
+
   it('deve manter a rota curinga como a última entrada redirecionando para login', () => {
     const ultimaRota = routes[routes.length - 1];
 
