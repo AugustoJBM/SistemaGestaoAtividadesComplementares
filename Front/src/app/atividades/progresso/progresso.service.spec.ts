@@ -48,20 +48,18 @@ describe('ProgressoService', () => {
     });
   });
 
-  // src/app/atividades/progresso/progresso.service.spec.ts
-
   it('deve mapear o payload da API para o objeto de domínio e derivar horasRestantes', () => {
     let progresso: unknown;
     service.obterProgresso().subscribe((resultado) => (progresso = resultado));
 
     httpMock.expectOne(PROGRESSO_URL).flush({
-      acc: { horasAcumuladas: 10, horasPendentes: 0, horasExigidas: 20, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasPendentes: 0, horasExigidas: 15, percentualConcluido: 33 }
+      acc: { horasAcumuladas: 10, horasPendentes: 4, horasExigidas: 20, percentualConcluido: 50 },
+      acex: { horasAcumuladas: 5, horasPendentes: 2, horasExigidas: 15, percentualConcluido: 33 }
     });
 
     expect(progresso).toEqual({
-      acc: { horasAcumuladas: 10, horasPendentes: 0, horasExigidas: 20, horasRestantes: 10, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasPendentes: 0, horasExigidas: 15, horasRestantes: 10, percentualConcluido: 33 }
+      acc: { horasAcumuladas: 10, horasPendentes: 4, horasExigidas: 20, horasRestantes: 10, percentualConcluido: 50 },
+      acex: { horasAcumuladas: 5, horasPendentes: 2, horasExigidas: 15, horasRestantes: 10, percentualConcluido: 33 }
     });
   });
 
