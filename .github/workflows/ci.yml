@@ -28,7 +28,7 @@ jobs:
           cache: maven
 
       - name: Build e testes (Maven)
-        run: ./mvnw -B test
+        run: ./mvnw test
 
   frontend:
     name: Frontend - Build e Testes
