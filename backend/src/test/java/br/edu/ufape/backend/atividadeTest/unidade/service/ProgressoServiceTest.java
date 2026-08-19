@@ -71,17 +71,17 @@ class ProgressoServiceTest {
         when(atividadeComplementarRepository.findByEstudanteAndNatureza(any(), any()))
                 .thenReturn(List.of());
 
-        ProgressoResponse progresso = criarService(200, 100).obterProgresso(EMAIL);
+        ProgressoResponse progresso = criarService(90, 320).obterProgresso(EMAIL);
 
         assertEquals(0, progresso.getAcc().getHorasAcumuladas());
         assertEquals(0, progresso.getAcc().getHorasPendentes());
         assertEquals(0, progresso.getAcc().getPercentualConcluido());
-        assertEquals(200, progresso.getAcc().getHorasExigidas());
+        assertEquals(90, progresso.getAcc().getHorasExigidas());
 
         assertEquals(0, progresso.getAcex().getHorasAcumuladas());
         assertEquals(0, progresso.getAcex().getHorasPendentes());
         assertEquals(0, progresso.getAcex().getPercentualConcluido());
-        assertEquals(100, progresso.getAcex().getHorasExigidas());
+        assertEquals(320, progresso.getAcex().getHorasExigidas());
     }
 
     @Test
@@ -96,17 +96,17 @@ class ProgressoServiceTest {
         when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
                 .thenReturn(List.of(criarAtividade(Natureza.ACEX, 10, estudante)));
 
-        ProgressoResponse progresso = criarService(200, 100).obterProgresso(EMAIL);
+        ProgressoResponse progresso = criarService(90, 320).obterProgresso(EMAIL);
 
         assertEquals(0, progresso.getAcc().getHorasAcumuladas());
         assertEquals(50, progresso.getAcc().getHorasPendentes());
         assertEquals(0, progresso.getAcc().getPercentualConcluido());
-        assertEquals(200, progresso.getAcc().getHorasExigidas());
+        assertEquals(90, progresso.getAcc().getHorasExigidas());
 
         assertEquals(0, progresso.getAcex().getHorasAcumuladas());
         assertEquals(10, progresso.getAcex().getHorasPendentes());
         assertEquals(0, progresso.getAcex().getPercentualConcluido());
-        assertEquals(100, progresso.getAcex().getHorasExigidas());
+        assertEquals(320, progresso.getAcex().getHorasExigidas());
     }
 
     @Test
@@ -117,7 +117,7 @@ class ProgressoServiceTest {
 
         AcessoNegadoAtividadeException excecao = assertThrows(
                 AcessoNegadoAtividadeException.class,
-                () -> criarService(200, 100).obterProgresso(EMAIL));
+                () -> criarService(90, 320).obterProgresso(EMAIL));
 
         assertEquals("Apenas estudantes podem consultar o progresso de atividades.", excecao.getMessage());
         assertFalse(excecao.getMessage().contains("cadastro p blico"));
@@ -130,7 +130,7 @@ class ProgressoServiceTest {
 
         AcessoNegadoAtividadeException excecao = assertThrows(
                 AcessoNegadoAtividadeException.class,
-                () -> criarService(200, 100).obterProgresso(EMAIL));
+                () -> criarService(90, 320).obterProgresso(EMAIL));
 
         assertEquals("Apenas estudantes podem consultar o progresso de atividades.", excecao.getMessage());
     }
