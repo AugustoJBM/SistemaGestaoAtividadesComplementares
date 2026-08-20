@@ -65,6 +65,11 @@ O sistema deverá permitir que o estudante:
 
 Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
+## Deploy em Produção (Render)
+
+- **Frontend (SPA):** https://sgac-frontend.onrender.com
+- **Backend (API REST):** https://sgac-backend-3rub.onrender.com
+- **Banco de Dados:** PostgreSQL (Render)
 - Java 21+
 - Node.js 22+
 - npm
