@@ -69,5 +69,9 @@ Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 * PostgreSQL
 * Docker
 
+## Deploy em Produção
+
+- **Frontend (SPA):** https://sgac-frontend.onrender.com
+- **Backend (API):** https://sgac-backend-3rub.onrender.com
 
 
