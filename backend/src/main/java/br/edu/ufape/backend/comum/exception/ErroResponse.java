@@ -1,13 +1,17 @@
 package br.edu.ufape.backend.comum.exception;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public record ErroResponse(
-        String mensagem,
+        String message,
         int status,
-        LocalDateTime timestamp
+        OffsetDateTime timestamp
 ) {
-    public ErroResponse(String mensagem, int status) {
-        this(mensagem, status, LocalDateTime.now());
+    public ErroResponse(String message, int status) {
+        this(message, status, OffsetDateTime.now());
+    }
+
+    public String mensagem() {
+        return message;
     }
 }
