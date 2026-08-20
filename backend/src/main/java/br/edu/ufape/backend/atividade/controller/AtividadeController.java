@@ -63,21 +63,15 @@ public class AtividadeController {
             @RequestPart("arquivo") MultipartFile arquivo,
             Authentication authentication) {
 
-        try {
-            LocalDate data = LocalDate.parse(dataRealizacao);
-            Integer carga = Integer.valueOf(cargaHoraria);
-            Natureza nat = Natureza.valueOf(natureza);
-            Categoria cat = Categoria.valueOf(categoria);
-
-            CadastroAtividadeRequest request = new CadastroAtividadeRequest(
-                    titulo, instituicaoResponsavel, data, carga, nat, cat);
-
-            String emailEstudante = authentication.getName();
-            AtividadeResponse response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().build();
-        }
+        LocalDate data = LocalDate.parse(dataRealizacao);
+        Integer carga = Integer.valueOf(cargaHoraria);
+        Natureza nat = Natureza.valueOf(natureza);
+        Categoria cat = Categoria.valueOf(categoria);
+        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+                titulo, instituicaoResponsavel, data, carga, nat, cat);
+        String emailEstudante = authentication.getName();
+        AtividadeResponse response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{id}")
