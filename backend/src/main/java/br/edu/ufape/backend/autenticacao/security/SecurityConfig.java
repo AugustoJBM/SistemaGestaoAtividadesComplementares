@@ -33,144 +33,115 @@ import tools.jackson.databind.ObjectMapper;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final Environment env;
-    private final ObjectMapper objectMapper;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final Environment env;
+        private final ObjectMapper objectMapper;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter,
-            UserDetailsService userDetailsService,
-            Environment env,
-            ObjectMapper objectMapper) {
+        public SecurityConfig(
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        UserDetailsService userDetailsService,
+                        Environment env,
+                        ObjectMapper objectMapper) {
 
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.env = env;
-        this.objectMapper = objectMapper;
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-
-                .cors(Customizer.withDefaults())
-
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                .authorizeHttpRequests(auth -> {
-
-                    auth.dispatcherTypeMatchers(DispatcherType.ERROR)
-                            .permitAll()
-
-                            .requestMatchers(
-                                    "/api/v1/auth/cadastro",
-                                    "/api/v1/auth/login",
-                                    "/api/v1/auth/logout")
-                            .permitAll();
-
-                    if (env.acceptsProfiles(Profiles.of("dev"))) {
-                        auth.requestMatchers("/h2-console/**")
-                                .permitAll();
-                    }
-
-                    // Rotas de atividades - ESTUDANTE
-                    auth.requestMatchers(
-                            HttpMethod.POST,
-                            "/api/v1/atividades")
-                            .hasRole("ESTUDANTE");
-
-                    auth.requestMatchers(
-                            HttpMethod.DELETE,
-                            "/api/v1/atividades/**")
-                            .hasRole("ESTUDANTE");
-
-                    auth.requestMatchers(
-                            HttpMethod.GET,
-                            "/api/v1/atividades",
-                            "/api/v1/atividades/progresso")
-                            .hasRole("ESTUDANTE");
-
-                    // Todas as demais rotas exigem autenticação
-                    auth.anyRequest()
-                            .authenticated();
-                })
-
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customAuthenticationEntryPoint()))
-
-                .anonymous(anonymous -> anonymous.disable())
-
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
-
-                .httpBasic(httpBasic -> httpBasic.disable());
-
-        if (env.acceptsProfiles(Profiles.of("dev"))) {
-            http.headers(headers -> headers
-                    .frameOptions(frame -> frame.sameOrigin()));
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.env = env;
+                this.objectMapper = objectMapper;
         }
 
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .cors(Customizer.withDefaults())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> {
+                                        auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();
 
-    @Bean
-    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
-        return (request, response, authException) -> {
+                                        // Permite pre-flight CORS em todos os endpoints
+                                        auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                        // Rotas públicas
+                                        auth.requestMatchers(
+                                                        "/api/v1/auth/cadastro",
+                                                        "/api/v1/auth/login",
+                                                        "/api/v1/auth/logout").permitAll();
 
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                        if (env.acceptsProfiles(Profiles.of("dev"))) {
+                                                auth.requestMatchers("/h2-console/**").permitAll();
+                                        }
 
-            response.setCharacterEncoding(
-                    StandardCharsets.UTF_8.name());
+                                        // Rotas de atividades - ESTUDANTE
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades")
+                                                        .hasRole("ESTUDANTE");
+                                        auth.requestMatchers(HttpMethod.DELETE, "/api/v1/atividades/**")
+                                                        .hasRole("ESTUDANTE");
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/atividades",
+                                                        "/api/v1/atividades/progresso").hasRole("ESTUDANTE");
 
-            ErroResponse erro = new ErroResponse(
-                    "Acesso não autorizado. Faça login novamente.",
-                    HttpStatus.UNAUTHORIZED.value());
+                                        auth.anyRequest().authenticated();
+                                })
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint(customAuthenticationEntryPoint()))
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .httpBasic(httpBasic -> httpBasic.disable());
 
-            objectMapper.writeValue(
-                    response.getWriter(),
-                    erro);
-        };
-    }
+                if (env.acceptsProfiles(Profiles.of("dev"))) {
+                        http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+                }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+        @Bean
+        public AuthenticationEntryPoint customAuthenticationEntryPoint() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+                return (request, response, authException) -> {
 
-        // Frontends autorizados a realizar requisições ao backend
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "https://gestaoatividadescomplementares.onrender.com"));
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        // Métodos HTTP permitidos
-        configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"));
+                        response.setContentType(
+                                        MediaType.APPLICATION_JSON_VALUE);
 
-        // Headers permitidos, incluindo Authorization (JWT)
-        configuration.setAllowedHeaders(List.of("*"));
+                        response.setCharacterEncoding(
+                                        StandardCharsets.UTF_8.name());
 
-        // Permite envio de credenciais/cookies
-        configuration.setAllowCredentials(true);
+                        ErroResponse erro = new ErroResponse(
+                                        "Acesso não autorizado. Faça login novamente.",
+                                        HttpStatus.UNAUTHORIZED.value());
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                        objectMapper.writeValue(
+                                        response.getWriter(),
+                                        erro);
+                };
+        }
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration);
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-        return source;
-    }
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+
+                // Permite origens locais e qualquer subdomínio do Render com ou sem barra final
+                configuration.setAllowedOriginPatterns(List.of(
+                                "http://localhost:4200",
+                                "http://localhost:*",
+                                "https://*.onrender.com"));
+
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(
+                                List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+                configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }
