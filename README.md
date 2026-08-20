@@ -71,6 +71,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
 ## Deploy em Produção (Render)
 
-- **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://sgac-backend-3rub.onrender.com)
+- **Frontend (SPA):** https://sgac-frontend.onrender.com
+- **Backend (API REST):** https://sgac-backend-3rub.onrender.com
 - **Banco de Dados:** PostgreSQL (Render)
 
