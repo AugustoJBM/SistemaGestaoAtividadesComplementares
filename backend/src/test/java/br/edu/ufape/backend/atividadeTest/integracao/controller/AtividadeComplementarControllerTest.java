@@ -28,8 +28,10 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest
 @Transactional
@@ -150,6 +152,149 @@ class AtividadeComplementarControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar mensagem de validação quando título estiver vazio")
+    void deveRetornarMensagemParaTituloVazio() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.validacao.titulo@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Título é obrigatório")));
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de validação para carga horária zero ou negativa")
+    void deveRetornarMensagemParaCargaHorariaInvalida() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.validacao.carga@ufape.edu.br");
+
+        for (String cargaHoraria : new String[] {"0", "-1"}) {
+            MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                    "application/pdf", "PDF-DUMMY".getBytes());
+
+            mockMvc.perform(multipart(URL_CADASTRO)
+                    .file(arquivo)
+                    .param("titulo", "Minicurso")
+                    .param("instituicaoResponsavel", "UFAPE")
+                    .param("dataRealizacao", LocalDate.now().toString())
+                    .param("cargaHoraria", cargaHoraria)
+                    .param("natureza", Natureza.ACC.name())
+                    .param("categoria", Categoria.EXTENSAO.name())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string(containsString("Carga horária deve ser maior que zero")));
+        }
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de validação para data futura")
+    void deveRetornarMensagemParaDataFutura() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.validacao.data@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "Minicurso")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().plusDays(1).toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Data de realização não pode ser no futuro")));
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de parsing para carga horária inválida")
+    void deveRetornarMensagemParaCargaHorariaNaoNumerica() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.parsing.carga@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "Minicurso")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "oito")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("cargaHoraria")));
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de parsing para data inválida")
+    void deveRetornarMensagemParaDataInvalida() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.parsing.data@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "Minicurso")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", "data-invalida")
+                .param("cargaHoraria", "8")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("dataRealizacao")));
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de parsing para enum natureza inválido")
+    void deveRetornarMensagemParaNaturezaInvalidaNoCadastro() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.parsing.natureza@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "Minicurso")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", "INEXISTENTE")
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("natureza")));
+    }
+
+    @Test
+    @DisplayName("Deve retornar mensagem de parsing para enum categoria inválido")
+    void deveRetornarMensagemParaCategoriaInvalidaNoCadastro() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.parsing.categoria@ufape.edu.br");
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", "Minicurso")
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", "INEXISTENTE")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("categoria")));
+    }
+
+    @Test
     @DisplayName("Cenário 3: Deve retornar 400 quando certificado ausente ou tipo inválido")
     void deveRetornarBadRequestParaArquivoInvalidoOuAusente() throws Exception {
         String token = cadastrarEstudanteERetornarToken("atividade.arquivo@ufape.edu.br");
@@ -163,7 +308,8 @@ class AtividadeComplementarControllerTest {
                 .param("natureza", Natureza.ACC.name())
                 .param("categoria", Categoria.EVENTOS.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Arquivo de certificado não pode ser vazio")));
 
         // Arquivo com tipo não permitido
         MockMultipartFile arquivoInvalido = new MockMultipartFile("arquivo", "certificado.exe",
@@ -178,7 +324,8 @@ class AtividadeComplementarControllerTest {
                 .param("natureza", Natureza.ACC.name())
                 .param("categoria", Categoria.EVENTOS.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Certificado inválido. Aceitos: PDF, PNG ou JPEG")));
     }
 
     @Test
