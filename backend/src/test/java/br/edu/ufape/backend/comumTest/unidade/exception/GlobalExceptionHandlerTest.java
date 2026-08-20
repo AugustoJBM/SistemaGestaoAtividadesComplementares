@@ -44,7 +44,7 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Arquivo vazio", response.getBody().mensagem());
+        assertEquals("Arquivo vazio", response.getBody().message());
         assertEquals(400, response.getBody().status());
         assertNotNull(response.getBody().timestamp());
     }
@@ -63,8 +63,9 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Email inválido", response.getBody().mensagem());
+        assertEquals("Email inválido", response.getBody().message());
         assertEquals(400, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -75,18 +76,25 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarRequisicaoInvalida(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Parâmetro inválido", response.getBody().message());
         assertEquals(400, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
     @DisplayName("Deve tratar NoResourceFoundException retornando 404")
     void deveTratarNoResourceFoundException() {
         NoResourceFoundException ex = mock(NoResourceFoundException.class);
+        when(ex.getMessage()).thenReturn("Recurso não encontrado.");
 
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarRecursoNaoEncontrado(ex);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Recurso não encontrado.", response.getBody().message());
         assertEquals(404, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -97,8 +105,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarAcessoNegadoAtividade(ex);
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("Acesso negado", response.getBody().mensagem());
+        assertNotNull(response.getBody());
+        assertEquals("Acesso negado", response.getBody().message());
         assertEquals(403, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -109,7 +119,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarPerfilNaoPermitido(ex);
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ex.getMessage(), response.getBody().message());
         assertEquals(403, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -120,7 +133,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarEmailDuplicado(ex);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ex.getMessage(), response.getBody().message());
         assertEquals(409, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -131,7 +147,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarUnauthorized(ex);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Credenciais inválidas", response.getBody().message());
         assertEquals(401, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
     }
 
     @Test
@@ -142,7 +161,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErroResponse> response = exceptionHandler.tratarCatchAll(ex);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Ocorreu um erro interno inesperado no servidor.", response.getBody().message());
         assertEquals(500, response.getBody().status());
-        assertFalse(response.getBody().mensagem().contains("NullPointer"));
+        assertNotNull(response.getBody().timestamp());
+        assertFalse(response.getBody().message().contains("NullPointer"));
     }
 }
