@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AtividadeControllerTest {
 
     private static final String URL_PROGRESSO = "/api/v1/atividades/progresso";
-
     private MockMvc mockMvc;
 
     @Autowired
@@ -71,28 +72,19 @@ class AtividadeControllerTest {
         cadastro.setEmail(email);
         cadastro.setSenha("senha1234");
         cadastro.setRole(Role.ESTUDANTE);
-
-        // Falha aqui, e nao mais adiante, caso o cadastro pare de funcionar.
         mockMvc.perform(post("/api/v1/auth/cadastro")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cadastro)))
                 .andExpect(status().isCreated());
-
         return jwtService.generateToken(email);
     }
 
-    /**
-     * Persiste um usuario NAO estudante (avaliador) direto pelo contrato de
-     * usuario, ja que o cadastro publico so aceita o perfil ESTUDANTE.
-     */
     private String criarAvaliadorERetornarToken(String email) {
         usuarioContrato.salvar(new Avaliador("Avaliador Progresso", email, "hash-irrelevante",
                 "REG-001", "Extensao"));
-
         return jwtService.generateToken(email);
     }
 
-    // Constraint: progresso-response-shape
     @Test
     @DisplayName("Deve retornar 200 com progresso de ACC e ACEX do proprio estudante autenticado, sem campos nulos")
     void deveRetornarProgressoDoEstudanteAutenticadoComSucesso() throws Exception {
@@ -119,24 +111,25 @@ class AtividadeControllerTest {
                 .andExpect(jsonPath("$.acex.percentualConcluido").value(percentualEntreZeroECem()));
     }
 
-    // Constraint: auth-401-unauthenticated
     @Test
     @DisplayName("Negativo: Deve retornar 401 Unauthorized quando requisicao de progresso nao possuir header Authorization")
     void deveRetornarUnauthorizedQuandoNaoHouverToken() throws Exception {
         mockMvc.perform(get(URL_PROGRESSO))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").exists());
     }
 
-    // Constraint: auth-401-unauthenticated
     @Test
     @DisplayName("Negativo: Deve retornar 401 Unauthorized quando token de progresso for invalido/malformado")
     void deveRetornarUnauthorizedQuandoTokenForInvalido() throws Exception {
         mockMvc.perform(get(URL_PROGRESSO)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer token.invalido.malformado"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").exists());
     }
 
-    // Constraint: apenas-estudante-consulta-progresso
     @Test
     @DisplayName("Negativo: Deve retornar 403 Forbidden quando o usuario autenticado nao for estudante")
     void deveRetornarForbiddenQuandoUsuarioNaoForEstudante() throws Exception {
@@ -152,18 +145,13 @@ class AtividadeControllerTest {
     void deveResponderComMensagemCoerenteComOContextoDeProgresso() throws Exception {
         String token = criarAvaliadorERetornarToken("progresso.avaliador.mensagem@ufape.edu.br");
 
-        String corpo = mockMvc.perform(get(URL_PROGRESSO)
+        mockMvc.perform(get(URL_PROGRESSO)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString();
-
-        org.junit.jupiter.api.Assertions.assertEquals(
-                "Apenas estudantes podem consultar o progresso de atividades.", corpo);
-        org.junit.jupiter.api.Assertions.assertFalse(corpo.contains("cadastro"),
-                "A mensagem do cadastro publico nao pode vazar pelo endpoint de progresso");
+                .andExpect(jsonPath("$.message").value("Apenas estudantes podem consultar o progresso de atividades."))
+                .andExpect(jsonPath("$.message", not(containsString("cadastro"))));
     }
 
-    // Constraint: no-student-id-param
     @Test
     @DisplayName("Negativo: Nao deve existir rota que aceite id de outro estudante via path variable")
     void naoDeveExistirRotaComIdDeEstudanteNoPath() throws Exception {
@@ -171,7 +159,8 @@ class AtividadeControllerTest {
 
         mockMvc.perform(get(URL_PROGRESSO + "/999999")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
     }
 
     @Test
