@@ -37,8 +37,12 @@ public class SecurityConfig {
     private final Environment env;
     private final ObjectMapper objectMapper;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsService userDetailsService,
-            Environment env, ObjectMapper objectMapper) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            UserDetailsService userDetailsService,
+            Environment env,
+            ObjectMapper objectMapper) {
+
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.env = env;
         this.objectMapper = objectMapper;
@@ -48,10 +52,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+
                 .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> {
-                    auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+
+                    auth.dispatcherTypeMatchers(DispatcherType.ERROR)
+                            .permitAll()
+
                             .requestMatchers(
                                     "/api/v1/auth/cadastro",
                                     "/api/v1/auth/login",
@@ -59,39 +70,69 @@ public class SecurityConfig {
                             .permitAll();
 
                     if (env.acceptsProfiles(Profiles.of("dev"))) {
-                        auth.requestMatchers("/h2-console/**").permitAll();
+                        auth.requestMatchers("/h2-console/**")
+                                .permitAll();
                     }
 
-                    // Todas as rotas de atividade exigem o papel ESTUDANTE (acesso por rota explícito)
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades").hasRole("ESTUDANTE");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/v1/atividades/**").hasRole("ESTUDANTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/atividades", "/api/v1/atividades/progresso").hasRole("ESTUDANTE");
+                    // Rotas de atividades - ESTUDANTE
+                    auth.requestMatchers(
+                            HttpMethod.POST,
+                            "/api/v1/atividades")
+                            .hasRole("ESTUDANTE");
 
-                    auth.anyRequest().authenticated();
+                    auth.requestMatchers(
+                            HttpMethod.DELETE,
+                            "/api/v1/atividades/**")
+                            .hasRole("ESTUDANTE");
+
+                    auth.requestMatchers(
+                            HttpMethod.GET,
+                            "/api/v1/atividades",
+                            "/api/v1/atividades/progresso")
+                            .hasRole("ESTUDANTE");
+
+                    // Todas as demais rotas exigem autenticação
+                    auth.anyRequest()
+                            .authenticated();
                 })
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint()))
+
                 .anonymous(anonymous -> anonymous.disable())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+
                 .httpBasic(httpBasic -> httpBasic.disable());
+
         if (env.acceptsProfiles(Profiles.of("dev"))) {
-            http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+            http.headers(headers -> headers
+                    .frameOptions(frame -> frame.sameOrigin()));
         }
+
         return http.build();
     }
 
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
         return (request, response, authException) -> {
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+            response.setCharacterEncoding(
+                    StandardCharsets.UTF_8.name());
 
             ErroResponse erro = new ErroResponse(
                     "Acesso não autorizado. Faça login novamente.",
                     HttpStatus.UNAUTHORIZED.value());
 
-            objectMapper.writeValue(response.getWriter(), erro);
+            objectMapper.writeValue(
+                    response.getWriter(),
+                    erro);
         };
     }
 
@@ -102,13 +143,34 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Frontends autorizados a realizar requisições ao backend
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "https://gestaoatividadescomplementares.onrender.com"));
+
+        // Métodos HTTP permitidos
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"));
+
+        // Headers permitidos, incluindo Authorization (JWT)
         configuration.setAllowedHeaders(List.of("*"));
+
+        // Permite envio de credenciais/cookies
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration);
+
         return source;
     }
 }
