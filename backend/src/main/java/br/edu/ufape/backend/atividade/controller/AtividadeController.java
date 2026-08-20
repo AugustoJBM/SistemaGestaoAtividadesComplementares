@@ -1,6 +1,7 @@
 package br.edu.ufape.backend.atividade.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
 import br.edu.ufape.backend.atividade.facade.AtividadeFacade;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 
 @RestController
 @RequestMapping("/api/v1/atividades")
@@ -69,17 +71,22 @@ public class AtividadeController {
     }
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<String> tratarFalhaDeValidacao(BindException ex) {
+    public ResponseEntity<Map<String, String>> tratarFalhaDeValidacao(BindException ex) {
         String mensagem = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
                 .orElse("Dados de cadastro inválidos");
-        return ResponseEntity.badRequest().body(mensagem);
+        return ResponseEntity.badRequest().body(Map.of("message", mensagem));
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
-    public ResponseEntity<String> tratarArquivoAusente(MissingServletRequestPartException ex) {
-        return ResponseEntity.badRequest().body("Arquivo de certificado não pode ser vazio");
+    public ResponseEntity<Map<String, String>> tratarArquivoAusente(MissingServletRequestPartException ex) {
+        return ResponseEntity.badRequest().body(Map.of("message", "Arquivo de certificado não pode ser vazio"));
+    }
+
+    @ExceptionHandler(CertificadoInvalidoException.class)
+    public ResponseEntity<Map<String, String>> tratarCertificadoInvalido(CertificadoInvalidoException ex) {
+        return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
     }
 
     @DeleteMapping("/{id}")

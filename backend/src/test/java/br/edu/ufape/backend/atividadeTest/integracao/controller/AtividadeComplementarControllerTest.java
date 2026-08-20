@@ -28,10 +28,9 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @Transactional
@@ -168,7 +167,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EXTENSAO.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Título é obrigatório")));
+                .andExpect(jsonPath("$.message").value("titulo: Título é obrigatório"));
     }
 
     @Test
@@ -190,7 +189,7 @@ class AtividadeComplementarControllerTest {
                     .param("categoria", Categoria.EXTENSAO.name())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string(containsString("Carga horária deve ser maior que zero")));
+                    .andExpect(jsonPath("$.message").value("cargaHoraria: Carga horária deve ser maior que zero"));
         }
     }
 
@@ -211,7 +210,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EXTENSAO.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Data de realização não pode ser no futuro")));
+                .andExpect(jsonPath("$.message").value("dataRealizacao: Data de realização não pode ser no futuro"));
     }
 
     @Test
@@ -231,7 +230,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EXTENSAO.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("cargaHoraria")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cargaHoraria")));
     }
 
     @Test
@@ -251,7 +250,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EXTENSAO.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("dataRealizacao")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("dataRealizacao")));
     }
 
     @Test
@@ -271,7 +270,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EXTENSAO.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("natureza")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("natureza")));
     }
 
     @Test
@@ -291,7 +290,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", "INEXISTENTE")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("categoria")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("categoria")));
     }
 
     @Test
@@ -309,7 +308,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EVENTOS.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Arquivo de certificado não pode ser vazio")));
+                .andExpect(jsonPath("$.message").value("Arquivo de certificado não pode ser vazio"));
 
         // Arquivo com tipo não permitido
         MockMultipartFile arquivoInvalido = new MockMultipartFile("arquivo", "certificado.exe",
@@ -325,7 +324,7 @@ class AtividadeComplementarControllerTest {
                 .param("categoria", Categoria.EVENTOS.name())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Certificado inválido. Aceitos: PDF, PNG ou JPEG")));
+                .andExpect(jsonPath("$.message").value("Certificado inválido. Aceitos: PDF, PNG ou JPEG"));
     }
 
     @Test
