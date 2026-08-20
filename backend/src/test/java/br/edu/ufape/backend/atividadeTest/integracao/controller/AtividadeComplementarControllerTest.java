@@ -29,6 +29,7 @@ import java.util.Map;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 @SpringBootTest
 @Transactional
@@ -76,6 +77,25 @@ class AtividadeComplementarControllerTest {
                 "REG-001", "Extensao"));
         return jwtService.generateToken(email);
     }
+    
+    private Long cadastrarAtividadeERetornarId(String token, String titulo) throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf",
+                "application/pdf", "PDF-DUMMY".getBytes());
+
+        var result = mockMvc.perform(multipart(URL_CADASTRO)
+                .file(arquivo)
+                .param("titulo", titulo)
+                .param("instituicaoResponsavel", "UFAPE")
+                .param("dataRealizacao", LocalDate.now().toString())
+                .param("cargaHoraria", "8")
+                .param("natureza", Natureza.ACC.name())
+                .param("categoria", Categoria.EXTENSAO.name())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        }
 
     @Test
     @DisplayName("Cenário 1: Deve cadastrar atividade com sucesso e retornar 201 Created")
@@ -197,4 +217,44 @@ class AtividadeComplementarControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("Cenário 6: Deve excluir atividade do próprio estudante e retornar 204 No Content")
+    void deveExcluirAtividadeDoProprioEstudanteERetornarNoContent() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.delete.ok@ufape.edu.br");
+        Long id = cadastrarAtividadeERetornarId(token, "Atividade para exclusao");
+
+        mockMvc.perform(delete(URL_CADASTRO + "/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isNoContent());
+        }
+
+    @Test
+    @DisplayName("Cenário 7: Deve retornar 403 Forbidden ao tentar excluir atividade de outro estudante")
+    void deveRetornarForbiddenAoExcluirAtividadeDeOutroEstudante() throws Exception {
+        String tokenEstudante1 = cadastrarEstudanteERetornarToken("atividade.delete.outro1@ufape.edu.br");
+        String tokenEstudante2 = cadastrarEstudanteERetornarToken("atividade.delete.outro2@ufape.edu.br");
+        Long id = cadastrarAtividadeERetornarId(tokenEstudante1, "Atividade de outro estudante");
+
+        mockMvc.perform(delete(URL_CADASTRO + "/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante2))
+                .andExpect(status().isForbidden());
+        }
+
+    @Test
+    @DisplayName("Cenário 8: Deve retornar 404 Not Found ao tentar excluir id inexistente")
+    void deveRetornarNotFoundAoExcluirIdInexistente() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("atividade.delete.inexistente@ufape.edu.br");
+
+        mockMvc.perform(delete(URL_CADASTRO + "/{id}", 999999L)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+        }
+
+    @Test
+    @DisplayName("Cenário 9: Deve retornar 401 Unauthorized ao tentar excluir sem token")
+    void deveRetornarUnauthorizedAoExcluirSemToken() throws Exception {
+        mockMvc.perform(delete(URL_CADASTRO + "/{id}", 1L))
+                .andExpect(status().isUnauthorized());
+        }
 }
