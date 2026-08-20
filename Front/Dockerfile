@@ -15,11 +15,11 @@ COPY --from=build /app/dist/sistema-gestao-atividades-complementares-front/brows
 COPY nginx.conf /etc/nginx/nginx.conf
 
 RUN mkdir -p /var/run /run /var/cache/nginx /var/log/nginx /tmp/client_temp && \
-    touch /run/nginx.pid /tmp/nginx.pid && \
+    touch /tmp/nginx.pid && \
     chown -R appuser:appgroup /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx /var/run /run /tmp && \
     chmod -R 777 /tmp /var/run /run
 
 USER appuser
 EXPOSE 8081
 
-CMD ["nginx", "-g", "daemon off; pid /tmp/nginx.pid;", "-c", "/etc/nginx/nginx.conf"]
+CMD ["nginx", "-g", "daemon off;", "-c", "/etc/nginx/nginx.conf"]
