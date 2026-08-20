@@ -67,8 +67,8 @@ Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
 ## Deploy em Produção (Render)
 
-- **Frontend (SPA):** https://sgac-frontend.onrender.com
-- **Backend (API REST):** https://sgac-backend-3rub.onrender.com
+- **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
+- **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://gestaoatividadescomplementares-backend.onrender.com)
 - **Banco de Dados:** PostgreSQL (Render)
 - Java 21+
 - Node.js 22+
