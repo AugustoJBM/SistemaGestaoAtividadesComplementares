@@ -2,6 +2,8 @@ package br.edu.ufape.backend.comum.exception;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -22,6 +24,8 @@ import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(CertificadoInvalidoException.class)
     public ResponseEntity<ErroResponse> tratarCertificadoInvalido(CertificadoInvalidoException ex) {
@@ -48,7 +52,10 @@ public class GlobalExceptionHandler {
             IllegalArgumentException.class
     })
     public ResponseEntity<ErroResponse> tratarRequisicaoInvalida(Exception ex) {
-        ErroResponse erro = new ErroResponse("Parâmetros da requisição inválidos ou ausentes.", HttpStatus.BAD_REQUEST.value());
+        String msg = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : "Parâmetros da requisição inválidos ou ausentes.";
+        ErroResponse erro = new ErroResponse(msg, HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
 
@@ -84,6 +91,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> tratarCatchAll(Exception ex) {
+        log.error("Erro interno não tratado no servidor", ex);
         ErroResponse erro = new ErroResponse(
                 "Ocorreu um erro interno inesperado no servidor.",
                 HttpStatus.INTERNAL_SERVER_ERROR.value()
