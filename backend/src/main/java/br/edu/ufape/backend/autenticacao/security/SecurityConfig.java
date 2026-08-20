@@ -57,11 +57,17 @@ public class SecurityConfig {
                                     "/api/v1/auth/login",
                                     "/api/v1/auth/logout")
                             .permitAll();
+
                     if (env.acceptsProfiles(Profiles.of("dev"))) {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades").hasRole("ESTUDANTE")
-                            .anyRequest().authenticated();
+
+                    // Todas as rotas de atividade exigem o papel ESTUDANTE (acesso por rota explícito)
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades").hasRole("ESTUDANTE");
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/v1/atividades/**").hasRole("ESTUDANTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/v1/atividades", "/api/v1/atividades/progresso").hasRole("ESTUDANTE");
+
+                    auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint()))
