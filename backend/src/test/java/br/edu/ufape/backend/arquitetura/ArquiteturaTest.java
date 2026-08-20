@@ -8,23 +8,26 @@ import com.tngtech.archunit.lang.ArchRule;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
- * Testes automatizados de fronteiras modulares e arquitetura em camadas.
+ * Testes automatizados de arquitetura e fronteiras de módulos com ArchUnit.
+ *
+ * Regras baseadas em documentos/02-arquitetura/5-comunicacao-entre-camadas-e-modulos.rst
  *
  * Exceção consciente documentada:
- * O acoplamento direto entre entidades JPA de módulos distintos (ex.: AtividadeComplementar
- * referenciando a entidade Usuario) é uma concessão técnica mantida temporariamente devido ao
- * mapeamento relacional do ORM/Hibernate. O isolamento de acesso aos dados é garantido
- * estritamente impedindo o acesso cruzado aos Repositories entre módulos.
+ * O acoplamento com ..usuario.model.. (entidades JPA como Usuario/Estudante) é permitido
+ * para mapeamento relacional ORM/Hibernate, mas o acesso aos componentes internos
+ * (repository e service) é estritamente proibido para módulos externos.
  */
 @AnalyzeClasses(packages = "br.edu.ufape.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArquiteturaTest {
 
     @ArchTest
-    static final ArchRule nenhumaClasseForaDeUsuarioDeveAcessarRepositoryDeUsuario =
+    static final ArchRule nenhumaClasseForaDeUsuarioDeveAcessarInternosDeUsuario =
         noClasses()
             .that().resideOutsideOfPackage("..usuario..")
-            .should().dependOnClassesThat().resideInAPackage("..usuario.repository..")
-            .because("O acesso a dados do módulo de usuários deve ocorrer exclusivamente via contrato (UsuarioContrato)");
+            .should().dependOnClassesThat()
+            .resideInAnyPackage("..usuario.repository..", "..usuario.service..")
+            .because("O acesso ao módulo de usuários deve ocorrer exclusivamente via UsuarioContrato; "
+                   + "a única exceção consciente é ..usuario.model.. por causa do mapeamento JPA");
 
     @ArchTest
     static final ArchRule nenhumaClasseForaDeAtividadeDeveAcessarRepositoryDeAtividade =
@@ -38,12 +41,40 @@ class ArquiteturaTest {
         noClasses()
             .that().resideInAPackage("..controller..")
             .should().dependOnClassesThat().resideInAPackage("..repository..")
-            .because("Controllers devem interagir apenas com Facades ou Services, nunca direto com a persistência");
+            .because("Controllers não devem acessar diretamente a camada de persistência");
+
+    @ArchTest
+    static final ArchRule controllersNaoDevemDependerDeServices =
+        noClasses()
+            .that().resideInAPackage("..controller..")
+            .should().dependOnClassesThat().resideInAPackage("..service..")
+            .because("Controllers devem se comunicar com a aplicação exclusivamente através de Facades");
 
     @ArchTest
     static final ArchRule facadesNaoDevemDependerDeRepositories =
         noClasses()
             .that().resideInAPackage("..facade..")
             .should().dependOnClassesThat().resideInAPackage("..repository..")
-            .because("Facades devem orquestrar casos de uso através de Services, sem acoplamento com a persistência");
+            .because("Facades devem orquestrar casos de uso através de Services, sem acoplamento direto com persistência");
+
+    @ArchTest
+    static final ArchRule servicesNaoDevemDependerDeControllers =
+        noClasses()
+            .that().resideInAPackage("..service..")
+            .should().dependOnClassesThat().resideInAPackage("..controller..")
+            .because("Services pertencem à camada de domínio/aplicação e não devem conhecer a camada de apresentação");
+
+    @ArchTest
+    static final ArchRule controllersNaoDevemDependerDeOutrosControllers =
+        noClasses()
+            .that().resideInAPackage("..autenticacao.controller..")
+            .should().dependOnClassesThat().resideInAPackage("..atividade.controller..")
+            .because("Controllers não devem depender de outros controllers");
+
+    @ArchTest
+    static final ArchRule repositoriesNaoDevemDependerDeOutrosRepositories =
+        noClasses()
+            .that().resideInAPackage("..usuario.repository..")
+            .should().dependOnClassesThat().resideInAPackage("..atividade.repository..")
+            .because("Repositories não devem se comunicar entre si");
 }
