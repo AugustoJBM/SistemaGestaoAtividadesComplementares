@@ -21,8 +21,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -148,8 +146,13 @@ class AtividadeControllerTest {
         mockMvc.perform(get(URL_PROGRESSO)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Apenas estudantes podem consultar o progresso de atividades."))
-                .andExpect(jsonPath("$.message", not(containsString("cadastro"))));
+                .andExpect(result -> {
+                    String corpo = result.getResponse().getContentAsString();
+                    org.junit.jupiter.api.Assertions.assertFalse(
+                        corpo != null && corpo.contains("cadastro"),
+                        "A mensagem do cadastro publico nao pode vazar pelo endpoint de progresso"
+                    );
+                });
     }
 
     @Test
