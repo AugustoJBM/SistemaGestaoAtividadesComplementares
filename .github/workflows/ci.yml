@@ -93,3 +93,22 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    name: Deploy no Render
+    runs-on: ubuntu-latest
+    needs: [build, sonarcloud]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Trigger Render Deploy Backend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: Trigger Render Deploy Frontend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK"
