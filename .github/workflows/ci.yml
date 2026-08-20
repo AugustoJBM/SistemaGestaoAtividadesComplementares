@@ -97,7 +97,7 @@ jobs:
   deploy:
     name: Deploy no Render
     runs-on: ubuntu-latest
-    needs: [build, sonarcloud]
+    needs: [backend, frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
