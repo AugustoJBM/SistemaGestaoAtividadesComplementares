@@ -45,4 +45,8 @@ public class AtividadeFacade {
             String emailEstudante) {
         return atividadeComplementarService.cadastrarAtividade(request, arquivo, emailEstudante);
     }
+
+    public void excluirAtividade(Long id, String emailEstudante) {
+        atividadeComplementarService.excluirAtividade(id, emailEstudante);
+    }
 }
