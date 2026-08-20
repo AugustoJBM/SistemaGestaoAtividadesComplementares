@@ -1,6 +1,7 @@
 package br.edu.ufape.backend.atividadeTest.unidade.contrato;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContratoImpl;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
+import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
@@ -61,6 +63,38 @@ class AtividadeContratoImplTest {
         assertTrue(resultado.isEmpty());
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
     }
+
+        @Test
+        @DisplayName("Deve propagar acesso negado ao buscar atividades por estudante")
+        void devePropagarAcessoNegadoAoBuscarPorEstudante() {
+        AcessoNegadoAtividadeException excecao =
+            new AcessoNegadoAtividadeException("Estudante não encontrado");
+        when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, null, null))
+            .thenThrow(excecao);
+
+        AcessoNegadoAtividadeException resultado = assertThrows(
+            AcessoNegadoAtividadeException.class,
+            () -> atividadeContrato.buscarPorEstudante(EMAIL));
+
+        assertEquals(excecao, resultado);
+        verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, null, null);
+        }
+
+        @Test
+        @DisplayName("Deve propagar acesso negado ao buscar por estudante e natureza")
+        void devePropagarAcessoNegadoAoBuscarPorEstudanteENatureza() {
+        AcessoNegadoAtividadeException excecao =
+            new AcessoNegadoAtividadeException("Estudante não encontrado");
+        when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null))
+            .thenThrow(excecao);
+
+        AcessoNegadoAtividadeException resultado = assertThrows(
+            AcessoNegadoAtividadeException.class,
+            () -> atividadeContrato.buscarPorEstudanteENatureza(EMAIL, Natureza.ACC));
+
+        assertEquals(excecao, resultado);
+        verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
+        }
 
     @Test
     @DisplayName("Deve mapear entidades retornadas pelo service para DTOs públicos")
