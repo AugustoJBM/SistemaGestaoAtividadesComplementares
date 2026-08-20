@@ -64,37 +64,37 @@ class AtividadeContratoImplTest {
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
     }
 
-        @Test
-        @DisplayName("Deve propagar acesso negado ao buscar atividades por estudante")
-        void devePropagarAcessoNegadoAoBuscarPorEstudante() {
+    @Test
+    @DisplayName("Deve propagar acesso negado ao buscar atividades por estudante")
+    void devePropagarAcessoNegadoAoBuscarPorEstudante() {
         AcessoNegadoAtividadeException excecao =
-            new AcessoNegadoAtividadeException("Estudante não encontrado");
+                new AcessoNegadoAtividadeException("Estudante não encontrado");
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, null, null))
-            .thenThrow(excecao);
+                .thenThrow(excecao);
 
         AcessoNegadoAtividadeException resultado = assertThrows(
-            AcessoNegadoAtividadeException.class,
-            () -> atividadeContrato.buscarPorEstudante(EMAIL));
+                AcessoNegadoAtividadeException.class,
+                () -> atividadeContrato.buscarPorEstudante(EMAIL));
 
         assertEquals(excecao, resultado);
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, null, null);
-        }
+    }
 
-        @Test
-        @DisplayName("Deve propagar acesso negado ao buscar por estudante e natureza")
-        void devePropagarAcessoNegadoAoBuscarPorEstudanteENatureza() {
+    @Test
+    @DisplayName("Deve propagar acesso negado ao buscar por estudante e natureza")
+    void devePropagarAcessoNegadoAoBuscarPorEstudanteENatureza() {
         AcessoNegadoAtividadeException excecao =
-            new AcessoNegadoAtividadeException("Estudante não encontrado");
+                new AcessoNegadoAtividadeException("Estudante não encontrado");
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null))
-            .thenThrow(excecao);
+                .thenThrow(excecao);
 
         AcessoNegadoAtividadeException resultado = assertThrows(
-            AcessoNegadoAtividadeException.class,
-            () -> atividadeContrato.buscarPorEstudanteENatureza(EMAIL, Natureza.ACC));
+                AcessoNegadoAtividadeException.class,
+                () -> atividadeContrato.buscarPorEstudanteENatureza(EMAIL, Natureza.ACC));
 
         assertEquals(excecao, resultado);
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
-        }
+    }
 
     @Test
     @DisplayName("Deve mapear entidades retornadas pelo service para DTOs públicos")
