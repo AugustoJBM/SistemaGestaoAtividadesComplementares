@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
@@ -76,5 +78,14 @@ public class AtividadeController {
         } catch (Exception ex) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String emailEstudante = authentication.getName();
+        atividadeFacade.excluirAtividade(id, emailEstudante);
+        return ResponseEntity.noContent().build();
     }
 }
