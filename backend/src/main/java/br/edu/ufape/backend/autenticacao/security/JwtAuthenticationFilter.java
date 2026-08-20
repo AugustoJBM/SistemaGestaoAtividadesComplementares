@@ -1,12 +1,10 @@
 package br.edu.ufape.backend.autenticacao.security;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +16,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import br.edu.ufape.backend.autenticacao.service.JwtService;
 import br.edu.ufape.backend.autenticacao.service.TokenBlacklistService;
+import br.edu.ufape.backend.comum.exception.ErroResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -25,51 +29,87 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final ObjectMapper objectMapper;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService,
-            TokenBlacklistService tokenBlacklistService) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService,
+            TokenBlacklistService tokenBlacklistService,
+            ObjectMapper objectMapper) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String token;
-        final String username;
+
+        String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        token = authHeader.substring(7);
-        if (!jwtService.isTokenValid(token) || tokenBlacklistService.isTokenBlacklisted(token)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido, expirado ou revogado");
+        String token = authHeader.substring(7);
+
+        if (!jwtService.isTokenValid(token)
+                || tokenBlacklistService.isTokenBlacklisted(token)) {
+            escreverErroUnauthorized(
+                    response,
+                    "Token inválido, expirado ou revogado");
             return;
         }
 
-        username = jwtService.extractUsername(token);
+        String username = jwtService.extractUsername(token);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                if (jwtService.isTokenValid(token)) {
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                }
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(username);
+
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities());
+
+                authenticationToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request));
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authenticationToken);
+
             } catch (UsernameNotFoundException ex) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuário do token não encontrado");
+                escreverErroUnauthorized(
+                        response,
+                        "Usuário do token não encontrado");
                 return;
             }
         }
-        filterChain.doFilter(request, response);
 
+        filterChain.doFilter(request, response);
+    }
+
+    private void escreverErroUnauthorized(
+            HttpServletResponse response,
+            String mensagem) throws IOException {
+
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+        ErroResponse erro = new ErroResponse(
+                mensagem,
+                HttpStatus.UNAUTHORIZED.value());
+
+        objectMapper.writeValue(response.getWriter(), erro);
     }
 }

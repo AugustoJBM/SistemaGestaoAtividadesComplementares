@@ -1,17 +1,25 @@
-# Stage 1: Build da aplicacao Angular
 FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
+
 RUN npm ci
 
 COPY . .
-RUN npm run build -- --configuration=production
 
-# Stage 2: Servir com Nginx Alpine
+RUN npx ng build --configuration=production
+
 FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/sistema-gestao-atividades-complementares-front/browser /usr/share/nginx/html
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=build /app/dist/sistema-gestao-atividades-complementares-front/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+RUN chown -R appuser:appgroup /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx /tmp
+RUN mkdir -p /var/cache/nginx/client_temp && chown -R appuser:appgroup /var/cache/nginx
+
+USER appuser
+EXPOSE 8081
+
+CMD ["nginx", "-g", "daemon off; pid /tmp/nginx.pid; error_log /dev/stdout info;", "-c", "/etc/nginx/nginx.conf"]
