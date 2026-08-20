@@ -1,4 +1,6 @@
-[![Build Status](https://github.com/Joaovitorrr07/SistemaGestaoAtividadesComplementares/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Joaovitorrr07/SistemaGestaoAtividadesComplementares/actions/workflows/ci.yml)
+[![Build Status](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=arayumi3_GestaoAtividadesComplementares&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
 
 # Sistema de Gestão de Atividades Complementares
 
