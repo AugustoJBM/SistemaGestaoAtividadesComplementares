@@ -1,0 +1,85 @@
+<div class="min-h-screen flex flex-col bg-[#f8f9fa]">
+  <main class="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-8 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-bold text-[#191c1d]">Relatório de Atividades</h1>
+      <a routerLink="/dashboard" class="text-sm font-medium text-[#003629] hover:underline">
+        Voltar ao painel
+      </a>
+    </div>
+
+    @if (carregando()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-16 text-[#404945]">
+      <p class="text-sm">Carregando seu relatório...</p>
+    </div>
+    } @else if (mensagemErro()) {
+    <div role="alert"
+      class="mb-6 p-4 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-start gap-3 border border-[#ba1a1a]/20 text-sm">
+      <div class="flex-1">
+        <p>{{ mensagemErro() }}</p>
+        <button type="button"
+          class="mt-3 px-3 py-1.5 bg-[#ba1a1a] text-white text-xs font-semibold rounded-lg hover:bg-[#93000a] transition-colors"
+          (click)="carregarRelatorio()">
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+    } @else if (semAtividades()) {
+    <div
+      class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-center">
+      <p class="text-sm text-[#404945]">Você ainda não possui atividades cadastradas.</p>
+      <a routerLink="/atividades/cadastro"
+        class="px-4 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#00291f] transition-colors">
+        Cadastrar atividade
+      </a>
+    </div>
+    } @else {
+    <div class="grid grid-cols-3 gap-3 mb-6">
+      <div class="bg-white rounded-xl border border-[#e1e3e4] p-4 text-center">
+        <p class="text-lg font-bold text-[#003629]">{{ relatorio()!.totalHorasAcc }}h</p>
+        <p class="text-[10px] uppercase tracking-wider text-[#707974] font-semibold">Total ACC</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#e1e3e4] p-4 text-center">
+        <p class="text-lg font-bold text-[#003629]">{{ relatorio()!.totalHorasAcex }}h</p>
+        <p class="text-[10px] uppercase tracking-wider text-[#707974] font-semibold">Total ACEX</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#e1e3e4] p-4 text-center">
+        <p class="text-lg font-bold text-[#191c1d]">{{ relatorio()!.totalHorasGeral }}h</p>
+        <p class="text-[10px] uppercase tracking-wider text-[#707974] font-semibold">Total Geral</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      @for (grupo of relatorio()!.naturezas; track grupo.natureza) {
+      <section class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-[#191c1d]">{{ grupo.natureza }}</h2>
+          <span class="text-sm font-semibold text-[#003629]">{{ grupo.totalHoras }}h</span>
+        </div>
+
+        @for (categoria of grupo.categorias; track categoria.categoria) {
+        <div class="mb-4 last:mb-0">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold text-[#404945]">{{ rotuloCategoria(categoria.categoria) }}</h3>
+            <span class="text-xs font-semibold text-[#404945]">{{ categoria.totalHoras }}h</span>
+          </div>
+          <ul class="flex flex-col gap-2">
+            @for (atividade of categoria.atividades; track atividade.id) {
+            <li class="bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg p-3 flex justify-between items-center gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-[#191c1d] truncate">{{ atividade.titulo }}</p>
+                <p class="text-xs text-[#707974]">
+                  {{ atividade.instituicaoResponsavel }} · {{ dataFormatada(atividade.dataRealizacao) }}
+                </p>
+              </div>
+              <span class="text-sm font-bold text-[#003629] shrink-0">{{ atividade.cargaHorariaEmHoras }}h</span>
+            </li>
+            }
+          </ul>
+        </div>
+        }
+      </section>
+      }
+    </div>
+    }
+  </main>
+</div>
