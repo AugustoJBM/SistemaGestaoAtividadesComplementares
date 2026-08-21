@@ -36,6 +36,11 @@ export class ListagemAtividadesComponent implements OnInit {
     () => this.filtroNatureza() !== '' || this.filtroCategoria() !== ''
   );
 
+  readonly atividadeParaExcluir = signal<Atividade | null>(null);
+  readonly excluindo = signal(false);
+  readonly mensagemSucesso = signal<string | null>(null);
+  readonly mensagemErroExclusao = signal<string | null>(null);
+
   readonly opcoesNatureza = [
     { valor: '', rotulo: 'Todas as Naturezas' },
     { valor: Natureza.ACC, rotulo: 'ACC' },
@@ -57,6 +62,8 @@ export class ListagemAtividadesComponent implements OnInit {
   buscarAtividades(): void {
     this.carregando.set(true);
     this.mensagemErro.set(null);
+    this.mensagemSucesso.set(null);
+    this.mensagemErroExclusao.set(null);
 
     const filtro: FiltroAtividades = {};
     const natureza = this.filtroNatureza();
@@ -97,6 +104,39 @@ export class ListagemAtividadesComponent implements OnInit {
     this.filtroNatureza.set('');
     this.filtroCategoria.set('');
     this.buscarAtividades();
+  }
+
+  solicitarExclusao(atividade: Atividade): void {
+    this.mensagemSucesso.set(null);
+    this.mensagemErroExclusao.set(null);
+    this.atividadeParaExcluir.set(atividade);
+  }
+
+  cancelarExclusao(): void {
+    this.atividadeParaExcluir.set(null);
+  }
+
+  confirmarExclusao(): void {
+    const atividade = this.atividadeParaExcluir();
+    if (!atividade) {
+      return;
+    }
+
+    this.excluindo.set(true);
+
+    this.atividadeService.excluir(atividade.id).subscribe({
+      next: () => {
+        this.atividades.update((atuais) => atuais.filter((item) => item.id !== atividade.id));
+        this.mensagemSucesso.set(`Atividade "${atividade.titulo}" excluída com sucesso.`);
+        this.atividadeParaExcluir.set(null);
+        this.excluindo.set(false);
+      },
+      error: (erro: Error) => {
+        this.mensagemErroExclusao.set(erro.message);
+        this.atividadeParaExcluir.set(null);
+        this.excluindo.set(false);
+      }
+    });
   }
 
   dataFormatada(dataIso: string): string {
