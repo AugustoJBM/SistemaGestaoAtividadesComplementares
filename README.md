@@ -71,6 +71,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
 - **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
 - **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://gestaoatividadescomplementares-backend.onrender.com)
+- **SonarCloud:** [https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares](https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares)
 - **Banco de Dados:** PostgreSQL (Render)
 - Java 21+
 - Node.js 22+
