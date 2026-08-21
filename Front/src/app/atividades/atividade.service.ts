@@ -48,6 +48,12 @@ export class AtividadeService {
     );
   }
 
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroExclusao(error))))
+    );
+  }
+
   private paraAtividade(dto: AtividadeListagemDTO): Atividade {
     return {
       id: dto?.id ?? 0,
@@ -85,6 +91,22 @@ export class AtividadeService {
       return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar suas atividades.';
     }
     return this.mensagemDoBackend(error) ?? 'Não foi possível carregar suas atividades. Tente novamente.';
+  }
+
+  private traduzirErroExclusao(error: HttpErrorResponse): string {
+    if (error.status === 401) {
+      return 'Sessão expirada. Faça login novamente.';
+    }
+    if (error.status === 0) {
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    }
+    if (error.status === 403) {
+      return this.mensagemDoBackend(error) ?? 'Você só pode excluir suas próprias atividades.';
+    }
+    if (error.status === 404) {
+      return this.mensagemDoBackend(error) ?? 'Atividade não encontrada.';
+    }
+    return this.mensagemDoBackend(error) ?? 'Não foi possível excluir a atividade. Tente novamente.';
   }
 
   private mensagemDoBackend(error: HttpErrorResponse): string | null {

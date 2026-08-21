@@ -240,4 +240,66 @@ describe('AtividadeService', () => {
       expect(erro?.message).toBe('Não foi possível carregar suas atividades. Tente novamente.');
     });
   });
+
+  describe('excluir', () => {
+    it('envia DELETE para o id informado e completa sem corpo', () => {
+      let completou = false;
+      service.excluir(7).subscribe({ complete: () => (completou = true) });
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/7`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(completou).toBe(true);
+    });
+
+    it('traduz 403 para mensagem de propriedade da atividade', () => {
+      let erro: Error | undefined;
+      service.excluir(7).subscribe({ error: (e: Error) => (erro = e) });
+
+      httpMock.expectOne(`${ATIVIDADES_URL}/7`).flush(null, { status: 403, statusText: 'Forbidden' });
+
+      expect(erro?.message).toBe('Você só pode excluir suas próprias atividades.');
+    });
+
+    it('traduz 401 para sessao expirada', () => {
+      let erro: Error | undefined;
+      service.excluir(7).subscribe({ error: (e: Error) => (erro = e) });
+
+      httpMock.expectOne(`${ATIVIDADES_URL}/7`).flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      expect(erro?.message).toBe('Sessão expirada. Faça login novamente.');
+    });
+
+    it('traduz 404 para atividade nao encontrada', () => {
+      let erro: Error | undefined;
+      service.excluir(7).subscribe({ error: (e: Error) => (erro = e) });
+
+      httpMock.expectOne(`${ATIVIDADES_URL}/7`).flush(null, { status: 404, statusText: 'Not Found' });
+
+      expect(erro?.message).toBe('Atividade não encontrada.');
+    });
+
+    it('prioriza a mensagem enviada pelo backend no 403', () => {
+      let erro: Error | undefined;
+      service.excluir(7).subscribe({ error: (e: Error) => (erro = e) });
+
+      httpMock
+        .expectOne(`${ATIVIDADES_URL}/7`)
+        .flush({ message: 'Atividade pertence a outro estudante' }, { status: 403, statusText: 'Forbidden' });
+
+      expect(erro?.message).toBe('Atividade pertence a outro estudante');
+    });
+
+    it('traduz falha de conexao', () => {
+      let erro: Error | undefined;
+      service.excluir(7).subscribe({ error: (e: Error) => (erro = e) });
+
+      httpMock
+        .expectOne(`${ATIVIDADES_URL}/7`)
+        .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+      expect(erro?.message).toBe('Não foi possível conectar ao servidor. Verifique sua conexão.');
+    });
+  });
 });

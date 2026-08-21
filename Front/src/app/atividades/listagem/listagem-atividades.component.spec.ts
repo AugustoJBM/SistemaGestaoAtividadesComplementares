@@ -205,4 +205,120 @@ describe('ListagemAtividadesComponent', () => {
     expect(texto).toContain('Nenhuma atividade encontrada com os filtros selecionados');
     expect(texto).toContain('Tente alterar ou limpar os filtros');
   });
+
+  describe('exclusao de atividade', () => {
+    function montarComExclusao(excluirDuble: (id: number) => Observable<void>) {
+      const duble = {
+        listar: () => of(atividades),
+        excluir: vi.fn(excluirDuble)
+      };
+      TestBed.configureTestingModule({
+        imports: [ListagemAtividadesComponent],
+        providers: [provideRouter([]), { provide: AtividadeService, useValue: duble }]
+      });
+      const fixture = TestBed.createComponent(ListagemAtividadesComponent);
+      fixture.detectChanges();
+      return { fixture, duble };
+    }
+
+    it('abre o dialogo de confirmacao sem chamar a API', () => {
+      const { fixture, duble } = montarComExclusao(() => of(void 0));
+
+      const listItem = fixture.nativeElement.querySelector('li');
+      const botaoExcluir = listItem.querySelector('button');
+      botaoExcluir.click();
+      fixture.detectChanges();
+
+      const dialogo = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialogo).toBeTruthy();
+      expect(dialogo.textContent).toContain('Excluir atividade');
+      expect(dialogo.textContent).toContain('Esta ação não pode ser desfeita');
+      expect(duble.excluir).not.toHaveBeenCalled();
+    });
+
+    it('cancelar a confirmacao nao chama a API e fecha o dialogo', () => {
+      const { fixture, duble } = montarComExclusao(() => of(void 0));
+
+      const listItem = fixture.nativeElement.querySelector('li');
+      const botaoExcluirLista = listItem.querySelector('button');
+      botaoExcluirLista.click();
+      fixture.detectChanges();
+
+      const dialogo = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+      const botoesDialogo = dialogo.querySelectorAll('button');
+      const botaoCancelar = Array.from(botoesDialogo).find((btn) => (btn as HTMLElement).textContent?.trim() === 'Cancelar') as HTMLButtonElement;
+      botaoCancelar.click();
+      fixture.detectChanges();
+
+      expect(duble.excluir).not.toHaveBeenCalled();
+      const dialogoAposCancel = fixture.nativeElement.querySelector('[role="dialog"]');
+      expect(dialogoAposCancel).toBeFalsy();
+    });
+
+    it('confirmar chama o service e remove o item da lista', () => {
+      const { fixture, duble } = montarComExclusao(() => of(void 0));
+
+      fixture.componentInstance.solicitarExclusao(atividades[0]);
+      fixture.componentInstance.confirmarExclusao();
+      fixture.detectChanges();
+
+      expect(duble.excluir).toHaveBeenCalledWith(1);
+      expect(fixture.componentInstance.atividades().map((a) => a.id)).toEqual([2]);
+      expect(fixture.componentInstance.atividadeParaExcluir()).toBeNull();
+      expect(fixture.componentInstance.mensagemSucesso()).toContain('excluída');
+    });
+
+    it('erro do backend exibe mensagem em role=alert e mantem o item na lista', () => {
+      const { fixture } = montarComExclusao(() =>
+        throwError(() => new Error('Você só pode excluir suas próprias atividades.'))
+      );
+
+      fixture.componentInstance.solicitarExclusao(atividades[0]);
+      fixture.componentInstance.confirmarExclusao();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.atividades().map((a) => a.id)).toEqual([1, 2]);
+      expect(fixture.componentInstance.mensagemErroExclusao())
+        .toBe('Você só pode excluir suas próprias atividades.');
+
+      const alertas = fixture.nativeElement.querySelectorAll('[role="alert"]');
+      const textos = Array.from(alertas).map((el) => (el as HTMLElement).textContent ?? '');
+      expect(textos.some((t) => t.includes('suas próprias atividades'))).toBe(true);
+    });
+
+    it('marca estado de carregamento enquanto a exclusao esta em andamento', () => {
+      const { fixture } = montarComExclusao(() => new Observable<void>(() => {}));
+
+      fixture.componentInstance.solicitarExclusao(atividades[0]);
+      fixture.componentInstance.confirmarExclusao();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.excluindo()).toBe(true);
+
+      const dialogo = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialogo).toBeTruthy();
+      const botoes = dialogo.querySelectorAll('button');
+      const todosDesabilitados = Array.from(botoes).every((btn) => (btn as HTMLButtonElement).disabled);
+      expect(todosDesabilitados).toBe(true);
+    });
+
+    it('limpa a mensagem de sucesso ao mudar filtros apos uma exclusao bem-sucedida', () => {
+      const { fixture, duble } = montarComExclusao(() => of(void 0));
+
+      fixture.componentInstance.solicitarExclusao(atividades[0]);
+      fixture.componentInstance.confirmarExclusao();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.mensagemSucesso()).toContain('excluída');
+
+      fixture.componentInstance.aoAlterarNatureza({
+        target: { value: 'ACC' }
+      } as unknown as Event);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.mensagemSucesso()).toBeNull();
+      const bannerSucesso = fixture.nativeElement.querySelector('[role="status"]');
+      expect(bannerSucesso).toBeFalsy();
+    });
+  });
 });

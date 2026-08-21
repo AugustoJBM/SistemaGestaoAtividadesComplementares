@@ -78,6 +78,9 @@ public class SecurityConfig {
                                                         .hasRole("ESTUDANTE");
                                         auth.requestMatchers(HttpMethod.GET, "/api/v1/atividades",
                                                         "/api/v1/atividades/progresso").hasRole("ESTUDANTE");
+                                        // Rotas de relatorios - ESTUDANTE
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/relatorios/atividades")
+                                                        .hasRole("ESTUDANTE");
 
                                         auth.anyRequest().authenticated();
                                 })

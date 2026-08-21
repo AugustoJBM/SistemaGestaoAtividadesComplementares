@@ -63,6 +63,12 @@ describe('routes', () => {
     expect(indiceCadastro).toBeLessThan(indiceListagem);
   });
 
+  it('deve proteger a rota de relatorio com authGuard', () => {
+    const rota = routes.find((r: Route) => r.path === 'relatorio');
+    expect(rota).toBeTruthy();
+    expect(rota?.canActivate).toEqual([authGuard]);
+  });
+
   it('deve manter a rota curinga como a última entrada redirecionando para login', () => {
     const ultimaRota = routes[routes.length - 1];
 
