@@ -65,7 +65,9 @@ public class SecurityConfig {
                                         auth.requestMatchers(
                                                         "/api/v1/auth/cadastro",
                                                         "/api/v1/auth/login",
-                                                        "/api/v1/auth/logout").permitAll();
+                                                        "/api/v1/auth/logout",
+                                                        "/api/v1/health",
+                                                        "/api/v1/health/database").permitAll();
 
                                         if (env.acceptsProfiles(Profiles.of("dev"))) {
                                                 auth.requestMatchers("/h2-console/**").permitAll();
