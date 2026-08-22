@@ -3,8 +3,8 @@ package br.edu.ufape.backend.atividade.service;
 import org.springframework.stereotype.Service;
 
 import br.edu.ufape.backend.atividade.config.ProgressoProperties;
-import br.edu.ufape.backend.atividade.dto.ProgressoModalidadeResponse;
-import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
+import br.edu.ufape.backend.atividade.dto.ProgressoModalidadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
@@ -31,7 +31,7 @@ public class ProgressoService {
                 this.progressoProperties = progressoProperties;
         }
 
-        public ProgressoResponse obterProgresso(String emailEstudante) {
+        public ProgressoResponseDTO obterProgresso(String emailEstudante) {
                 Estudante estudante = obterEstudante(emailEstudante);
 
                 // Enquanto não houver fluxo de aprovação/deferimento por um avaliador,
@@ -40,17 +40,17 @@ public class ProgressoService {
                 int horasCadastradasAcc = calcularHorasCadastradas(estudante, Natureza.ACC);
                 int horasCadastradasAcex = calcularHorasCadastradas(estudante, Natureza.ACEX);
 
-                ProgressoModalidadeResponse acc = new ProgressoModalidadeResponse(
+                ProgressoModalidadeResponseDTO acc = new ProgressoModalidadeResponseDTO(
                                 0,
                                 horasCadastradasAcc,
                                 progressoProperties.getAcc().getHorasExigidas());
 
-                ProgressoModalidadeResponse acex = new ProgressoModalidadeResponse(
+                ProgressoModalidadeResponseDTO acex = new ProgressoModalidadeResponseDTO(
                                 0,
                                 horasCadastradasAcex,
                                 progressoProperties.getAcex().getHorasExigidas());
 
-                return new ProgressoResponse(acc, acex);
+                return new ProgressoResponseDTO(acc, acex);
         }
 
         private Estudante obterEstudante(String email) {
