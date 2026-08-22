@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Positive;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 
-public record CadastroAtividadeRequest(
+public record CadastroAtividadeRequestDTO(
         @NotBlank(message = "Título é obrigatório")
         String titulo,
         @NotBlank(message = "Instituição responsável é obrigatória")

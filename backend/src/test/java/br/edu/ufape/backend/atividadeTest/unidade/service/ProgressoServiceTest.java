@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.edu.ufape.backend.atividade.config.ProgressoProperties;
-import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
+import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -71,7 +71,7 @@ class ProgressoServiceTest {
         when(atividadeComplementarRepository.findByEstudanteAndNatureza(any(), any()))
                 .thenReturn(List.of());
 
-        ProgressoResponse progresso = criarService(90, 320).obterProgresso(EMAIL);
+        ProgressoResponseDTO progresso = criarService(90, 320).obterProgresso(EMAIL);
 
         assertEquals(0, progresso.getAcc().getHorasAcumuladas());
         assertEquals(0, progresso.getAcc().getHorasPendentes());
@@ -96,7 +96,7 @@ class ProgressoServiceTest {
         when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
                 .thenReturn(List.of(criarAtividade(Natureza.ACEX, 10, estudante)));
 
-        ProgressoResponse progresso = criarService(90, 320).obterProgresso(EMAIL);
+        ProgressoResponseDTO progresso = criarService(90, 320).obterProgresso(EMAIL);
 
         assertEquals(0, progresso.getAcc().getHorasAcumuladas());
         assertEquals(50, progresso.getAcc().getHorasPendentes());

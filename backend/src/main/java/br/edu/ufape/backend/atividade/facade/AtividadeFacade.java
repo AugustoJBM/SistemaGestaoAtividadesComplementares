@@ -5,9 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
-import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.AtualizarAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.service.AtividadeComplementarService;
@@ -26,21 +27,29 @@ public class AtividadeFacade {
         this.atividadeComplementarService = atividadeComplementarService;
     }
 
-    public ProgressoResponse obterProgresso(String emailEstudante) {
+    public AtividadeResponseDTO atualizarAtividade(
+            Long id,
+            AtualizarAtividadeRequestDTO request,
+            MultipartFile arquivo,
+            String emailEstudante) {
+        return atividadeComplementarService.atualizarAtividade(id, request, arquivo, emailEstudante);
+    }
+
+    public ProgressoResponseDTO obterProgresso(String emailEstudante) {
         return progressoService.obterProgresso(emailEstudante);
     }
 
-    public List<AtividadeResponse> listarAtividadesDoEstudante(
+    public List<AtividadeResponseDTO> listarAtividadesDoEstudante(
             String emailEstudante, Natureza natureza, Categoria categoria) {
         return atividadeComplementarService
                 .listarAtividadesDoEstudante(emailEstudante, natureza, categoria)
                 .stream()
-                .map(AtividadeResponse::new)
+                .map(AtividadeResponseDTO::new)
                 .toList();
     }
 
-    public AtividadeResponse cadastrarAtividade(
-            CadastroAtividadeRequest request,
+    public AtividadeResponseDTO cadastrarAtividade(
+            CadastroAtividadeRequestDTO request,
             MultipartFile arquivo,
             String emailEstudante) {
         return atividadeComplementarService.cadastrarAtividade(request, arquivo, emailEstudante);

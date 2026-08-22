@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.relatorio.dto.GrupoCategoriaResponse;
 import br.edu.ufape.backend.relatorio.dto.GrupoNaturezaResponse;
 import br.edu.ufape.backend.relatorio.dto.ItemAtividadeResponse;
@@ -30,9 +30,9 @@ public class RelatorioService {
     }
 
     public RelatorioAtividadesResponse gerarRelatorio(String emailEstudante) {
-        List<AtividadeResponse> atividades = atividadeContrato.buscarPorEstudante(emailEstudante);
+        List<AtividadeResponseDTO> atividades = atividadeContrato.buscarPorEstudante(emailEstudante);
 
-        Map<String, List<AtividadeResponse>> porNatureza = atividades.stream()
+        Map<String, List<AtividadeResponseDTO>> porNatureza = atividades.stream()
                 .collect(Collectors.groupingBy(
                         atividade -> atividade.natureza().name(),
                         LinkedHashMap::new,
@@ -40,7 +40,7 @@ public class RelatorioService {
 
         List<GrupoNaturezaResponse> grupos = new ArrayList<>();
         for (String natureza : ORDEM_NATUREZA) {
-            List<AtividadeResponse> doGrupo = porNatureza.getOrDefault(natureza, List.of());
+            List<AtividadeResponseDTO> doGrupo = porNatureza.getOrDefault(natureza, List.of());
             if (doGrupo.isEmpty()) {
                 continue;
             }
@@ -58,7 +58,7 @@ public class RelatorioService {
                 totalHorasAcc + totalHorasAcex);
     }
 
-    private List<GrupoCategoriaResponse> agruparPorCategoria(List<AtividadeResponse> atividades) {
+    private List<GrupoCategoriaResponse> agruparPorCategoria(List<AtividadeResponseDTO> atividades) {
         return atividades.stream()
                 .collect(Collectors.groupingBy(
                         atividade -> atividade.categoria().name(),
@@ -73,7 +73,7 @@ public class RelatorioService {
                 .toList();
     }
 
-    private ItemAtividadeResponse paraItem(AtividadeResponse atividade) {
+    private ItemAtividadeResponse paraItem(AtividadeResponseDTO atividade) {
         return new ItemAtividadeResponse(
                 atividade.id(),
                 atividade.titulo(),
@@ -82,9 +82,9 @@ public class RelatorioService {
                 atividade.cargaHorariaEmHoras());
     }
 
-    private int somarHoras(List<AtividadeResponse> atividades) {
+    private int somarHoras(List<AtividadeResponseDTO> atividades) {
         return atividades.stream()
-                .mapToInt(AtividadeResponse::cargaHorariaEmHoras)
+                .mapToInt(AtividadeResponseDTO::cargaHorariaEmHoras)
                 .sum();
     }
 }

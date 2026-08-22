@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.service.AtividadeComplementarService;
 
@@ -20,19 +20,19 @@ public class AtividadeContratoImpl implements AtividadeContrato {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AtividadeResponse> buscarPorEstudante(String emailEstudante) {
+    public List<AtividadeResponseDTO> buscarPorEstudante(String emailEstudante) {
         return atividadeComplementarService.listarAtividadesDoEstudante(emailEstudante, null, null)
                 .stream()
-                .map(AtividadeResponse::new)
+                .map(AtividadeResponseDTO::new)
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AtividadeResponse> buscarPorEstudanteENatureza(String emailEstudante, Natureza natureza) {
+    public List<AtividadeResponseDTO> buscarPorEstudanteENatureza(String emailEstudante, Natureza natureza) {
         return atividadeComplementarService.listarAtividadesDoEstudante(emailEstudante, natureza, null)
                 .stream()
-                .map(AtividadeResponse::new)
+                .map(AtividadeResponseDTO::new)
                 .toList();
     }
 }
