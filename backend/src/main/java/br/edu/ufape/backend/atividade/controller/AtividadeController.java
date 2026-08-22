@@ -1,8 +1,13 @@
 package br.edu.ufape.backend.atividade.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +62,33 @@ public class AtividadeController {
         String emailEstudante = authentication.getName();
         AtividadeResponseDTO response = atividadeFacade.atualizarAtividade(id, request, arquivo, emailEstudante);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/certificado")
+    public ResponseEntity<Resource> obterCertificado(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String emailEstudante = authentication.getName();
+        Resource resource = atividadeFacade.obterCertificado(id, emailEstudante);
+
+        String contentType = "application/pdf";
+        try {
+            Path path = resource.getFile().toPath();
+            String probedType = Files.probeContentType(path);
+            if (probedType != null) {
+                contentType = probedType;
+            }
+        } catch (IOException ignored) {}
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
     @GetMapping("/progresso")
