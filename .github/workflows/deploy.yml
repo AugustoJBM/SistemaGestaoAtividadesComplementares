@@ -1,0 +1,30 @@
+name: Deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy no Render
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy Backend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: |
+          curl --fail --show-error --silent \
+            -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: Trigger Render Deploy Frontend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          curl --fail --show-error --silent \
+            -X POST "$RENDER_DEPLOY_HOOK"
