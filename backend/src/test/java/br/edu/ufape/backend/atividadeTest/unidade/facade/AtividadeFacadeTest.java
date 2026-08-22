@@ -20,9 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
-import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
 import br.edu.ufape.backend.atividade.facade.AtividadeFacade;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -48,10 +48,10 @@ class AtividadeFacadeTest {
     @Test
     @DisplayName("obterProgresso delega para ProgressoService com o email exato")
     void obterProgressoDelegaParaProgressoService() {
-        ProgressoResponse respostaEsperada = mock(ProgressoResponse.class);
+        ProgressoResponseDTO respostaEsperada = mock(ProgressoResponseDTO.class);
         when(progressoService.obterProgresso(EMAIL)).thenReturn(respostaEsperada);
 
-        ProgressoResponse resposta = facade.obterProgresso(EMAIL);
+        ProgressoResponseDTO resposta = facade.obterProgresso(EMAIL);
 
         assertSame(respostaEsperada, resposta);
         verify(progressoService).obterProgresso(EMAIL);
@@ -74,7 +74,7 @@ class AtividadeFacadeTest {
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, Categoria.PESQUISA))
                 .thenReturn(List.of(atividade));
 
-        List<AtividadeResponse> resultado = facade.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, Categoria.PESQUISA);
+        List<AtividadeResponseDTO> resultado = facade.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, Categoria.PESQUISA);
 
         assertEquals(1, resultado.size());
         assertEquals(atividade.getTitulo(), resultado.get(0).titulo());
@@ -86,7 +86,7 @@ class AtividadeFacadeTest {
     @Test
     @DisplayName("cadastrarAtividade delega para AtividadeComplementarService com os argumentos exatos")
     void cadastrarAtividadeDelegaParaAtividadeComplementarService() {
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
@@ -95,11 +95,11 @@ class AtividadeFacadeTest {
                 Categoria.PESQUISA);
         MultipartFile arquivo = new MockMultipartFile(
                 "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
-        AtividadeResponse respostaEsperada = mock(AtividadeResponse.class);
+        AtividadeResponseDTO respostaEsperada = mock(AtividadeResponseDTO.class);
         when(atividadeComplementarService.cadastrarAtividade(request, arquivo, EMAIL))
                 .thenReturn(respostaEsperada);
 
-        AtividadeResponse resposta = facade.cadastrarAtividade(request, arquivo, EMAIL);
+        AtividadeResponseDTO resposta = facade.cadastrarAtividade(request, arquivo, EMAIL);
 
         assertSame(respostaEsperada, resposta);
         verify(atividadeComplementarService).cadastrarAtividade(eq(request), eq(arquivo), eq(EMAIL));
