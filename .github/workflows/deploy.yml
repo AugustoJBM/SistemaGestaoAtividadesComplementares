@@ -1,21 +1,50 @@
 name: Deploy
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [main]
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - main
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   deploy:
     name: Deploy no Render
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
+    if: github.event.workflow_run.conclusion == 'success'
+
     steps:
+      - name: Verificar se o commit veio de um Pull Request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PR=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/commits/$COMMIT_SHA/pulls" \
+            --jq '[.[] | select(.base.ref == "main" and .merged_at != null)] | .[0]')
+
+          if [ -z "$PR" ] || [ "$PR" = "null" ]; then
+            echo "O commit não veio de um Pull Request mergeado para main."
+            echo "Deploy não será realizado."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PR_NUMBER=$(echo "$PR" | jq -r '.number')
+
+          echo "Pull Request mergeado encontrado: #$PR_NUMBER"
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+
       - name: Verificar Deploy Hook Backend
+        if: steps.pr.outputs.deploy == 'true'
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
         run: |
@@ -24,7 +53,8 @@ jobs:
             exit 1
           fi
 
-      - name: Trigger Render Deploy Backend
+      - name: Deploy Backend no Render
+        if: steps.pr.outputs.deploy == 'true'
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
         run: |
@@ -32,6 +62,7 @@ jobs:
             -X POST "$RENDER_DEPLOY_HOOK"
 
       - name: Verificar Deploy Hook Frontend
+        if: steps.pr.outputs.deploy == 'true'
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
         run: |
@@ -40,7 +71,8 @@ jobs:
             exit 1
           fi
 
-      - name: Trigger Render Deploy Frontend
+      - name: Deploy Frontend no Render
+        if: steps.pr.outputs.deploy == 'true'
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
         run: |
