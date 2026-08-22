@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.AtualizarAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
+import br.edu.ufape.backend.atividade.exception.AtividadeNaoEncontradaException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
@@ -28,15 +30,8 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 public class AtividadeComplementarService {
 
     private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem listar atividades complementares.";
-
-    /*
-     * Mesma mensagem/exceção usada tanto para "atividade não existe" quanto para
-     * "atividade pertence a outro estudante". É proposital: distinguir os dois
-     * casos permitiria a um usuário mal-intencionado descobrir quais IDs existem
-     * no banco só testando exclusões (enumeração de recursos).
-     */
-    private static final String MENSAGEM_ACESSO_NEGADO_EXCLUSAO =
-            "Atividade não encontrada ou não pertence ao estudante autenticado.";
+    private static final String MENSAGEM_ACESSO_NEGADO_EDICAO = "Você não tem permissão para editar esta atividade.";
+    private static final String MENSAGEM_ACESSO_NEGADO_EXCLUSAO = "Atividade não encontrada ou não pertence ao estudante autenticado.";
 
     private final AtividadeComplementarRepository atividadeRepository;
     private final UsuarioContrato usuarioContrato;
@@ -58,12 +53,12 @@ public class AtividadeComplementarService {
     }
 
     @Transactional
-    public AtividadeResponse cadastrarAtividade(CadastroAtividadeRequest request, MultipartFile arquivo,
+    public AtividadeResponseDTO cadastrarAtividade(CadastroAtividadeRequestDTO request, MultipartFile arquivo,
             String emailEstudante) {
         validarTipoArquivo(arquivo);
 
         Usuario estudante = usuarioContrato.buscarPorEmail(emailEstudante)
-            .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
 
         Certificado certificado = armazenamentoCertificadoService.armazenar(arquivo);
 
@@ -79,13 +74,64 @@ public class AtividadeComplementarService {
 
         try {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
-            return new AtividadeResponse(atividadeSalva);
+            return new AtividadeResponseDTO(atividadeSalva);
         } catch (RuntimeException e) {
             // compensa a gravação em disco já feita, evitando certificado órfão
             try {
                 Files.deleteIfExists(Paths.get(certificado.getReferencia()));
             } catch (IOException ioException) {
                 e.addSuppressed(ioException);
+            }
+            throw e;
+        }
+    }
+
+    @Transactional
+    public AtividadeResponseDTO atualizarAtividade(Long id, AtualizarAtividadeRequestDTO request,
+            MultipartFile novoArquivo, String emailEstudante) {
+        Estudante estudante = obterEstudante(emailEstudante);
+
+        // 1. 404 se não existir
+        AtividadeComplementar atividade = atividadeRepository.findById(id)
+                .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada."));
+
+        // 2. 403 se não pertencer ao estudante autenticado
+        if (!atividade.getEstudante().getId().equals(estudante.getId())) {
+            throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO_EDICAO);
+        }
+
+        // 3. Atualiza os dados cadastrais
+        atividade.setTitulo(request.titulo());
+        atividade.setInstituicaoResponsavel(request.instituicaoResponsavel());
+        atividade.setDataRealizacao(request.dataRealizacao());
+        atividade.setCargaHorariaEmHoras(request.cargaHoraria());
+        atividade.setNatureza(request.natureza());
+        atividade.setCategoria(request.categoria());
+
+        // 4. Tratamento de substituição opcional do certificado
+        Certificado certificadoAntigo = atividade.getCertificado();
+        Certificado novoCertificado = null;
+
+        if (novoArquivo != null && !novoArquivo.isEmpty()) {
+            validarTipoArquivo(novoArquivo);
+            novoCertificado = armazenamentoCertificadoService.armazenar(novoArquivo);
+            atividade.setCertificado(novoCertificado);
+        }
+
+        try {
+            AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
+
+            // Remove o arquivo físico antigo do disco após persistência com sucesso
+            if (novoCertificado != null && certificadoAntigo != null) {
+                removerArquivoCertificado(certificadoAntigo);
+            }
+
+            return new AtividadeResponseDTO(atividadeSalva);
+        } catch (RuntimeException e) {
+            // Se houver falha ao salvar, remove o novo arquivo gerado para evitar arquivo
+            // órfão
+            if (novoCertificado != null) {
+                removerArquivoCertificado(novoCertificado);
             }
             throw e;
         }
