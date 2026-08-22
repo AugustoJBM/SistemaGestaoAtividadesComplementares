@@ -34,7 +34,7 @@ jobs:
             --silent \
             --show-error \
             --max-time 30 \
-            https://gestaoatividadescomplementares-backend.onrender.com/health
+            https://gestaoatividadescomplementares-backend.onrender.com/api/v1/health
 
           echo "Backend esta UP."
 
@@ -47,6 +47,6 @@ jobs:
             --silent \
             --show-error \
             --max-time 30 \
-            https://gestaoatividadescomplementares-backend.onrender.com/health/database
+            https://gestaoatividadescomplementares-backend.onrender.com/api/v1/health/database
 
           echo "banco de dados está UP."
