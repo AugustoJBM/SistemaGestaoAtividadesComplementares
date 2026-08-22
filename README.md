@@ -1,6 +1,20 @@
-[![Build Status](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml)
+[![CI](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml)
+[![DEPLOY](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/deploy.yml/badge.svg)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/deploy.yml)
+
 [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=arayumi3_GestaoAtividadesComplementares&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
+
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
+
+## Deploy em Produção (Render)
+
+- **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
+- **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://gestaoatividadescomplementares-backend.onrender.com)
+- **SonarCloud:** [https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares](https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares)
+- **Banco de Dados:** PostgreSQL (Render)
+
+### SENHA DE ACESSO PADRÃO
+- **LOGIN:** test@test.test
+- **PASSWORD:** 12345678
 
 # Sistema de Gestão de Atividades Complementares
 
@@ -67,12 +81,6 @@ O sistema deverá permitir que o estudante:
 
 Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
-## Deploy em Produção (Render)
-
-- **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
-- **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://gestaoatividadescomplementares-backend.onrender.com)
-- **SonarCloud:** [https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares](https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares)
-- **Banco de Dados:** PostgreSQL (Render)
 - Java 21+
 - Node.js 22+
 - npm
