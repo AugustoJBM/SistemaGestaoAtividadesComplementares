@@ -9,9 +9,10 @@ import { CadastroAtividadeComponent } from './atividades/cadastro/cadastro-ativi
 import { ListagemAtividadesComponent } from './atividades/listagem/listagem-atividades.component';
 import { RelatorioComponent } from './relatorio/relatorio.component';
 import { EdicaoAtividadeComponent } from './atividades/edicao/edicao-atividade.component';
+import { LandingComponent } from './landing/landing.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
+    { path: '', component: LandingComponent },
     { path: 'login', component: LoginComponent },
     { path: 'registro', component: RegistroComponent },
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
