@@ -3,14 +3,14 @@ import { Route } from '@angular/router';
 
 import { routes } from './app.routes';
 import { authGuard } from './autenticacao/auth.guard';
+import { LandingComponent } from './landing/landing.component';
 
 describe('routes', () => {
-  it('deve redirecionar a rota raiz para login com pathMatch full', () => {
+  it('deve expor a Landing Page na rota raiz', () => {
     const raiz = routes.find((rota: Route) => rota.path === '');
 
     expect(raiz).toBeTruthy();
-    expect(raiz?.redirectTo).toBe('login');
-    expect(raiz?.pathMatch).toBe('full');
+    expect(raiz?.component).toBe(LandingComponent);
   });
 
   it('deve expor a rota login sem authGuard', () => {
