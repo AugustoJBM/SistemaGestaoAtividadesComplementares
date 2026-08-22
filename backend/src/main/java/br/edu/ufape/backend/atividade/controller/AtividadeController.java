@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -23,9 +24,10 @@ import org.springframework.validation.BindException;
 
 import jakarta.validation.Valid;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
-import br.edu.ufape.backend.atividade.dto.ProgressoResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.AtualizarAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
+import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
 import br.edu.ufape.backend.atividade.facade.AtividadeFacade;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
@@ -41,32 +43,48 @@ public class AtividadeController {
         this.atividadeFacade = atividadeFacade;
     }
 
-    @GetMapping("/progresso")
-    public ResponseEntity<ProgressoResponse> progresso(Authentication authentication) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AtividadeResponseDTO> atualizarAtividade(
+            @PathVariable Long id,
+            @Valid @ModelAttribute AtualizarAtividadeRequestDTO request,
+            @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         String emailEstudante = authentication.getName();
-        ProgressoResponse progressoResponse = atividadeFacade.obterProgresso(emailEstudante);
+        AtividadeResponseDTO response = atividadeFacade.atualizarAtividade(id, request, arquivo, emailEstudante);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/progresso")
+    public ResponseEntity<ProgressoResponseDTO> progresso(Authentication authentication) {
+        String emailEstudante = authentication.getName();
+        ProgressoResponseDTO progressoResponse = atividadeFacade.obterProgresso(emailEstudante);
         return ResponseEntity.ok(progressoResponse);
     }
 
     @GetMapping
-    public ResponseEntity<List<AtividadeResponse>> listar(
+    public ResponseEntity<List<AtividadeResponseDTO>> listar(
             @RequestParam(required = false) Natureza natureza,
             @RequestParam(required = false) Categoria categoria,
             Authentication authentication) {
         String emailEstudante = authentication.getName();
-        List<AtividadeResponse> atividades = atividadeFacade.listarAtividadesDoEstudante(
+        List<AtividadeResponseDTO> atividades = atividadeFacade.listarAtividadesDoEstudante(
                 emailEstudante, natureza, categoria);
         return ResponseEntity.ok(atividades);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AtividadeResponse> cadastrar(
-            @Valid @ModelAttribute CadastroAtividadeRequest request,
+    public ResponseEntity<AtividadeResponseDTO> cadastrar(
+            @Valid @ModelAttribute CadastroAtividadeRequestDTO request,
             @RequestPart("arquivo") MultipartFile arquivo,
             Authentication authentication) {
 
         String emailEstudante = authentication.getName();
-        AtividadeResponse response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
+        AtividadeResponseDTO response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
