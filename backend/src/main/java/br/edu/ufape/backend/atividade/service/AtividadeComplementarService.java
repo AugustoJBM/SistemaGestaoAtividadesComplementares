@@ -1,11 +1,14 @@
 package br.edu.ufape.backend.atividade.service;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +21,8 @@ import br.edu.ufape.backend.atividade.exception.AtividadeNaoEncontradaException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
-import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
+import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
@@ -52,6 +55,33 @@ public class AtividadeComplementarService {
         return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria);
     }
 
+    public Resource obterArquivoCertificado(Long id, String emailEstudante) {
+        Estudante estudante = obterEstudante(emailEstudante);
+        AtividadeComplementar atividade = atividadeRepository.findById(id)
+                .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada."));
+
+        if (!atividade.getEstudante().getId().equals(estudante.getId())) {
+            throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO_EDICAO);
+        }
+
+        Certificado certificado = atividade.getCertificado();
+        if (certificado == null || certificado.getReferencia() == null) {
+            throw new AtividadeNaoEncontradaException("Certificado não encontrado para esta atividade.");
+        }
+
+        try {
+            Path caminho = Paths.get(certificado.getReferencia());
+            Resource resource = new UrlResource(caminho.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else {
+                throw new AtividadeNaoEncontradaException("Arquivo físico do certificado não encontrado no servidor.");
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Erro ao recuperar arquivo do certificado", e);
+        }
+    }
+
     @Transactional
     public AtividadeResponseDTO cadastrarAtividade(CadastroAtividadeRequestDTO request, MultipartFile arquivo,
             String emailEstudante) {
@@ -76,7 +106,6 @@ public class AtividadeComplementarService {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
             return new AtividadeResponseDTO(atividadeSalva);
         } catch (RuntimeException e) {
-            // compensa a gravação em disco já feita, evitando certificado órfão
             try {
                 Files.deleteIfExists(Paths.get(certificado.getReferencia()));
             } catch (IOException ioException) {
@@ -91,16 +120,13 @@ public class AtividadeComplementarService {
             MultipartFile novoArquivo, String emailEstudante) {
         Estudante estudante = obterEstudante(emailEstudante);
 
-        // 1. 404 se não existir
         AtividadeComplementar atividade = atividadeRepository.findById(id)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada."));
 
-        // 2. 403 se não pertencer ao estudante autenticado
         if (!atividade.getEstudante().getId().equals(estudante.getId())) {
             throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO_EDICAO);
         }
 
-        // 3. Atualiza os dados cadastrais
         atividade.setTitulo(request.titulo());
         atividade.setInstituicaoResponsavel(request.instituicaoResponsavel());
         atividade.setDataRealizacao(request.dataRealizacao());
@@ -108,7 +134,6 @@ public class AtividadeComplementarService {
         atividade.setNatureza(request.natureza());
         atividade.setCategoria(request.categoria());
 
-        // 4. Tratamento de substituição opcional do certificado
         Certificado certificadoAntigo = atividade.getCertificado();
         Certificado novoCertificado = null;
 
@@ -121,15 +146,12 @@ public class AtividadeComplementarService {
         try {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
 
-            // Remove o arquivo físico antigo do disco após persistência com sucesso
             if (novoCertificado != null && certificadoAntigo != null) {
                 removerArquivoCertificado(certificadoAntigo);
             }
 
             return new AtividadeResponseDTO(atividadeSalva);
         } catch (RuntimeException e) {
-            // Se houver falha ao salvar, remove o novo arquivo gerado para evitar arquivo
-            // órfão
             if (novoCertificado != null) {
                 removerArquivoCertificado(novoCertificado);
             }
