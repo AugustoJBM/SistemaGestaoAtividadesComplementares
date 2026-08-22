@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContratoImpl;
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -46,7 +46,7 @@ class AtividadeContratoImplTest {
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, null, null))
                 .thenReturn(List.of());
 
-        List<AtividadeResponse> resultado = atividadeContrato.buscarPorEstudante(EMAIL);
+        List<AtividadeResponseDTO> resultado = atividadeContrato.buscarPorEstudante(EMAIL);
 
         assertTrue(resultado.isEmpty());
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, null, null);
@@ -58,7 +58,7 @@ class AtividadeContratoImplTest {
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null))
                 .thenReturn(List.of());
 
-        List<AtividadeResponse> resultado = atividadeContrato.buscarPorEstudanteENatureza(EMAIL, Natureza.ACC);
+        List<AtividadeResponseDTO> resultado = atividadeContrato.buscarPorEstudanteENatureza(EMAIL, Natureza.ACC);
 
         assertTrue(resultado.isEmpty());
         verify(atividadeComplementarService).listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null);
@@ -112,7 +112,7 @@ class AtividadeContratoImplTest {
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, null, null))
                 .thenReturn(List.of(atividade));
 
-        List<AtividadeResponse> resultado = atividadeContrato.buscarPorEstudante(EMAIL);
+        List<AtividadeResponseDTO> resultado = atividadeContrato.buscarPorEstudante(EMAIL);
 
         assertEquals(1, resultado.size());
         assertEquals(atividade.getTitulo(), resultado.get(0).titulo());
