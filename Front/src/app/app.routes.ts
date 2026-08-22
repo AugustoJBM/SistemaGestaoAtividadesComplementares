@@ -8,6 +8,7 @@ import { authGuard } from './autenticacao/auth.guard';
 import { CadastroAtividadeComponent } from './atividades/cadastro/cadastro-atividade.component';
 import { ListagemAtividadesComponent } from './atividades/listagem/listagem-atividades.component';
 import { RelatorioComponent } from './relatorio/relatorio.component';
+import { EdicaoAtividadeComponent } from './atividades/edicao/edicao-atividade.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -16,6 +17,7 @@ export const routes: Routes = [
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
     { path: 'progresso', component: ProgressoComponent, canActivate: [authGuard] },
     { path: 'atividades/cadastro', component: CadastroAtividadeComponent, canActivate: [authGuard] },
+    { path: 'atividades/edicao/:id', component: EdicaoAtividadeComponent, canActivate: [authGuard] },
     { path: 'atividades', component: ListagemAtividadesComponent, canActivate: [authGuard] },
     { path: 'relatorio', component: RelatorioComponent, canActivate: [authGuard] },
     { path: 'logout', component: LogoutComponent, canActivate: [authGuard] },
