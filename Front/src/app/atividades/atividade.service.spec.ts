@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AtividadeService } from './atividade.service';
 import { Atividade, AtividadeRequest, Categoria, Natureza } from './atividade.model';
+import { AtividadeEdicaoRequest } from './edicao/edicao-atividade.model';
 import { API_BASE_URL } from '../api.config';
 
 const ATIVIDADES_URL = `${API_BASE_URL}/atividades`;
@@ -111,6 +112,137 @@ describe('AtividadeService', () => {
 
       expect(erro).toBeInstanceOf(Error);
       expect(erro?.message).toBe('Não foi possível cadastrar a atividade. Tente novamente.');
+    });
+  });
+
+  describe('atualizar', () => {
+    const edicaoSemArquivo: AtividadeEdicaoRequest = {
+      titulo: 'Título Editado',
+      instituicaoResponsavel: 'UFAPE',
+      dataRealizacao: '2026-06-01',
+      cargaHoraria: 40,
+      natureza: Natureza.ACC,
+      categoria: Categoria.PESQUISA,
+      arquivo: null
+    };
+
+    it('deve enviar PUT com FormData para a URL de atividade com ID', () => {
+      service.atualizar(10, edicaoSemArquivo).subscribe();
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/10`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toBeInstanceOf(FormData);
+      req.flush({
+        id: 10,
+        titulo: 'Título Editado',
+        instituicaoResponsavel: 'UFAPE',
+        dataRealizacao: '2026-06-01',
+        cargaHorariaEmHoras: 40,
+        natureza: 'ACC',
+        categoria: 'PESQUISA'
+      });
+    });
+
+    it('deve incluir o arquivo no FormData quando fornecido na edição', () => {
+      const arquivoNovo = new File(['novo'], 'novo_certificado.pdf', { type: 'application/pdf' });
+      const edicaoComArquivo: AtividadeEdicaoRequest = {
+        ...edicaoSemArquivo,
+        arquivo: arquivoNovo
+      };
+
+      service.atualizar(10, edicaoComArquivo).subscribe();
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/10`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body.get('arquivo')).toBeTruthy();
+      req.flush({ id: 10 });
+    });
+
+    it('deve traduzir erro 403 para mensagem de permissão negada', () => {
+      let erro: Error | undefined;
+      service.atualizar(10, edicaoSemArquivo).subscribe({
+        error: (falha: Error) => (erro = falha)
+      });
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/10`);
+      req.flush('Você não tem permissão para editar esta atividade.', { status: 403, statusText: 'Forbidden' });
+
+      expect(erro?.message).toBe('Você não tem permissão para editar esta atividade.');
+    });
+
+    it('deve traduzir erro 404 para mensagem de atividade não encontrada', () => {
+      let erro: Error | undefined;
+      service.atualizar(999, edicaoSemArquivo).subscribe({
+        error: (falha: Error) => (erro = falha)
+      });
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/999`);
+      req.flush('', { status: 404, statusText: 'Not Found' });
+
+      expect(erro?.message).toBe('Atividade não encontrada.');
+    });
+  });
+
+  describe('buscarPorId', () => {
+    it('deve retornar a atividade quando o ID existir na listagem', () => {
+      let resultado: Atividade | undefined;
+      service.buscarPorId(5).subscribe((atv) => (resultado = atv));
+
+      const req = httpMock.expectOne(ATIVIDADES_URL);
+      expect(req.request.method).toBe('GET');
+      req.flush([
+        {
+          id: 5,
+          titulo: 'Projeto de Extensão',
+          instituicaoResponsavel: 'UFAPE',
+          dataRealizacao: '2026-01-01',
+          cargaHorariaEmHoras: 30,
+          natureza: 'ACEX',
+          categoria: 'EXTENSAO',
+          dataCadastro: null
+        }
+      ]);
+
+      expect(resultado).toEqual({
+        id: 5,
+        titulo: 'Projeto de Extensão',
+        instituicaoResponsavel: 'UFAPE',
+        dataRealizacao: '2026-01-01',
+        cargaHorariaEmHoras: 30,
+        natureza: 'ACEX',
+        categoria: 'EXTENSAO',
+        dataCadastro: null
+      });
+    });
+
+    it('deve lançar erro quando o ID não for encontrado na listagem', () => {
+      let erro: Error | undefined;
+      service.buscarPorId(99).subscribe({
+        error: (falha: Error) => (erro = falha)
+      });
+
+      const req = httpMock.expectOne(ATIVIDADES_URL);
+      expect(req.request.method).toBe('GET');
+      req.flush([]);
+
+      expect(erro).toBeInstanceOf(Error);
+      expect(erro?.message).toBe('Atividade não encontrada.');
+    });
+  });
+
+  describe('obterCertificado', () => {
+    it('deve solicitar o blob do certificado por id', () => {
+      let blobRetornado: Blob | undefined;
+      service.obterCertificado(5).subscribe((b) => (blobRetornado = b));
+
+      const req = httpMock.expectOne(`${ATIVIDADES_URL}/5/certificado`);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.responseType).toBe('blob');
+
+      const blobMock = new Blob(['dummy'], { type: 'application/pdf' });
+      req.flush(blobMock);
+
+      expect(blobRetornado).toBeTruthy();
     });
   });
 

@@ -2,6 +2,7 @@ package br.edu.ufape.backend.atividade.facade;
 
 import java.util.List;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,10 @@ public class AtividadeFacade {
             MultipartFile arquivo,
             String emailEstudante) {
         return atividadeComplementarService.atualizarAtividade(id, request, arquivo, emailEstudante);
+    }
+
+    public Resource obterCertificado(Long id, String emailEstudante) {
+        return atividadeComplementarService.obterArquivoCertificado(id, emailEstudante);
     }
 
     public ProgressoResponseDTO obterProgresso(String emailEstudante) {

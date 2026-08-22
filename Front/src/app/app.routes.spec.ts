@@ -48,6 +48,12 @@ describe('routes', () => {
     expect(progresso?.canActivate).toContain(authGuard);
   });
 
+  it('deve proteger a rota de edicao de atividade com authGuard', () => {
+    const edicao = routes.find((rota: Route) => rota.path === 'atividades/edicao/:id');
+    expect(edicao).toBeTruthy();
+    expect(edicao?.canActivate).toContain(authGuard);
+  });
+
   it('deve proteger a rota de listagem de atividades com authGuard', () => {
     const listagem = routes.find((rota: Route) => rota.path === 'atividades');
 
@@ -55,12 +61,14 @@ describe('routes', () => {
     expect(listagem?.canActivate).toContain(authGuard);
   });
 
-  it('deve declarar a rota de cadastro antes da listagem para não capturar o segmento extra', () => {
+  it('deve declarar a rota de cadastro e edicao antes da listagem para nao capturar o segmento extra', () => {
     const indiceCadastro = routes.findIndex((rota: Route) => rota.path === 'atividades/cadastro');
+    const indiceEdicao = routes.findIndex((rota: Route) => rota.path === 'atividades/edicao/:id');
     const indiceListagem = routes.findIndex((rota: Route) => rota.path === 'atividades');
-
     expect(indiceCadastro).toBeGreaterThanOrEqual(0);
     expect(indiceCadastro).toBeLessThan(indiceListagem);
+    expect(indiceEdicao).toBeGreaterThanOrEqual(0);
+    expect(indiceEdicao).toBeLessThan(indiceListagem);
   });
 
   it('deve proteger a rota de relatorio com authGuard', () => {
