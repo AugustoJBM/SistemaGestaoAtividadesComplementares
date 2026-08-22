@@ -25,8 +25,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
-import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequest;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -252,7 +252,7 @@ class AtividadeComplementarServiceTest {
 
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
@@ -280,7 +280,7 @@ class AtividadeComplementarServiceTest {
         Certificado certificado = new Certificado("certificado.pdf", "application/pdf", 100L, "/tmp/certificado.pdf");
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
@@ -301,7 +301,7 @@ class AtividadeComplementarServiceTest {
         when(armazenamentoCertificadoService.armazenar(arquivo)).thenReturn(certificado);
         when(atividadeRepository.save(any())).thenReturn(atividadeSalva);
 
-        AtividadeResponse resposta = service.cadastrarAtividade(request, arquivo, EMAIL);
+        AtividadeResponseDTO resposta = service.cadastrarAtividade(request, arquivo, EMAIL);
 
         assertEquals(request.titulo(), resposta.titulo());
         assertEquals(request.natureza(), resposta.natureza());
@@ -315,7 +315,7 @@ class AtividadeComplementarServiceTest {
     void cadastroComEstudanteInexistenteLancaRuntimeException() {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo", "certificado.pdf", "application/pdf", "conteudo".getBytes());
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
@@ -337,7 +337,7 @@ class AtividadeComplementarServiceTest {
     void cadastroComArquivoVazioLancaCertificadoInvalidoException() {
         MockMultipartFile arquivoVazio = new MockMultipartFile(
                 "arquivo", "certificado.pdf", "application/pdf", new byte[0]);
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
@@ -357,7 +357,7 @@ class AtividadeComplementarServiceTest {
     void cadastroComTipoDeArquivoNaoSuportadoLancaCertificadoInvalidoException() {
         MockMultipartFile arquivoInvalido = new MockMultipartFile(
                 "arquivo", "certificado.txt", "text/plain", "conteudo".getBytes());
-        CadastroAtividadeRequest request = new CadastroAtividadeRequest(
+        CadastroAtividadeRequestDTO request = new CadastroAtividadeRequestDTO(
                 "Atividade de teste",
                 "Instituicao",
                 LocalDate.now(),
