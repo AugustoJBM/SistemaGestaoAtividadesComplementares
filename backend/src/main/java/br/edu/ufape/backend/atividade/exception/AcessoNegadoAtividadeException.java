@@ -1,8 +1,11 @@
 package br.edu.ufape.backend.atividade.exception;
 
-public class AcessoNegadoAtividadeException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    public AcessoNegadoAtividadeException(String mensagem) {
-        super(mensagem);
+@ResponseStatus(HttpStatus.FORBIDDEN)
+public class AcessoNegadoAtividadeException extends RuntimeException {
+    public AcessoNegadoAtividadeException(String message) {
+        super(message);
     }
 }
