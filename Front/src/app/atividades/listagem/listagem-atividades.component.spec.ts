@@ -49,7 +49,6 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: () => listagemNaoResolvida.asObservable() };
     await configurarComponente();
     fixture.detectChanges();
-
     const texto = fixture.nativeElement.textContent as string;
     expect(fixture.componentInstance.carregando()).toBeTruthy();
     expect(texto).toContain('Carregando suas atividades...');
@@ -59,7 +58,6 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: () => of(atividades) };
     await configurarComponente();
     fixture.detectChanges();
-
     const itens = fixture.nativeElement.querySelectorAll('li');
     const texto = fixture.nativeElement.textContent as string;
     expect(fixture.componentInstance.carregando()).toBeFalsy();
@@ -73,11 +71,21 @@ describe('ListagemAtividadesComponent', () => {
     expect(texto).toContain('Extensão');
   });
 
+  it('deve exibir o link de edicao apontando para a rota correta de cada atividade', async () => {
+    atividadeServiceDuble = { listar: () => of(atividades) };
+    await configurarComponente();
+    fixture.detectChanges();
+
+    const linksEdicao = fixture.nativeElement.querySelectorAll('a[href*="/atividades/edicao"]');
+    expect(linksEdicao.length).toBe(2);
+    expect(linksEdicao[0].getAttribute('href')).toContain('/atividades/edicao/1');
+    expect(linksEdicao[1].getAttribute('href')).toContain('/atividades/edicao/2');
+  });
+
   it('deve exibir o empty state quando o estudante não possui atividades e não há filtro ativo', async () => {
     atividadeServiceDuble = { listar: () => of([]) };
     await configurarComponente();
     fixture.detectChanges();
-
     const itens = fixture.nativeElement.querySelectorAll('li');
     const texto = fixture.nativeElement.textContent as string;
     expect(fixture.componentInstance.semAtividades()).toBeTruthy();
@@ -91,7 +99,6 @@ describe('ListagemAtividadesComponent', () => {
     };
     await configurarComponente();
     fixture.detectChanges();
-
     const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
     expect(fixture.componentInstance.carregando()).toBeFalsy();
     expect(alerta.textContent).toContain('Não foi possível carregar suas atividades. Tente novamente.');
@@ -109,11 +116,9 @@ describe('ListagemAtividadesComponent', () => {
     };
     await configurarComponente();
     fixture.detectChanges();
-
     const botao = fixture.nativeElement.querySelector('[role="alert"] button') as HTMLButtonElement;
     botao.click();
     fixture.detectChanges();
-
     const texto = fixture.nativeElement.textContent as string;
     expect(tentativas).toBe(2);
     expect(fixture.componentInstance.mensagemErro()).toBeNull();
@@ -125,12 +130,10 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: spyListar };
     await configurarComponente();
     fixture.detectChanges();
-
     const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
     selectNatureza.value = Natureza.ACC;
     selectNatureza.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-
     expect(spyListar).toHaveBeenLastCalledWith({ natureza: Natureza.ACC });
     expect(fixture.componentInstance.filtroNatureza()).toBe(Natureza.ACC);
   });
@@ -140,12 +143,10 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: spyListar };
     await configurarComponente();
     fixture.detectChanges();
-
     const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
     selectCategoria.value = Categoria.ENSINO;
     selectCategoria.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-
     expect(spyListar).toHaveBeenLastCalledWith({ categoria: Categoria.ENSINO });
     expect(fixture.componentInstance.filtroCategoria()).toBe(Categoria.ENSINO);
   });
@@ -155,16 +156,13 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: spyListar };
     await configurarComponente();
     fixture.detectChanges();
-
     const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
     selectNatureza.value = Natureza.ACC;
     selectNatureza.dispatchEvent(new Event('change'));
-
     const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
     selectCategoria.value = Categoria.ENSINO;
     selectCategoria.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-
     expect(spyListar).toHaveBeenLastCalledWith({
       natureza: Natureza.ACC,
       categoria: Categoria.ENSINO
@@ -176,16 +174,13 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: spyListar };
     await configurarComponente();
     fixture.detectChanges();
-
     fixture.componentInstance.filtroNatureza.set(Natureza.ACC);
     fixture.componentInstance.filtroCategoria.set(Categoria.ENSINO);
     fixture.detectChanges();
-
     const botaoLimpar = fixture.nativeElement.querySelector('#btn-limpar-filtros') as HTMLButtonElement;
     expect(botaoLimpar).toBeTruthy();
     botaoLimpar.click();
     fixture.detectChanges();
-
     expect(fixture.componentInstance.filtroNatureza()).toBe('');
     expect(fixture.componentInstance.filtroCategoria()).toBe('');
     expect(spyListar).toHaveBeenLastCalledWith({});
@@ -195,12 +190,10 @@ describe('ListagemAtividadesComponent', () => {
     atividadeServiceDuble = { listar: () => of([]) };
     await configurarComponente();
     fixture.detectChanges();
-
     const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
     selectNatureza.value = Natureza.ACEX;
     selectNatureza.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('Nenhuma atividade encontrada com os filtros selecionados');
     expect(texto).toContain('Tente alterar ou limpar os filtros');
@@ -287,7 +280,7 @@ describe('ListagemAtividadesComponent', () => {
     });
 
     it('marca estado de carregamento enquanto a exclusao esta em andamento', () => {
-      const { fixture } = montarComExclusao(() => new Observable<void>(() => {}));
+      const { fixture } = montarComExclusao(() => new Observable<void>(() => { }));
 
       fixture.componentInstance.solicitarExclusao(atividades[0]);
       fixture.componentInstance.confirmarExclusao();
