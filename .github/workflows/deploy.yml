@@ -15,12 +15,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verificar Deploy Hook Backend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "ERRO: RENDER_DEPLOY_HOOK_BACKEND não está configurado."
+            exit 1
+          fi
+
       - name: Trigger Render Deploy Backend
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
         run: |
           curl --fail --show-error --silent \
             -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: Verificar Deploy Hook Frontend
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "ERRO: RENDER_DEPLOY_HOOK_FRONTEND não está configurado."
+            exit 1
+          fi
 
       - name: Trigger Render Deploy Frontend
         env:
