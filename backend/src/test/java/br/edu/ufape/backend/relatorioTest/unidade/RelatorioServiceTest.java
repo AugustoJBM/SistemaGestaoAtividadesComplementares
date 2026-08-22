@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
-import br.edu.ufape.backend.atividade.dto.AtividadeResponse;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.relatorio.dto.GrupoNaturezaResponse;
@@ -38,8 +38,8 @@ class RelatorioServiceTest {
         relatorioService = new RelatorioService(atividadeContrato);
     }
 
-    private AtividadeResponse atividade(Long id, Natureza natureza, Categoria categoria, int horas) {
-        return new AtividadeResponse(
+    private AtividadeResponseDTO atividade(Long id, Natureza natureza, Categoria categoria, int horas) {
+        return new AtividadeResponseDTO(
                 id,
                 "Atividade " + id,
                 "UFAPE",
