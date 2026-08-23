@@ -49,14 +49,16 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioContrato.buscarPorEmail(request.getUsuario())
+        String emailTratado = request.getUsuario() != null ? request.getUsuario().trim().toLowerCase() : "";
+
+        Usuario usuario = usuarioContrato.buscarPorEmail(emailTratado)
                 .orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
 
         if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {
             throw new UnauthorizedException("Credenciais inválidas");
         }
 
-        String token = jwtService.generateToken(usuario.getEmail());
+        String token = jwtService.generateToken(usuario.getEmail(), usuario.getRole().name());
         return new LoginResponse(token, "Bearer");
     }
 
