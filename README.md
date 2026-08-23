@@ -5,6 +5,7 @@
 
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
 
+
 ## Deploy em Produção (Render)
 
 - **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
