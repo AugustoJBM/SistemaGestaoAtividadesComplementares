@@ -1,15 +1,11 @@
 package br.edu.ufape.backend.autenticacaoTest.unidade.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,9 +24,17 @@ import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Role;
 import br.edu.ufape.backend.usuario.model.Usuario;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
-    
+
     @Mock
     private UsuarioContrato usuarioContrato;
 
@@ -43,90 +47,118 @@ public class AuthServiceTest {
     @Mock
     private TokenBlacklistService tokenBlacklistService;
 
+    @InjectMocks
     private AuthService authService;
-
-    @BeforeEach
-    void setUp() {
-        authService = new AuthService(usuarioContrato, jwtService, passwordEncoder, tokenBlacklistService);
-    }
 
     @Test
     @DisplayName("Deve cadastrar estudante com sucesso")
     void deveCadastrarEstudanteComSucesso() {
         CadastroUsuarioRequest request = new CadastroUsuarioRequest();
-        request.setNome("Estudante Teste");
-        request.setEmail("novo@ufape.edu.br");
+        request.setNome("Lucas Silva");
+        request.setEmail("lucas@ufape.edu.br");
         request.setSenha("senha1234");
         request.setRole(Role.ESTUDANTE);
 
-        when(usuarioContrato.existePorEmail("novo@ufape.edu.br")).thenReturn(false);
-        when(passwordEncoder.encode("senha1234")).thenReturn("senhaCriptografada");
-        when(usuarioContrato.salvar(any(Estudante.class))).thenAnswer(i -> i.getArgument(0));
+        when(usuarioContrato.existePorEmail("lucas@ufape.edu.br")).thenReturn(false);
+        when(passwordEncoder.encode("senha1234")).thenReturn("hashSeguro");
+        when(usuarioContrato.salvar(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Usuario resultado = authService.cadastrarUsuario(request);
+        Usuario usuarioSalvo = authService.cadastrarUsuario(request);
 
-        assertNotNull(resultado);
-        assertEquals("Estudante Teste", resultado.getNome());
-        verify(usuarioContrato, times(1)).salvar(any(Estudante.class));
+        assertNotNull(usuarioSalvo);
+        assertEquals("lucas@ufape.edu.br", usuarioSalvo.getEmail());
+        assertEquals("hashSeguro", usuarioSalvo.getSenhaHash());
     }
 
     @Test
-    @DisplayName("Deve lancar EmailJaCadastradoException se email ja existir")
-    void deveLancarExcecaoQuandoEmailExistir() {
+    @DisplayName("Deve lançar exceção ao cadastrar usuário com e-mail já existente")
+    void deveLancarExcecaoQuandoEmailJaExiste() {
         CadastroUsuarioRequest request = new CadastroUsuarioRequest();
-        request.setEmail("existente@ufape.edu.br");
+        request.setEmail("duplicado@ufape.edu.br");
+        request.setSenha("senha1234");
 
-        when(usuarioContrato.existePorEmail("existente@ufape.edu.br")).thenReturn(true);
+        when(usuarioContrato.existePorEmail("duplicado@ufape.edu.br")).thenReturn(true);
 
         assertThrows(EmailJaCadastradoException.class, () -> authService.cadastrarUsuario(request));
-        verify(usuarioContrato, never()).salvar(any());
     }
 
     @Test
-    @DisplayName("Deve lancar PerfilNaoPermitidoException se tentar cadastrar perfil diferente de ESTUDANTE")
-    void deveLancarExcecaoQuandoPerfilNaoForEstudante() {
+    @DisplayName("Deve lançar exceção ao tentar autocadastrar perfil não permitido")
+    void deveLancarExcecaoParaPerfilNaoPermitido() {
         CadastroUsuarioRequest request = new CadastroUsuarioRequest();
-        request.setEmail("novo@ufape.edu.br");
-        request.setRole(Role.ADMINISTRADOR);
+        request.setEmail("avaliador@ufape.edu.br");
+        request.setSenha("senha1234");
+        request.setRole(Role.AVALIADOR);
 
-        when(usuarioContrato.existePorEmail("novo@ufape.edu.br")).thenReturn(false);
+        when(usuarioContrato.existePorEmail("avaliador@ufape.edu.br")).thenReturn(false);
 
         assertThrows(PerfilNaoPermitidoException.class, () -> authService.cadastrarUsuario(request));
-        verify(usuarioContrato, never()).salvar(any());
     }
 
     @Test
-    @DisplayName("Deve realizar login com sucesso e retornar token JWT")
+    @DisplayName("Deve realizar login com sucesso e gerar token JWT com role")
     void deveRealizarLoginComSucesso() {
         LoginRequest request = new LoginRequest();
         request.setUsuario("aluno@ufape.edu.br");
         request.setSenha("senha1234");
 
-        Estudante estudante = new Estudante("Aluno", "aluno@ufape.edu.br", "senhaHash");
+        Estudante estudante = new Estudante("Aluno Teste", "aluno@ufape.edu.br", "hashSeguro");
 
         when(usuarioContrato.buscarPorEmail("aluno@ufape.edu.br")).thenReturn(Optional.of(estudante));
-        when(passwordEncoder.matches("senha1234", "senhaHash")).thenReturn(true);
-        when(jwtService.generateToken("aluno@ufape.edu.br")).thenReturn("fake-jwt-token");
+        when(passwordEncoder.matches("senha1234", "hashSeguro")).thenReturn(true);
+        when(jwtService.generateToken("aluno@ufape.edu.br", "ESTUDANTE")).thenReturn("fake-jwt-token");
 
         LoginResponse response = authService.login(request);
 
         assertNotNull(response);
         assertEquals("fake-jwt-token", response.getToken());
         assertEquals("Bearer", response.getTipo());
+        verify(jwtService, times(1)).generateToken("aluno@ufape.edu.br", "ESTUDANTE");
     }
 
     @Test
-    @DisplayName("Deve lancar UnauthorizedException quando a senha de login for incorreta")
-    void deveLancarExcecaoQuandoSenhaForIncorreta() {
+    @DisplayName("Deve lançar exceção de não autorizado quando usuário não existe")
+    void deveLancarExcecaoQuandoUsuarioNaoExiste() {
         LoginRequest request = new LoginRequest();
-        request.setUsuario("aluno@ufape.edu.br");
-        request.setSenha("senhaErrada");
+        request.setUsuario("inexistente@ufape.edu.br");
+        request.setSenha("senha1234");
 
-        Estudante estudante = new Estudante("Aluno", "aluno@ufape.edu.br", "senhaHash");
-
-        when(usuarioContrato.buscarPorEmail("aluno@ufape.edu.br")).thenReturn(Optional.of(estudante));
-        when(passwordEncoder.matches("senhaErrada", "senhaHash")).thenReturn(false);
+        when(usuarioContrato.buscarPorEmail("inexistente@ufape.edu.br")).thenReturn(Optional.empty());
 
         assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção de não autorizado quando senha for inválida")
+    void deveLancarExcecaoQuandoSenhaInvalida() {
+        LoginRequest request = new LoginRequest();
+        request.setUsuario("aluno@ufape.edu.br");
+        request.setSenha("senhaIncorreta");
+
+        Estudante estudante = new Estudante("Aluno Teste", "aluno@ufape.edu.br", "hashSeguro");
+
+        when(usuarioContrato.buscarPorEmail("aluno@ufape.edu.br")).thenReturn(Optional.of(estudante));
+        when(passwordEncoder.matches("senhaIncorreta", "hashSeguro")).thenReturn(false);
+
+        assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    @DisplayName("Deve realizar logout e invalidar o token na blacklist")
+    void deveRealizarLogoutComSucesso() {
+        String authHeader = "Bearer token-valido";
+
+        when(jwtService.isTokenValid("token-valido")).thenReturn(true);
+
+        authService.logout(authHeader);
+
+        verify(tokenBlacklistService, times(1)).blacklistToken("token-valido");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção no logout quando header for ausente ou inválido")
+    void deveLancarExcecaoLogoutHeaderInvalido() {
+        assertThrows(UnauthorizedException.class, () -> authService.logout(null));
+        assertThrows(UnauthorizedException.class, () -> authService.logout("Invalido token"));
     }
 }

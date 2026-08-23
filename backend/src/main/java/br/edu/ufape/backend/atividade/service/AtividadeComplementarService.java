@@ -6,13 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.dto.AtualizarAtividadeRequestDTO;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
@@ -21,7 +19,9 @@ import br.edu.ufape.backend.atividade.exception.AtividadeNaoEncontradaException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.atividade.model.ParecerConformidade;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
+import br.edu.ufape.backend.atividade.repository.ParecerConformidadeRepository;
 import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.certificados.model.Certificado;
 import br.edu.ufape.backend.certificados.service.ArmazenamentoCertificadoService;
@@ -39,14 +39,24 @@ public class AtividadeComplementarService {
     private final AtividadeComplementarRepository atividadeRepository;
     private final UsuarioContrato usuarioContrato;
     private final ArmazenamentoCertificadoService armazenamentoCertificadoService;
+    private final AuditoriaConformidadeService auditoriaConformidadeService;
+    private final ParecerConformidadeRepository parecerConformidadeRepository;
 
     public AtividadeComplementarService(
             AtividadeComplementarRepository atividadeRepository,
             UsuarioContrato usuarioContrato,
-            ArmazenamentoCertificadoService armazenamentoCertificadoService) {
+            ArmazenamentoCertificadoService armazenamentoCertificadoService,
+            AuditoriaConformidadeService auditoriaConformidadeService,
+            ParecerConformidadeRepository parecerConformidadeRepository) {
         this.atividadeRepository = atividadeRepository;
         this.usuarioContrato = usuarioContrato;
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
+        this.auditoriaConformidadeService = auditoriaConformidadeService;
+        this.parecerConformidadeRepository = parecerConformidadeRepository;
+    }
+
+    public ParecerConformidade auditarOuObterParecer(AtividadeComplementar atividade) {
+        return auditoriaConformidadeService.auditarOuObterParecer(atividade);
     }
 
     public List<AtividadeComplementar> listarAtividadesDoEstudante(
@@ -86,12 +96,10 @@ public class AtividadeComplementarService {
     public AtividadeResponseDTO cadastrarAtividade(CadastroAtividadeRequestDTO request, MultipartFile arquivo,
             String emailEstudante) {
         validarTipoArquivo(arquivo);
-
         Usuario estudante = usuarioContrato.buscarPorEmail(emailEstudante)
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
 
         Certificado certificado = armazenamentoCertificadoService.armazenar(arquivo);
-
         AtividadeComplementar atividade = new AtividadeComplementar(
                 request.titulo(),
                 request.instituicaoResponsavel(),
@@ -119,7 +127,6 @@ public class AtividadeComplementarService {
     public AtividadeResponseDTO atualizarAtividade(Long id, AtualizarAtividadeRequestDTO request,
             MultipartFile novoArquivo, String emailEstudante) {
         Estudante estudante = obterEstudante(emailEstudante);
-
         AtividadeComplementar atividade = atividadeRepository.findById(id)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada."));
 
@@ -145,11 +152,11 @@ public class AtividadeComplementarService {
 
         try {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
-
+            // INVALIDA O PARECER ANTIGO PARA FORÇAR NOVA AUDITORIA DA IA COM OS DADOS EDITADOS
+            parecerConformidadeRepository.findByAtividadeId(id).ifPresent(parecerConformidadeRepository::delete);
             if (novoCertificado != null && certificadoAntigo != null) {
                 removerArquivoCertificado(certificadoAntigo);
             }
-
             return new AtividadeResponseDTO(atividadeSalva);
         } catch (RuntimeException e) {
             if (novoCertificado != null) {
@@ -162,20 +169,23 @@ public class AtividadeComplementarService {
     @Transactional
     public void excluirAtividade(Long id, String emailEstudante) {
         Estudante estudante = obterEstudante(emailEstudante);
-
         AtividadeComplementar atividade = atividadeRepository.findByIdAndEstudante(id, estudante)
                 .orElseThrow(() -> new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO_EXCLUSAO));
 
+        parecerConformidadeRepository.findByAtividadeId(id).ifPresent(parecerConformidadeRepository::delete);
         removerArquivoCertificado(atividade.getCertificado());
-
         atividadeRepository.delete(atividade);
+    }
+
+    public AtividadeComplementar buscarPorId(Long id) {
+        return atividadeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Atividade não encontrada com o id: " + id));
     }
 
     private void removerArquivoCertificado(Certificado certificado) {
         if (certificado == null || certificado.getReferencia() == null) {
             return;
         }
-
         try {
             Files.deleteIfExists(Path.of(certificado.getReferencia()));
         } catch (IOException ex) {
@@ -190,7 +200,6 @@ public class AtividadeComplementarService {
         if (!(usuario instanceof Estudante estudante)) {
             throw new AcessoNegadoAtividadeException(MENSAGEM_ACESSO_NEGADO);
         }
-
         return estudante;
     }
 
@@ -198,7 +207,6 @@ public class AtividadeComplementarService {
         if (arquivo == null || arquivo.isEmpty()) {
             throw new CertificadoInvalidoException("Arquivo de certificado não pode ser vazio");
         }
-
         String tipo = arquivo.getContentType();
         if (tipo == null || !(tipo.equals("application/pdf") || tipo.equals("image/png") || tipo.equals("image/jpeg")
                 || tipo.equals("image/jpg"))) {

@@ -142,7 +142,11 @@
                 class="inline-flex items-center text-[11px] font-semibold bg-[#f3f4f5] text-[#404945] border border-[#c0c9c3] px-2.5 py-0.5 rounded-full">
                 {{ rotuloCategoria(atividade.categoria) }}
               </span>
-              <!-- Botão de Ação: Editar -->
+              <button type="button" (click)="abrirModalParecer(atividade)"
+                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] bg-[#e6efe9] border border-[#c0c9c3] rounded-lg hover:bg-[#003629] hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[16px]">psychology</span>
+                <span>Parecer IA</span>
+              </button>
               <a [routerLink]="['/atividades/edicao', atividade.id]"
                 class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] border border-[#003629] rounded-lg hover:bg-[#003629] hover:text-white transition-colors"
                 [attr.aria-label]="'Editar atividade ' + atividade.titulo">
@@ -174,6 +178,7 @@
       }
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
     @if (atividadeParaExcluir(); as alvo) {
     <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
       <div role="dialog" aria-modal="true" aria-labelledby="titulo-confirmacao-exclusao"
@@ -196,6 +201,47 @@
             {{ excluindo() ? 'Excluindo...' : 'Excluir' }}
           </button>
         </div>
+      </div>
+    </div>
+    }
+
+    <!-- Modal Parecer IA com Componente Reutilizável -->
+    @if (modalParecerAberto()) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+      (click)="fecharModalParecer()">
+      <div class="bg-white rounded-2xl border border-[#c0c9c3] shadow-2xl p-6 max-w-lg w-full space-y-4"
+        (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-2xl text-[#003629]">verified_user</span>
+            <div>
+              <h3 class="text-base font-bold text-[#191c1d]">Parecer Técnico de Conformidade</h3>
+              <p class="text-[11px] text-[#707974]">Auditoria Regulamentar Automática (UFAPE)</p>
+            </div>
+          </div>
+          <button (click)="fecharModalParecer()" class="p-1 hover:bg-[#f3f4f5] rounded-full text-[#707974]"
+            aria-label="Fechar modal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        @if (carregandoParecer()) {
+        <div class="flex flex-col items-center justify-center py-8 gap-3 text-[#404945]">
+          <span class="material-symbols-outlined animate-spin text-3xl text-[#003629]">progress_activity</span>
+          <p class="text-xs font-medium">Consultando o regulamento da UFAPE com a IA...</p>
+        </div>
+        } @else if (erroParecer()) {
+        <div
+          class="p-4 bg-[#ffdad6] text-[#93000a] rounded-xl text-xs font-medium flex items-start gap-2 border border-[#ba1a1a]/20">
+          <span class="material-symbols-outlined text-sm mt-0.5">error</span>
+          <div>
+            <p class="font-bold">Falha na Auditoria:</p>
+            <p>{{ erroParecer() }}</p>
+          </div>
+        </div>
+        } @else if (parecerSelecionado(); as p) {
+        <app-parecer-card [parecer]="p" />
+        }
       </div>
     </div>
     }

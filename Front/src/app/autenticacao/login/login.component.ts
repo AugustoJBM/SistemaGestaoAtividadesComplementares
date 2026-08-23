@@ -55,7 +55,14 @@ export class LoginComponent {
     this.authService.login(credenciais).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        const role = this.authService.getRole();
+
+        // Redireciona conforme o perfil
+        if (role === 'ADMINISTRADOR' || role === 'AVALIADOR') {
+          this.router.navigate(['/regulamentos/gestao']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (erro: Error) => {
         this.isLoading.set(false);

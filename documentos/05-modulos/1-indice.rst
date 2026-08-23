@@ -197,6 +197,19 @@ Arquivo:
     6-relatorios.rst
 
 
+====================
+Módulo de Inteligência Artificial
+====================
+
+Responsável pela extração automática de dados de certificados, vetorização de normas e auditoria de conformidade por RAG.
+
+Arquivo:
+
+::
+
+    9-inteligencia-artificial.rst
+
+
 
 ====================
 Módulo de Notificações

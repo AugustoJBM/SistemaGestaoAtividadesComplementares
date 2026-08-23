@@ -1,8 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Atividade, Categoria, FiltroAtividades, Natureza } from '../atividade.model';
+import { Atividade, Categoria, FiltroAtividades, Natureza, ParecerResponseDTO } from '../atividade.model';
 import { AtividadeService } from '../atividade.service';
+import { ParecerCardComponent } from '../parecer/parecer-conformidade/parecer-card.component';
 
 const ROTULOS_NATUREZA: Record<string, string> = {
   ACC: 'ACC',
@@ -19,7 +20,7 @@ const ROTULOS_CATEGORIA: Record<string, string> = {
 @Component({
   selector: 'app-listagem-atividades',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ParecerCardComponent],
   templateUrl: './listagem-atividades.component.html'
 })
 export class ListagemAtividadesComponent implements OnInit {
@@ -40,6 +41,12 @@ export class ListagemAtividadesComponent implements OnInit {
   readonly excluindo = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErroExclusao = signal<string | null>(null);
+
+  // Estados do Modal de Parecer IA
+  readonly modalParecerAberto = signal<boolean>(false);
+  readonly carregandoParecer = signal<boolean>(false);
+  readonly parecerSelecionado = signal<ParecerResponseDTO | null>(null);
+  readonly erroParecer = signal<string | null>(null);
 
   readonly opcoesNatureza = [
     { valor: '', rotulo: 'Todas as Naturezas' },
@@ -69,12 +76,8 @@ export class ListagemAtividadesComponent implements OnInit {
     const natureza = this.filtroNatureza();
     const categoria = this.filtroCategoria();
 
-    if (natureza) {
-      filtro.natureza = natureza;
-    }
-    if (categoria) {
-      filtro.categoria = categoria;
-    }
+    if (natureza) filtro.natureza = natureza;
+    if (categoria) filtro.categoria = categoria;
 
     this.atividadeService.listar(filtro).subscribe({
       next: (atividades) => {
@@ -118,12 +121,9 @@ export class ListagemAtividadesComponent implements OnInit {
 
   confirmarExclusao(): void {
     const atividade = this.atividadeParaExcluir();
-    if (!atividade) {
-      return;
-    }
+    if (!atividade) return;
 
     this.excluindo.set(true);
-
     this.atividadeService.excluir(atividade.id).subscribe({
       next: () => {
         this.atividades.update((atuais) => atuais.filter((item) => item.id !== atividade.id));
@@ -141,9 +141,7 @@ export class ListagemAtividadesComponent implements OnInit {
 
   dataFormatada(dataIso: string): string {
     const partes = dataIso.split('-');
-    if (partes.length !== 3) {
-      return '';
-    }
+    if (partes.length !== 3) return '';
     const [ano, mes, dia] = partes;
     return `${dia}/${mes}/${ano}`;
   }
@@ -154,5 +152,29 @@ export class ListagemAtividadesComponent implements OnInit {
 
   rotuloCategoria(categoria: string): string {
     return ROTULOS_CATEGORIA[categoria] ?? '';
+  }
+
+  abrirModalParecer(atividade: Atividade): void {
+    this.modalParecerAberto.set(true);
+    this.carregandoParecer.set(true);
+    this.parecerSelecionado.set(null);
+    this.erroParecer.set(null);
+
+    this.atividadeService.obterParecer(atividade.id).subscribe({
+      next: (parecer) => {
+        this.parecerSelecionado.set(parecer);
+        this.carregandoParecer.set(false);
+      },
+      error: (err: Error) => {
+        this.carregandoParecer.set(false);
+        this.erroParecer.set(err.message || 'Erro ao consultar parecer da IA.');
+      }
+    });
+  }
+
+  fecharModalParecer(): void {
+    this.modalParecerAberto.set(false);
+    this.parecerSelecionado.set(null);
+    this.erroParecer.set(null);
   }
 }

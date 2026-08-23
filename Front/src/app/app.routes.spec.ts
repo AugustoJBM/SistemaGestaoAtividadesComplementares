@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { Route } from '@angular/router';
-
 import { routes } from './app.routes';
 import { authGuard } from './autenticacao/auth.guard';
 import { LandingComponent } from './landing/landing.component';
@@ -8,14 +7,12 @@ import { LandingComponent } from './landing/landing.component';
 describe('routes', () => {
   it('deve expor a Landing Page na rota raiz', () => {
     const raiz = routes.find((rota: Route) => rota.path === '');
-
     expect(raiz).toBeTruthy();
     expect(raiz?.component).toBe(LandingComponent);
   });
 
   it('deve expor a rota login sem authGuard', () => {
     const login = routes.find((rota: Route) => rota.path === 'login');
-
     expect(login).toBeTruthy();
     expect(login?.canActivate).toBeUndefined();
   });
@@ -29,7 +26,6 @@ describe('routes', () => {
 
   it('deve proteger a rota dashboard com authGuard', () => {
     const dashboard = routes.find((rota: Route) => rota.path === 'dashboard');
-
     expect(dashboard).toBeTruthy();
     expect(dashboard?.canActivate).toContain(authGuard);
   });
@@ -71,7 +67,13 @@ describe('routes', () => {
     expect(indiceEdicao).toBeLessThan(indiceListagem);
   });
 
-  it('deve proteger a rota de relatorio com authGuard', () => {
+  it('deve proteger a rota regulamentos/gestao com authGuard e roleGuard', () => {
+    const regulamentos = routes.find((rota: Route) => rota.path === 'regulamentos/gestao');
+    expect(regulamentos).toBeTruthy();
+    expect(regulamentos?.canActivate?.length).toBe(2);
+  });
+
+  it('deve proteger a rota relatorio com authGuard', () => {
     const rota = routes.find((r: Route) => r.path === 'relatorio');
     expect(rota).toBeTruthy();
     expect(rota?.canActivate).toEqual([authGuard]);
@@ -79,7 +81,6 @@ describe('routes', () => {
 
   it('deve manter a rota curinga como a última entrada redirecionando para login', () => {
     const ultimaRota = routes[routes.length - 1];
-
     expect(ultimaRota.path).toBe('**');
     expect(ultimaRota.redirectTo).toBe('login');
   });
