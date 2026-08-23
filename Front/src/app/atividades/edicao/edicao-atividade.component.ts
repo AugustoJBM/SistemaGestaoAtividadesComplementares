@@ -26,11 +26,15 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
     atividadeId: number | null = null;
     readonly carregandoDados = signal<boolean>(true);
     readonly carregando = signal<boolean>(false);
+    readonly extraindoComIA = signal<boolean>(false);
+    readonly erroExtracao = signal<string | null>(null);
+
     readonly mensagemErro = signal<string | null>(null);
     readonly mensagemSucesso = signal<boolean>(false);
     readonly arquivoAnexado = signal<File | null>(null);
     readonly erroArquivo = signal<string | null>(null);
     readonly dragOver = signal<boolean>(false);
+
     readonly atividadeOriginal = signal<Atividade | null>(null);
     readonly certificadoAtualRemovido = signal<boolean>(false);
 
@@ -66,7 +70,6 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
             this.carregandoDados.set(false);
             return;
         }
-
         this.atividadeId = Number(idParam);
         this.carregarDadosAtividade(this.atividadeId);
     }
@@ -78,7 +81,6 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
     carregarDadosAtividade(id: number): void {
         this.carregandoDados.set(true);
         this.mensagemErro.set(null);
-
         this.atividadeService.buscarPorId(id).subscribe({
             next: (atividade) => {
                 this.atividadeOriginal.set(atividade);
@@ -109,6 +111,7 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
             this.activityForm.invalid ||
             this.carregando() ||
             this.carregandoDados() ||
+            this.extraindoComIA() ||
             !this.temCertificadoValido()
         );
     }
@@ -118,6 +121,39 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
         if (input.files && input.files.length > 0) {
             this.validarEProcessarArquivo(input.files[0]);
         }
+    }
+
+    aoSelecionarNovoArquivoComIA(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files || input.files.length === 0) return;
+        const arquivo = input.files[0];
+        const valido = this.validarEProcessarArquivo(arquivo);
+        if (valido) {
+            this.extrairDadosComIA(arquivo);
+        }
+        input.value = '';
+    }
+
+    private extrairDadosComIA(file: File): void {
+        this.extraindoComIA.set(true);
+        this.erroExtracao.set(null);
+        this.atividadeService.extrairDadosCertificado(file).subscribe({
+            next: (dados) => {
+                this.activityForm.patchValue({
+                    titulo: dados.titulo ?? this.activityForm.value.titulo,
+                    instituicao: dados.instituicaoResponsavel ?? this.activityForm.value.instituicao,
+                    data: dados.dataRealizacao ?? this.activityForm.value.data,
+                    natureza: dados.natureza ?? this.activityForm.value.natureza,
+                    categoria: dados.categoria ?? this.activityForm.value.categoria,
+                    cargaHoraria: dados.cargaHoraria ?? this.activityForm.value.cargaHoraria
+                });
+                this.extraindoComIA.set(false);
+            },
+            error: () => {
+                this.extraindoComIA.set(false);
+                this.erroExtracao.set('Não foi possível extrair os dados com a IA. Os campos mantiveram seus valores.');
+            }
+        });
     }
 
     onDragOver(event: DragEvent): void {
@@ -144,6 +180,7 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
     removerNovoArquivo(): void {
         this.arquivoAnexado.set(null);
         this.erroArquivo.set(null);
+        this.erroExtracao.set(null);
     }
 
     removerCertificadoAtual(): void {
@@ -156,11 +193,11 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
         this.certificadoAtualRemovido.set(false);
         this.arquivoAnexado.set(null);
         this.erroArquivo.set(null);
+        this.erroExtracao.set(null);
     }
 
     visualizarCertificadoAtual(): void {
         if (!this.atividadeId) return;
-
         this.liberarUrlObjeto();
         this.erroPrevia.set(null);
         this.carregandoPrevia.set(true);
@@ -185,7 +222,6 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
     visualizarNovoArquivo(): void {
         const file = this.arquivoAnexado();
         if (!file) return;
-
         this.liberarUrlObjeto();
         this.erroPrevia.set(null);
         const url = URL.createObjectURL(file);
@@ -248,20 +284,25 @@ export class EdicaoAtividadeComponent implements OnInit, OnDestroy {
         });
     }
 
-    private validarEProcessarArquivo(file: File): void {
+    private validarEProcessarArquivo(file: File): boolean {
         this.erroArquivo.set(null);
+        this.erroExtracao.set(null);
+
         if (!FORMATOS_PERMITIDOS.includes(file.type)) {
             this.erroArquivo.set('Tipo de arquivo inválido. Apenas PDF, PNG ou JPEG são permitidos.');
             this.arquivoAnexado.set(null);
-            return;
+            return false;
         }
+
         if (file.size > TAMANHO_MAXIMO_BYTES) {
             this.erroArquivo.set('O arquivo excede o limite máximo de 5MB.');
             this.arquivoAnexado.set(null);
-            return;
+            return false;
         }
+
         this.arquivoAnexado.set(file);
         this.certificadoAtualRemovido.set(false);
+        return true;
     }
 
     private liberarUrlObjeto(): void {
