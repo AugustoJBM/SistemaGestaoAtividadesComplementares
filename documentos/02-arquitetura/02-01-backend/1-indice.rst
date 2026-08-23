@@ -23,3 +23,4 @@ Arquitetura do Backend
    testes
    logging
    convencoes
+   inteligencia_artificial
