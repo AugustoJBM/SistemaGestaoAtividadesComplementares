@@ -1,0 +1,40 @@
+<div class="bg-white border rounded-xl p-5 shadow-sm space-y-4" [ngClass]="{
+        'border-[#003629]/40 bg-[#e6efe9]/20': parecer().decisaoIA === 'DEFERIDO',
+        'border-[#ba1a1a]/40 bg-[#ffdad6]/20': parecer().decisaoIA === 'INDEFERIDO',
+        'border-[#ffe082] bg-[#fff8e1]/30': parecer().decisaoIA === 'AMBIGUO'
+      }">
+    <div class="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-2xl text-[#003629]">verified_user</span>
+            <div>
+                <h4 class="text-sm font-bold text-[#191c1d]">Parecer Automatizado de Conformidade (RAG)</h4>
+                <p class="text-[11px] text-[#707974]">Rastreabilidade Regulatória UFAPE</p>
+            </div>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase" [ngClass]="{
+            'bg-[#003629] text-white': parecer().decisaoIA === 'DEFERIDO',
+            'bg-[#ba1a1a] text-white': parecer().decisaoIA === 'INDEFERIDO',
+            'bg-[#b78103] text-white': parecer().decisaoIA === 'AMBIGUO'
+          }">
+            {{ parecer().decisaoIA }}
+        </span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-white/80 p-3 rounded-lg border border-[#e1e3e4]">
+        <div>
+            <span class="text-[#707974] block font-semibold">Artigo Citado:</span>
+            <span class="font-bold text-[#003629]">{{ parecer().artigoRegulamento }}</span>
+        </div>
+        <div>
+            <span class="text-[#707974] block font-semibold">Horas Aproveitáveis:</span>
+            <span class="font-bold text-[#191c1d]">{{ parecer().cargaHorariaAproveitavel }}h (Teto)</span>
+        </div>
+        <div>
+            <span class="text-[#707974] block font-semibold">Grau de Confiança:</span>
+            <span class="font-bold text-[#003629]">{{ (parecer().scoreConfianca * 100) | number:'1.0-0' }}%</span>
+        </div>
+    </div>
+    <div class="text-xs text-[#404945] leading-relaxed">
+        <span class="font-semibold text-[#191c1d] block mb-1">Fundamentação Técnica:</span>
+        <p>{{ parecer().justificativaTecnica }}</p>
+    </div>
+</div>
