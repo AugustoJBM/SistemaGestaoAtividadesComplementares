@@ -30,10 +30,9 @@ export interface AtividadeResponse {
   categoria: string;
   dataCadastro?: string;
   estudanteEmail?: string;
+  status?: string;
 }
 
-// Contrato de fio da listagem (GET /api/v1/atividades). Campos podem vir
-// ausentes ou nulos, por isso o service normaliza antes de expor o dominio.
 export interface AtividadeListagemDTO {
   id?: number | null;
   titulo?: string | null;
@@ -43,9 +42,9 @@ export interface AtividadeListagemDTO {
   natureza?: string | null;
   categoria?: string | null;
   dataCadastro?: string | null;
+  status?: string | null;
 }
 
-// Modelo de dominio entregue as telas de listagem.
 export interface Atividade {
   id: number;
   titulo: string;
@@ -55,9 +54,32 @@ export interface Atividade {
   natureza: string;
   categoria: string;
   dataCadastro: string | null;
+  status?: string;
 }
 
 export interface FiltroAtividades {
   natureza?: Natureza;
   categoria?: Categoria;
+}
+
+export interface ParecerResponseDTO {
+  id: number | null;
+  atividadeId: number | null;
+  naturezaSugerida: string;
+  categoriaSugerida: string;
+  cargaHorariaAproveitavel: number;
+  artigoRegulamento: string;
+  justificativaTecnica: string;
+  scoreConfianca: number;
+  decisaoIA: 'DEFERIDO' | 'INDEFERIDO' | 'AMBIGUO';
+  tempoProcessamentoMs: number | null;
+}
+
+export interface ExtracaoCertificadoResponseDTO {
+  titulo: string;
+  instituicaoResponsavel: string;
+  dataRealizacao: string;
+  cargaHoraria: number;
+  natureza: Natureza | string;
+  categoria: Categoria | string;
 }
