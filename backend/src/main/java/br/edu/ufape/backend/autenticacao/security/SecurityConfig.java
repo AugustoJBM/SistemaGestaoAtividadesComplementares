@@ -73,17 +73,37 @@ public class SecurityConfig {
                                                 auth.requestMatchers("/h2-console/**").permitAll();
                                         }
 
-                                        // Rotas de atividades - ESTUDANTE
-                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades")
+                                        // Rotas de atividades, certificados e IA associadas ao Estudante
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades",
+                                                        "/api/v1/atividades/**")
+                                                        .hasRole("ESTUDANTE");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/atividades/**")
                                                         .hasRole("ESTUDANTE");
                                         auth.requestMatchers(HttpMethod.DELETE, "/api/v1/atividades/**")
                                                         .hasRole("ESTUDANTE");
                                         auth.requestMatchers(HttpMethod.GET, "/api/v1/atividades",
-                                                        "/api/v1/atividades/progresso").hasRole("ESTUDANTE");
-                                        // Rotas de relatorios - ESTUDANTE
-                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/relatorios/atividades")
+                                                        "/api/v1/atividades/**", "/api/v1/atividades/progresso")
                                                         .hasRole("ESTUDANTE");
 
+                                        // Rotas de relatórios - ESTUDANTE
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/relatorios",
+                                                        "/api/v1/relatorios/**")
+                                                        .hasRole("ESTUDANTE");
+
+                                        // Rotas de Gestão de Regulamentos (PPC/RAG) - ADMINISTRADOR e AVALIADOR
+                                        auth.requestMatchers("/api/v1/regulamentos", "/api/v1/regulamentos/**")
+                                                        .hasAnyRole("ADMINISTRADOR", "AVALIADOR");
+
+                                        // Rotas de Métricas de Pesquisa e Auditoria - ADMINISTRADOR e AVALIADOR
+                                        auth.requestMatchers("/api/v1/metricas-pesquisa",
+                                                        "/api/v1/metricas-pesquisa/**")
+                                                        .hasAnyRole("ADMINISTRADOR", "AVALIADOR");
+
+                                        // Avaliação e homologação de atividades - AVALIADOR e ADMINISTRADOR
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/atividades/*/avaliar")
+                                                        .hasAnyRole("AVALIADOR", "ADMINISTRADOR");
+
+                                        // Demais rotas autenticadas (Regulamentos, Métricas de Pesquisa, etc.)
                                         auth.anyRequest().authenticated();
                                 })
                                 .exceptionHandling(exception -> exception
