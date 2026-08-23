@@ -54,6 +54,31 @@
                 </a>
             </div>
 
+            <!-- Card de Autopreenchimento com IA -->
+            <div class="mb-6 p-4 bg-[#e6efe9]/50 border border-[#c0c9c3] rounded-xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-[#003629]/10 flex items-center justify-center text-[#003629]">
+                        <span class="material-symbols-outlined text-2xl">document_scanner</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-[#191c1d]">Preenchimento Inteligente com IA</h3>
+                        <p class="text-[11px] text-[#707974]">Selecione o certificado para preencher os campos e anexar o arquivo automaticamente</p>
+                    </div>
+                </div>
+                <label
+                    class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#1b4d3e] transition-colors shrink-0 shadow-sm">
+                    @if (extraindoComIA()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    <span>Lendo Certificado...</span>
+                    } @else {
+                    <span class="material-symbols-outlined text-sm">upload_file</span>
+                    <span>Autopreencher</span>
+                    }
+                    <input type="file" (change)="aoSelecionarArquivoComIA($event)" accept=".pdf,image/png,image/jpeg,image/jpg" class="hidden"
+                        [disabled]="extraindoComIA()">
+                </label>
+            </div>
+
             <!-- Main Form Card -->
             <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" aria-label="Formulário de Cadastro de Atividade"
                 class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant p-6 md:p-8 space-y-8"
@@ -222,8 +247,8 @@
                         <div class="flex items-center justify-between bg-surface-container p-4 rounded-lg z-20 relative"
                             id="upload-success">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-primary-container"
-                                    id="file-icon">description</span>
+                                <span class="material-symbols-outlined text-primary-container text-2xl"
+                                    id="file-icon">task</span>
                                 <div class="text-left">
                                     <p class="font-body-md text-body-md font-medium text-on-surface truncate max-w-[200px] sm:max-w-xs"
                                         id="file-name">
