@@ -69,7 +69,7 @@ public class ProgressoService {
                                 .filter(Objects::nonNull)
                                 .filter(a -> aprovadas ? RegraAtividadeValida.isAprovada(a)
                                                 : RegraAtividadeValida.isPendente(a))
-                                .mapToInt(a -> a.getCargaHorariaEmHoras())
+                                .mapToInt(a -> a.getCargaHorariaEmHoras() != null ? a.getCargaHorariaEmHoras() : 0)
                                 .sum();
         }
 }
