@@ -32,7 +32,6 @@ export class RelatorioComponent implements OnInit {
   carregarRelatorio(): void {
     this.carregando.set(true);
     this.mensagemErro.set(null);
-
     this.relatorioService.obterRelatorio().subscribe({
       next: (relatorio) => {
         this.relatorio.set(relatorio);
@@ -45,15 +44,17 @@ export class RelatorioComponent implements OnInit {
     });
   }
 
+  imprimirRelatorio(): void {
+    window.print();
+  }
+
   rotuloCategoria(categoria: string): string {
     return ROTULOS_CATEGORIA[categoria] ?? categoria;
   }
 
   dataFormatada(dataIso: string): string {
     const partes = dataIso.split('-');
-    if (partes.length !== 3) {
-      return '';
-    }
+    if (partes.length !== 3) return '';
     const [ano, mes, dia] = partes;
     return `${dia}/${mes}/${ano}`;
   }
