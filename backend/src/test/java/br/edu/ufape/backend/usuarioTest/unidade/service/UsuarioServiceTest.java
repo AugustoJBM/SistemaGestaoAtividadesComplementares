@@ -1,20 +1,27 @@
 package br.edu.ufape.backend.usuarioTest.unidade.service;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Usuario;
 import br.edu.ufape.backend.usuario.repository.UsuarioRepository;
 import br.edu.ufape.backend.usuario.service.UsuarioService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UsuarioServiceTest {
@@ -22,46 +29,49 @@ class UsuarioServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @InjectMocks
     private UsuarioService usuarioService;
 
-    @BeforeEach
-    void setUp() {
-        usuarioService = new UsuarioService(usuarioRepository);
-    }
-
     @Test
-    @DisplayName("Deve salvar usuario com sucesso")
+    @DisplayName("Deve salvar usuário com sucesso")
     void deveSalvarUsuario() {
-        Estudante estudante = new Estudante("Jose", "jose@ufape.edu.br", "senhaHash");
-        when(usuarioRepository.save(estudante)).thenReturn(estudante);
+        Estudante estudante = new Estudante("Lucas Silva", "lucas@ufape.edu.br", "hash123");
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(estudante);
 
         Usuario resultado = usuarioService.salvar(estudante);
 
         assertNotNull(resultado);
-        assertEquals("Jose", resultado.getNome());
+        assertEquals("lucas@ufape.edu.br", resultado.getEmail());
         verify(usuarioRepository, times(1)).save(estudante);
     }
 
     @Test
-    @DisplayName("Deve buscar usuario por e-mail com sucesso")
+    @DisplayName("Deve buscar usuário por e-mail ignorando maiúsculas/minúsculas")
     void deveBuscarUsuarioPorEmail() {
-        Estudante estudante = new Estudante("Jose", "jose@ufape.edu.br", "senhaHash");
-        when(usuarioRepository.findByEmail("jose@ufape.edu.br")).thenReturn(Optional.of(estudante));
+        String email = "aluno@ufape.edu.br";
+        Estudante estudante = new Estudante("Aluno Teste", email, "hash123");
 
-        Optional<Usuario> resultado = usuarioService.buscarPorEmail("jose@ufape.edu.br");
+        when(usuarioRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(estudante));
+        lenient().when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(estudante));
+
+        Optional<Usuario> resultado = usuarioService.buscarPorEmail(email);
 
         assertTrue(resultado.isPresent());
-        assertEquals("jose@ufape.edu.br", resultado.get().getEmail());
+        assertEquals(email, resultado.get().getEmail());
+        verify(usuarioRepository, times(1)).findByEmailIgnoreCase(email);
     }
 
     @Test
-    @DisplayName("Deve verificar se e-mail existe no banco")
+    @DisplayName("Deve verificar se e-mail existe ignorando maiúsculas/minúsculas")
     void deveVerificarSeEmailExiste() {
-        when(usuarioRepository.existsByEmail("jose@ufape.edu.br")).thenReturn(true);
+        String email = "aluno@ufape.edu.br";
 
-        boolean existe = usuarioService.existePorEmail("jose@ufape.edu.br");
+        when(usuarioRepository.existsByEmailIgnoreCase(email)).thenReturn(true);
+        lenient().when(usuarioRepository.existsByEmail(email)).thenReturn(true);
+
+        boolean existe = usuarioService.existePorEmail(email);
 
         assertTrue(existe);
-        verify(usuarioRepository, times(1)).existsByEmail("jose@ufape.edu.br");
+        verify(usuarioRepository, times(1)).existsByEmailIgnoreCase(email);
     }
 }
