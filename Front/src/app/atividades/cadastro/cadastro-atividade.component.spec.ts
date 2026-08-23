@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { of, throwError } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CadastroAtividadeComponent } from './cadastro-atividade.component';
 import { AtividadeService } from '../atividade.service';
 import { API_BASE_URL } from '../../api.config';
@@ -12,6 +13,7 @@ const ATIVIDADES_URL = `${API_BASE_URL}/atividades`;
 describe('CadastroAtividadeComponent', () => {
     let component: CadastroAtividadeComponent;
     let fixture: ComponentFixture<CadastroAtividadeComponent>;
+    let atividadeService: AtividadeService;
     let httpMock: HttpTestingController;
 
     beforeEach(async () => {
@@ -27,6 +29,7 @@ describe('CadastroAtividadeComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(CadastroAtividadeComponent);
         component = fixture.componentInstance;
+        atividadeService = TestBed.inject(AtividadeService);
         httpMock = TestBed.inject(HttpTestingController);
         fixture.detectChanges();
     });
@@ -42,6 +45,42 @@ describe('CadastroAtividadeComponent', () => {
     it('deve iniciar com formulário inválido e botão de envio desabilitado', () => {
         expect(component.activityForm.valid).toBeFalsy();
         expect(component.isFormularioInvalido()).toBeTruthy();
+    });
+
+    it('deve autopreencher os campos ao selecionar arquivo com IA', () => {
+        const arquivo = new File(['conteudo'], 'certificado.pdf', { type: 'application/pdf' });
+        const extracaoMock = {
+            titulo: 'Curso de IA Aplicada',
+            instituicaoResponsavel: 'UFAPE',
+            dataRealizacao: '2026-04-10',
+            cargaHoraria: 40,
+            natureza: 'ACC',
+            categoria: 'PESQUISA'
+        };
+
+        vi.spyOn(atividadeService, 'extrairDadosCertificado').mockReturnValue(of(extracaoMock as any));
+
+        component.aoSelecionarArquivoComIA({ target: { files: [arquivo] } } as unknown as Event);
+
+        expect(component.arquivoAnexado()).toEqual(arquivo);
+        expect(component.activityForm.value.titulo).toBe('Curso de IA Aplicada');
+        expect(component.activityForm.value.instituicao).toBe('UFAPE');
+        expect(component.activityForm.value.cargaHoraria).toBe(40);
+        expect(component.extraindoComIA()).toBe(false);
+    });
+
+    it('deve manter o arquivo anexado mesmo se a extração de IA falhar', () => {
+        const arquivo = new File(['conteudo'], 'certificado.pdf', { type: 'application/pdf' });
+
+        vi.spyOn(atividadeService, 'extrairDadosCertificado').mockReturnValue(
+            throwError(() => new Error('Falha de IA'))
+        );
+
+        component.aoSelecionarArquivoComIA({ target: { files: [arquivo] } } as unknown as Event);
+
+        expect(component.arquivoAnexado()).toEqual(arquivo);
+        expect(component.erroExtracao()).toContain('Não foi possível extrair os dados');
+        expect(component.extraindoComIA()).toBe(false);
     });
 
     it('deve rejeitar arquivos com formato não permitido', () => {
@@ -86,9 +125,7 @@ describe('CadastroAtividadeComponent', () => {
         });
         const arquivoValido = new File(['dummy content'], 'certificado.jpg', { type: 'image/jpeg' });
         component.onFileSelected({ target: { files: [arquivoValido] } } as unknown as Event);
-
         component.onSubmit();
-
         const req = httpMock.expectOne(ATIVIDADES_URL);
         expect(req.request.method).toBe('POST');
         req.flush({
@@ -100,7 +137,6 @@ describe('CadastroAtividadeComponent', () => {
             natureza: 'ACEX',
             categoria: 'EXTENSAO'
         });
-
         expect(component.mensagemSucesso()).toBeTruthy();
         expect(component.activityForm.get('titulo')?.value).toBeNull();
         expect(component.arquivoAnexado()).toBeNull();
