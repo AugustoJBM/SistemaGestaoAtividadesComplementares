@@ -4,10 +4,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,7 +22,14 @@ public class JwtService {
     private long jwtExpirationMs;
 
     public String generateToken(String subject) {
+        return generateToken(subject, null);
+    }
+
+    public String generateToken(String subject, String role) {
         Map<String, Object> claims = new HashMap<>();
+        if (role != null) {
+            claims.put("role", role);
+        }
         return buildToken(claims, subject);
     }
 
