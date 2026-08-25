@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - dev
       - ia
   pull_request:
     branches:
       - main
+      - dev
       - ia
 
 permissions:
@@ -38,7 +40,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Build, testes e JaCoCo
@@ -77,11 +79,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: Front/package-lock.json
 
@@ -103,8 +107,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Executar SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          projectBaseDir: Front
+
   # ============================================================
-  # SONARCLOUD (Apenas Backend)
+  # SONARCLOUD (Backend - o scan do frontend roda no job frontend)
   # ============================================================
 
   sonarcloud:
@@ -122,7 +134,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Cache SonarCloud

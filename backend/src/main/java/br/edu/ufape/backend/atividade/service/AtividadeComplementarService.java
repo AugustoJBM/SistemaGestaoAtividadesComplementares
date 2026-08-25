@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -44,18 +45,23 @@ public class AtividadeComplementarService {
     private final ArmazenamentoCertificadoService armazenamentoCertificadoService;
     private final AuditoriaConformidadeService auditoriaConformidadeService;
     private final ParecerConformidadeRepository parecerConformidadeRepository;
+    private final Path diretorioCertificados;
 
     public AtividadeComplementarService(
             AtividadeComplementarRepository atividadeRepository,
             UsuarioContrato usuarioContrato,
             ArmazenamentoCertificadoService armazenamentoCertificadoService,
             AuditoriaConformidadeService auditoriaConformidadeService,
-            ParecerConformidadeRepository parecerConformidadeRepository) {
+            ParecerConformidadeRepository parecerConformidadeRepository,
+            @Value("${sgac.certificados.diretorio:certificados}") String diretorioCertificados) {
         this.atividadeRepository = atividadeRepository;
         this.usuarioContrato = usuarioContrato;
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
         this.auditoriaConformidadeService = auditoriaConformidadeService;
         this.parecerConformidadeRepository = parecerConformidadeRepository;
+        this.diretorioCertificados = Path
+                .of(diretorioCertificados != null ? diretorioCertificados : "certificados")
+                .toAbsolutePath().normalize();
     }
 
     public ParecerConformidade auditarOuObterParecer(AtividadeComplementar atividade) {
@@ -83,7 +89,10 @@ public class AtividadeComplementarService {
         }
 
         try {
-            Path caminho = Paths.get(certificado.getReferencia());
+            Path caminho = Paths.get(certificado.getReferencia()).toAbsolutePath().normalize();
+            if (!caminho.startsWith(diretorioCertificados)) {
+                throw new AtividadeNaoEncontradaException("Arquivo físico do certificado não encontrado no servidor.");
+            }
             Resource resource = new UrlResource(caminho.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;

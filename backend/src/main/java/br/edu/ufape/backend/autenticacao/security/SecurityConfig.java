@@ -3,6 +3,7 @@ package br.edu.ufape.backend.autenticacao.security;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -36,15 +37,18 @@ public class SecurityConfig {
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final Environment env;
         private final ObjectMapper objectMapper;
+        private final List<String> corsAllowedOrigins;
 
         public SecurityConfig(
                         JwtAuthenticationFilter jwtAuthenticationFilter,
                         UserDetailsService userDetailsService,
                         Environment env,
-                        ObjectMapper objectMapper) {
+                        ObjectMapper objectMapper,
+                        @Value("${app.cors.allowed-origins}") List<String> corsAllowedOrigins) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
                 this.env = env;
                 this.objectMapper = objectMapper;
+                this.corsAllowedOrigins = corsAllowedOrigins;
         }
 
         @Bean
@@ -146,10 +150,7 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOriginPatterns(List.of(
-                                "http://localhost:4200",
-                                "http://localhost:*",
-                                "https://*.onrender.com"));
+                configuration.setAllowedOrigins(corsAllowedOrigins);
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(
                                 List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
