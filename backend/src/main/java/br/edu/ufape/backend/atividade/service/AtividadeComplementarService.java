@@ -6,11 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.dto.AtualizarAtividadeRequestDTO;
 import br.edu.ufape.backend.atividade.dto.CadastroAtividadeRequestDTO;
@@ -20,6 +22,7 @@ import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.model.ParecerConformidade;
+import br.edu.ufape.backend.atividade.model.StatusAtividade;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.atividade.repository.ParecerConformidadeRepository;
 import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
@@ -141,6 +144,9 @@ public class AtividadeComplementarService {
         atividade.setNatureza(request.natureza());
         atividade.setCategoria(request.categoria());
 
+        // Reset de status para PENDENTE na edição para evitar inconsistência de horas
+        atividade.setStatus(StatusAtividade.PENDENTE);
+
         Certificado certificadoAntigo = atividade.getCertificado();
         Certificado novoCertificado = null;
 
@@ -152,11 +158,14 @@ public class AtividadeComplementarService {
 
         try {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
-            // INVALIDA O PARECER ANTIGO PARA FORÇAR NOVA AUDITORIA DA IA COM OS DADOS EDITADOS
+
+            // Invalida o parecer antigo para forçar nova auditoria
             parecerConformidadeRepository.findByAtividadeId(id).ifPresent(parecerConformidadeRepository::delete);
+
             if (novoCertificado != null && certificadoAntigo != null) {
                 removerArquivoCertificado(certificadoAntigo);
             }
+
             return new AtividadeResponseDTO(atividadeSalva);
         } catch (RuntimeException e) {
             if (novoCertificado != null) {
@@ -179,7 +188,7 @@ public class AtividadeComplementarService {
 
     public AtividadeComplementar buscarPorId(Long id) {
         return atividadeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Atividade não encontrada com o id: " + id));
+                .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada com o id: " + id));
     }
 
     private void removerArquivoCertificado(Certificado certificado) {
