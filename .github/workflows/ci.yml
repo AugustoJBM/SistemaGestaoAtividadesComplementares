@@ -79,11 +79,15 @@ jobs:
       - name: Testes e cobertura
         run: npm run test:coverage
 
-      - name: Verificar relatório LCOV
+      - name: Verificar cobertura
+        if: always()
         run: |
-          test -f coverage/lcov.info
-          echo "Relatório LCOV encontrado:"
-          ls -lh coverage/lcov.info
+          echo "=== Conteúdo de coverage ==="
+          find coverage -maxdepth 4 -type f -print 2>/dev/null || true
+
+          echo ""
+          echo "=== Arquivos LCOV ==="
+          find . -type f \( -name "lcov.info" -o -name "*.lcov" \) -print 2>/dev/null || true
 
       - name: Publicar relatório de cobertura
         if: always()
