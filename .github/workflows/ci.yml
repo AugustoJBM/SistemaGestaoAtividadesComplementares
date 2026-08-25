@@ -215,7 +215,7 @@ jobs:
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dsonar.token="${SONAR_TOKEN}"
           -Dsonar.organization=gestaoatividadecomplementarorg
-          -Dsonar.projectKey=sgac-sistemagestaoatividadescomplementares
+          -Dsonar.projectKey=sgac-sistemagestaoatividadescomplementares_sgac
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.javascript.lcov.reportPaths=../Front/coverage/sonar/lcov.info
