@@ -8,6 +8,7 @@ import { AutenticacaoService } from './autenticacao.service';
 export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authService = inject(AutenticacaoService);
   const router = inject(Router);
+
   const token = authService.getToken();
   const authReq = token
     ? req.clone({ setHeaders: { Authorization: `${authService.getTokenType()} ${token}` } })
@@ -17,7 +18,8 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if ((error.status === 401 || error.status === 403) && !isPublicAuthRoute) {
+      // Apenas 401 (sessão inválida/expirada) deve deslogar e limpar a sessão
+      if (error.status === 401 && !isPublicAuthRoute) {
         authService.encerrarSessao();
         void router.navigate(['/login']);
       }

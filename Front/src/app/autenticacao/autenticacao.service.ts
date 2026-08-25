@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, tap, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { Credenciais, LoginRequest, LoginResponse } from './autenticacao.model';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { API_BASE_URL } from '../api.config';
+import { Credenciais, LoginResponse } from './autenticacao.model';
+import { RegistroRequest, RegistroResponse } from './registro/registro.model';
 
-const TIPO_TOKEN_PADRAO = 'Bearer';
+const CHAVE_TOKEN = 'sgac_token';
+const CHAVE_TIPO_TOKEN = 'sgac_token_tipo';
 
 @Injectable({
   providedIn: 'root'
@@ -13,70 +15,92 @@ const TIPO_TOKEN_PADRAO = 'Bearer';
 export class AutenticacaoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${API_BASE_URL}/auth`;
-  private readonly TOKEN_KEY = 'sgac_auth_token';
-  private readonly TOKEN_TYPE_KEY = 'sgac_auth_token_type';
 
-  login(credenciais: Credenciais): Observable<LoginResponse> {
-    const payload: LoginRequest = {
-      usuario: credenciais.email,
-      senha: credenciais.senha
-    };
-
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, payload).pipe(
-      tap((response) => this.salvarSessao(response)),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErro(error))))
+  cadastrar(request: RegistroRequest): Observable<RegistroResponse> {
+    return this.http.post<RegistroResponse>(`${this.apiUrl}/cadastro`, request).pipe(
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroCadastro(error))))
     );
   }
 
-  saveToken(token: string, tipo: string = TIPO_TOKEN_PADRAO): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
-    localStorage.setItem(this.TOKEN_TYPE_KEY, tipo);
+  login(credenciais: Credenciais): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, {
+      usuario: credenciais.email,
+      senha: credenciais.senha
+    }).pipe(
+      tap((resposta) => this.saveToken(resposta.token, resposta.tipo || 'Bearer')),
+      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroLogin(error))))
+    );
+  }
+
+  saveToken(token: string, tipo: string = 'Bearer'): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(CHAVE_TOKEN, token);
+      localStorage.setItem(CHAVE_TIPO_TOKEN, tipo);
+    }
+  }
+
+  salvarSessao(resposta: LoginResponse): void {
+    this.saveToken(resposta.token, resposta.tipo || 'Bearer');
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+    return localStorage.getItem(CHAVE_TOKEN);
   }
 
   getTokenType(): string {
-    return localStorage.getItem(this.TOKEN_TYPE_KEY) ?? TIPO_TOKEN_PADRAO;
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return 'Bearer';
+    }
+    return localStorage.getItem(CHAVE_TIPO_TOKEN) ?? 'Bearer';
   }
 
-  // Fonte unica do encerramento de sessao: usada tanto no logout manual
-  // quanto na expiracao de token detectada pelo interceptor.
-  encerrarSessao(): void {
-    this.limparToken();
-    // A aplicacao nao grava nada em sessionStorage hoje; limpar tudo garante
-    // que nenhum residuo de sessao sobreviva a saida.
-    sessionStorage.clear();
+  getRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (!payloadBase64) return null;
+      const json = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+      const parsed = JSON.parse(json);
+      return parsed.role ?? parsed.roles?.[0] ?? null;
+    } catch {
+      return null;
+    }
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return this.getToken() !== null;
   }
 
-  private limparToken(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.TOKEN_TYPE_KEY);
+  estaAutenticado(): boolean {
+    return this.isAuthenticated();
   }
 
-  private salvarSessao(response: LoginResponse): void {
-    if (response?.token) {
-      this.saveToken(response.token, response.tipo || TIPO_TOKEN_PADRAO);
+  encerrarSessao(): void {
+    if (typeof window !== 'undefined') {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.clear();
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
     }
   }
 
-  // Traduz o erro de transporte para uma mensagem de dominio, para que os
-  // componentes visuais nao precisem conhecer status HTTP.
-  private traduzirErro(error: HttpErrorResponse): string {
-    if (error.status === 401) {
-      return 'Credenciais inválidas.';
-    }
+  private traduzirErroCadastro(error: HttpErrorResponse): string {
+    if (error.status === 400 && error.error?.message) return error.error.message;
+    if (error.status === 400 && typeof error.error === 'string') return error.error;
+    if (error.status === 409) return 'Este e-mail já está cadastrado.';
+    if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    return 'Não foi possível realizar o cadastro. Tente novamente mais tarde.';
+  }
 
-    // status 0 indica que a requisicao nao chegou ao servidor.
-    if (error.status === 0) {
-      return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
-    }
-
-    return error.error?.message || 'Ocorreu um erro ao realizar o login. Tente novamente.';
+  private traduzirErroLogin(error: HttpErrorResponse): string {
+    if (error.status === 401) return 'Credenciais inválidas.';
+    if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    return 'Ocorreu um erro ao realizar o login. Tente novamente.';
   }
 }

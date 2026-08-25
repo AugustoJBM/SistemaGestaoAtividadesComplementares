@@ -1,7 +1,6 @@
 package br.edu.ufape.backend.comum.exception;
 
 import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,8 +14,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
+import br.edu.ufape.backend.atividade.exception.AtividadeNaoEncontradaException;
 import br.edu.ufape.backend.autenticacao.exception.EmailJaCadastradoException;
 import br.edu.ufape.backend.autenticacao.exception.PerfilNaoPermitidoException;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
@@ -44,10 +43,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
 
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErroResponse> tratarArquivoAusente(MissingServletRequestPartException ex) {
+        ErroResponse erro = new ErroResponse("Arquivo de certificado não pode ser vazio", HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
     @ExceptionHandler({
             MissingServletRequestParameterException.class,
             MethodArgumentTypeMismatchException.class,
-            MissingServletRequestPartException.class,
             MultipartException.class,
             IllegalArgumentException.class
     })
@@ -62,6 +66,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResponse> tratarRecursoNaoEncontrado(NoResourceFoundException ex) {
         ErroResponse erro = new ErroResponse("Recurso não encontrado.", HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+    }
+
+    @ExceptionHandler(AtividadeNaoEncontradaException.class)
+    public ResponseEntity<ErroResponse> tratarAtividadeNaoEncontrada(AtividadeNaoEncontradaException ex) {
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 
@@ -97,5 +107,12 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erro);
+    }
+
+    @ExceptionHandler(br.edu.ufape.backend.ia.exception.IaProcessamentoException.class)
+    public ResponseEntity<ErroResponse> tratarErroIA(br.edu.ufape.backend.ia.exception.IaProcessamentoException ex) {
+        log.warn("Erro no processamento de IA: {}", ex.getMessage());
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE.value());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(erro);
     }
 }

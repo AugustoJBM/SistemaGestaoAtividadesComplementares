@@ -1,0 +1,200 @@
+<div class="bg-[#f8f9fa] min-h-screen flex flex-col font-sans text-[#191c1d]">
+    <!-- Header -->
+    <header class="bg-white border-b border-[#c0c9c3] shadow-sm sticky top-0 z-50">
+        <div class="flex justify-between items-center px-4 md:px-8 w-full max-w-[1280px] mx-auto h-16">
+            <div class="flex items-center gap-3">
+                <span class="text-lg md:text-xl font-bold text-[#003629] tracking-tight">
+                    SGAC - Gestão de Atividades Complementares
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow w-full max-w-4xl mx-auto px-4 py-8 md:py-12 flex flex-col items-center">
+
+        <!-- Header Section -->
+        <div class="w-full mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-[#003629] tracking-tight mb-2">
+                    Base de Conhecimento RAG (PPC & Leis)
+                </h1>
+                <p class="text-xs md:text-sm text-[#404945]">
+                    Submeta documentos normativos da UFAPE para segmentação, extração de artigos e vetorização
+                    automática.
+                </p>
+            </div>
+            <a class="inline-flex items-center gap-2 text-[#003629] hover:text-[#1b4d3e] font-semibold text-xs px-4 py-2 border border-[#c0c9c3] rounded-xl hover:border-[#003629] transition-all bg-white shadow-sm"
+                routerLink="/dashboard">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Voltar ao Painel
+            </a>
+        </div>
+
+        <!-- Error Alert -->
+        @if (mensagemErro()) {
+        <div
+            class="w-full mb-6 p-4 bg-[#ffdad6] text-[#93000a] border border-[#ba1a1a]/20 rounded-xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2 text-xs font-medium">
+                <span class="material-symbols-outlined text-sm">error</span>
+                <span>{{ mensagemErro() }}</span>
+            </div>
+            <button type="button" (click)="mensagemErro.set(null)" class="text-[#93000a] hover:opacity-75">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+        }
+
+        <!-- Result Banner -->
+        @if (resultado(); as r) {
+        <div
+            class="w-full mb-6 p-5 bg-[#e6efe9] border-2 border-[#003629] rounded-2xl shadow-sm space-y-3 animate-fadeIn">
+            <div class="flex items-center gap-3 text-[#003629]">
+                <span class="material-symbols-outlined text-3xl">verified</span>
+                <div>
+                    <h3 class="text-sm font-bold">Documento Processado com Sucesso!</h3>
+                    <p class="text-xs text-[#404945]">{{ r.mensagem }}</p>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Form Container -->
+        <div
+            class="w-full bg-white rounded-2xl border border-[#c0c9c3] shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-6 md:p-8 space-y-6">
+
+            <!-- Info Box -->
+            <div
+                class="p-4 bg-[#e6efe9]/30 border border-[#c0c9c3]/50 rounded-xl flex items-start gap-3 text-xs text-[#404945] leading-relaxed">
+                <span class="material-symbols-outlined text-xl text-[#003629] mt-0.5">info</span>
+                <div>
+                    <p class="font-bold text-[#191c1d] mb-1">Como funciona a extração e vetorização?</p>
+                    <p>
+                        O arquivo (PPC do curso, Regulamento Geral de ACC/ACEX ou Resolução) é lido e fatiado. O modelo
+                        compila cada regra e teto de horas, gerando vetores numéricos de 384 dimensões via
+                        <b>Hugging Face</b> para buscas semânticas em tempo real.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-[#191c1d] uppercase tracking-wider">
+                    Documento Normativo Oficial (PDF ou TXT)
+                </label>
+
+                @if (!arquivoSelecionado()) {
+                <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                    class="border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer relative bg-[#f8f9fa] hover:bg-[#e6efe9]/20"
+                    [ngClass]="{ 'border-[#003629] bg-[#e6efe9]/30': arrastando(), 'border-[#c0c9c3]': !arrastando() }">
+                    <input type="file" accept=".pdf,.txt" (change)="aoSelecionarArquivo($event)"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="material-symbols-outlined text-4xl text-[#003629]">upload_file</span>
+                        <p class="text-xs md:text-sm font-bold text-[#191c1d]">Arraste o PPC ou Regulamento aqui</p>
+                        <p class="text-[11px] text-[#707974]">ou clique para selecionar do computador</p>
+                        <span
+                            class="inline-block mt-2 px-3 py-1 bg-white border border-[#c0c9c3] rounded-full text-[10px] font-semibold text-[#404945]">
+                            Aceita PDF e TXT (Sem limite de páginas)
+                        </span>
+                    </div>
+                </div>
+                } @else {
+                <div
+                    class="p-4 bg-white border-2 border-[#003629] rounded-2xl flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-[#003629]/10 flex items-center justify-center text-[#003629]">
+                            <span class="material-symbols-outlined text-2xl">description</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-[#191c1d] truncate max-w-xs md:max-w-md">{{
+                                arquivoSelecionado()?.name }}</p>
+                            <p class="text-[11px] text-[#707974]">{{ formatarTamanho(arquivoSelecionado()?.size || 0) }}
+                                • Pronto para vetorização</p>
+                        </div>
+                    </div>
+                    <button type="button" (click)="removerArquivo()" [disabled]="processando()"
+                        class="p-2 text-[#ba1a1a] hover:bg-[#ffdad6]/30 rounded-xl transition-colors disabled:opacity-50">
+                        <span class="material-symbols-outlined text-xl">delete</span>
+                    </button>
+                </div>
+                }
+            </div>
+
+            <!-- Substitution Option Toggle -->
+            <div class="pt-4 border-t border-[#e1e3e4]">
+                <label class="flex items-start gap-3 cursor-pointer select-none">
+                    <input type="checkbox" [checked]="substituirExistentes()"
+                        (change)="substituirExistentes.set(!substituirExistentes())"
+                        class="mt-1 w-4 h-4 rounded text-[#003629] focus:ring-[#003629] border-[#c0c9c3]" />
+                    <div>
+                        <span class="text-xs font-bold text-[#191c1d] block">Substituir base regulatória anterior</span>
+                        <span class="text-[11px] text-[#707974] block">
+                            Marque esta opção caso esteja submetendo uma versão atualizada que substitui integralmente
+                            os artigos antigos.
+                        </span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-4 flex justify-end">
+                <button type="button" (click)="processarDocumento()" [disabled]="!arquivoSelecionado() || processando()"
+                    class="w-full sm:w-auto px-8 py-3 bg-[#003629] hover:bg-[#1b4d3e] text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    @if (processando()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    <span>Extraindo e Vetorizando com IA...</span>
+                    } @else {
+                    <span class="material-symbols-outlined text-sm">psychology</span>
+                    <span>Ingerir e Vetorizar Normas</span>
+                    }
+                </button>
+            </div>
+        </div>
+
+        <!-- Seção de Normas Ativas no Banco Vetorial -->
+        <div class="w-full mt-8 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-[#191c1d] flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#003629]">folder_open</span>
+                    <span>Normas Ativas na Base de Conhecimento ({{ regrasAtivas().length }})</span>
+                </h2>
+                <button type="button" (click)="carregarRegulamentos()"
+                    class="text-xs text-[#003629] hover:underline font-semibold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">refresh</span> Atualizar
+                </button>
+            </div>
+
+            @if (carregandoRegras()) {
+            <div
+                class="bg-white rounded-2xl border border-[#c0c9c3] p-8 text-center text-xs text-[#707974] flex flex-col items-center gap-2">
+                <span class="material-symbols-outlined animate-spin text-2xl text-[#003629]">progress_activity</span>
+                <span>Carregando normas armazenadas...</span>
+            </div>
+            } @else if (regrasAtivas().length === 0) {
+            <div class="bg-white rounded-2xl border border-[#c0c9c3] p-8 text-center text-xs text-[#707974]">
+                Nenhuma norma cadastrada na base. Faça o upload de um PPC ou regulamento acima.
+            </div>
+            } @else {
+            <div class="grid grid-cols-1 gap-3">
+                @for (regra of regrasAtivas(); track regra.id) {
+                <div
+                    class="bg-white p-4 rounded-xl border border-[#c0c9c3] shadow-sm hover:border-[#003629]/50 transition-all space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-[#003629] bg-[#e6efe9] px-2.5 py-0.5 rounded-md">
+                            {{ regra.artigo }}
+                        </span>
+                        <span class="text-[10px] text-[#707974] font-medium">Vetorizado</span>
+                    </div>
+                    <p class="text-xs text-[#404945] leading-relaxed pt-1">
+                        {{ regra.conteudoTexto }}
+                    </p>
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+    </main>
+</div>

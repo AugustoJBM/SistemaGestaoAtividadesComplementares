@@ -73,19 +73,16 @@
             }
           </div>
           <p class="text-xs text-[#404945] mb-4">{{ resumo.descricao }}</p>
-
           <p class="text-sm text-[#404945] mb-3">
             <span class="text-2xl font-bold text-[#003629]">{{ resumo.dados.horasAcumuladas }}h</span>
             <span class="text-[#707974]"> de {{ resumo.dados.horasExigidas }}h exigidas</span>
           </p>
-
           <div class="w-full h-3 bg-[#f3f4f5] rounded-full overflow-hidden" role="progressbar"
             [attr.aria-label]="'Progresso de ' + resumo.titulo" [attr.aria-valuenow]="percentualExibido(resumo.dados)"
             aria-valuemin="0" aria-valuemax="100">
             <div class="h-full bg-[#003629] rounded-full transition-all"
               [style.width.%]="percentualExibido(resumo.dados)"></div>
           </div>
-
           <div class="flex justify-between items-center mt-2 text-xs text-[#404945]">
             <span class="text-[11px] text-[#707974]">Faltam {{ resumo.dados.horasRestantes }}h</span>
             <span class="font-bold text-[#003629]">{{ percentualExibido(resumo.dados) }}% concluído</span>
@@ -107,6 +104,10 @@
         <a routerLink="/progresso"
           class="px-4 py-2 border border-[#003629] text-[#003629] text-sm font-semibold rounded-lg hover:bg-[#f3f4f5] transition-colors">
           Acompanhar carga horária
+        </a>
+        <a routerLink="/relatorio"
+          class="px-4 py-2 border border-[#003629] text-[#003629] text-sm font-semibold rounded-lg hover:bg-[#f3f4f5] transition-colors">
+          Relatório de Atividades
         </a>
       </nav>
     </div>

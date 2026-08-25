@@ -22,7 +22,7 @@ O Sistema de Gestão de Atividades Complementares tem como objetivo fornecer uma
 
 O sistema busca simplificar o acompanhamento das horas complementares exigidas pelos cursos de graduação, centralizando em um único ambiente todas as informações relacionadas às atividades realizadas pelos estudantes.
 
-Além de beneficiar os estudantes, o sistema também deverá fornecer mecanismos para facilitar o processo de avaliação das atividades pelos responsáveis institucionais.
+Além de beneficiar os estudantes, o sistema também fornece mecanismos automatizados e assistidos por Inteligência Artificial para facilitar o processo de auditoria e validação das atividades pelos responsáveis institucionais.
 
 ====================
 Problema
@@ -47,14 +47,15 @@ O projeto propõe uma plataforma web capaz de centralizar todo o processo de ger
 
 O sistema permitirá que o estudante:
 
-* envie certificados;
-* organize suas atividades;
-* acompanhe sua carga horária;
-* visualize o percentual concluído em cada categoria;
+* envie certificados com leitura e preenchimento assistidos por IA;
+* organize suas atividades complementares;
+* acompanhe sua carga horária em tempo real;
+* visualize o percentual concluído em cada modalidade (ACC e ACEX);
+* consulte pareceres preliminares de conformidade regulatória;
 * acompanhe o status das solicitações;
 * emita relatórios para formalização institucional.
 
-Além disso, os responsáveis pela validação poderão analisar as solicitações através de uma interface dedicada.
+Além disso, os responsáveis pela validação poderão analisar as solicitações através de uma interface dedicada com suporte a pareceres automáticos baseados nas normas oficiais da UFAPE.
 
 ====================
 Objetivos do Produto
@@ -63,13 +64,13 @@ Objetivos do Produto
 Os principais objetivos do sistema são:
 
 * centralizar o gerenciamento das atividades complementares;
-* reduzir processos manuais;
-* facilitar o envio de certificados;
-* automatizar o cálculo da carga horária;
-* fornecer transparência durante o processo de avaliação;
-* reduzir erros de documentação;
+* reduzir processos manuais e retrabalho de digitação;
+* facilitar o envio e a validação de certificados;
+* automatizar o cálculo e a conferência de carga horária com base em limites regulamentares;
+* fornecer transparência e rastreabilidade durante o processo de auditoria;
+* reduzir erros de classificação documental;
 * facilitar a emissão de relatórios institucionais;
-* melhorar a experiência do estudante.
+* melhorar a experiência do estudante e do avaliador.
 
 ====================
 Público-Alvo
@@ -79,99 +80,81 @@ O sistema será utilizado principalmente pelos seguintes perfis.
 
 Estudantes
 
-* cadastro de atividades;
+* cadastro de atividades com autopreenchimento;
 * envio de certificados;
 * acompanhamento do progresso;
-* consulta das horas cumpridas;
+* consulta das horas cumpridas e pendentes;
 * emissão de relatórios.
 
 Avaliadores
 
-* análise de solicitações;
+* análise de solicitações e documentos;
+* consulta a pareceres técnicos emitidos por IA;
 * aprovação de atividades;
-* rejeição de atividades;
+* rejeição de atividades com justificativa;
 * solicitação de correções.
 
-Coordenadores
+Coordenadores e Administradores
 
-* acompanhamento geral;
-* gerenciamento das regras institucionais;
-* gerenciamento das categorias de atividades.
-
-Administradores
-
-* gerenciamento do sistema;
-* manutenção dos usuários;
-* parametrização da aplicação.
+* acompanhamento geral e indicadores de integralização;
+* gestão da base de conhecimento regulatória (PPC e resoluções);
+* parametrização das exigências horárias e categorias;
+* acompanhamento de métricas de acurácia e concordância do sistema.
 
 ====================
 Escopo do Produto
 ====================
 
-O sistema contemplará inicialmente as seguintes funcionalidades.
+O sistema contempla as seguintes funcionalidades principais.
 
-Autenticação
+Autenticação e Autorização
 
-* cadastro;
-* login;
-* recuperação de senha;
-* controle de acesso.
+* cadastro de estudantes;
+* login com credenciais institucionais;
+* controle de acesso baseado em papéis (RBAC).
 
 Gerenciamento de Atividades
 
-* cadastro;
-* edição;
-* exclusão;
-* consulta;
-* categorização.
+* cadastro com autopreenchimento inteligente;
+* edição e exclusão de atividades;
+* consulta e filtragem por natureza e categoria.
 
 Gerenciamento de Certificados
 
-* upload;
-* download;
-* visualização;
-* validação.
+* upload de arquivos (PDF, PNG, JPEG);
+* armazenamento seguro e visualização integrada;
+* substituição de comprovantes durante a edição.
 
-Avaliação
+Inteligência Artificial e Auditoria Regulatória
 
-* aprovação;
-* rejeição;
-* solicitação de correções.
+* extração inteligente de metadados a partir de certificados (OCR/Visão);
+* ingestão e vetorização semântica de regulamentos e PPCs (RAG);
+* emissão de pareceres automatizados de conformidade com citação de artigos;
+* monitoramento de métricas de concordância e tempo de inferência.
 
-Dashboard
+Dashboard e Acompanhamento
 
-* horas acumuladas;
-* percentual concluído;
-* progresso por categoria.
+* horas acumuladas, pendentes e restantes;
+* percentual de conclusão de ACC (90h) e ACEX (320h);
+* visão integrada de progresso.
 
 Relatórios
 
-* resumo das atividades;
-* carga horária;
-* documentos institucionais.
-
-Notificações
-
-* alterações de status;
-* solicitações de correção;
-* novas avaliações.
+* relatório consolidado por natureza e categoria;
+* discriminação de atividades realizadas para formalização acadêmica.
 
 ====================
 Escopo Fora da Primeira Versão
 ====================
 
-As funcionalidades abaixo não fazem parte do escopo inicial do projeto.
+As funcionalidades abaixo não fazem parte do escopo inicial do projeto:
 
-* aplicativo mobile;
-* integração com SIGAA;
-* assinatura digital;
-* reconhecimento automático de certificados;
-* inteligência artificial para validação automática;
-* integração com sistemas externos;
-* múltiplas instituições de ensino;
-* suporte multilíngue.
+* aplicativo mobile nativo;
+* integração direta via API com o SIGAA;
+* assinatura digital ICP-Brasil;
+* integração com sistemas externos de outras instituições;
+* suporte a múltiplos idiomas.
 
-Essas funcionalidades poderão ser avaliadas para versões futuras.
 
 ====================
 Benefícios Esperados
@@ -259,13 +242,11 @@ Critérios de Sucesso
 O projeto será considerado bem-sucedido quando:
 
 * permitir o gerenciamento completo das atividades complementares;
-* reduzir significativamente o controle manual;
-* apresentar uma interface intuitiva;
-* possuir arquitetura organizada e modular;
-* permitir evolução futura do sistema;
-* atender aos requisitos definidos pelos Product Owners;
-* manter alta qualidade de código;
-* possuir documentação técnica completa.
+* automatizar a extração de dados e a auditoria de conformidade via normas institucionais;
+* apresentar interface responsiva, intuitiva e acessível;
+* manter arquitetura modular e baixo acoplamento entre os domínios;
+* atender aos requisitos funcionais e não funcionais estabelecidos.
+
 
 ====================
 Visão de Longo Prazo
