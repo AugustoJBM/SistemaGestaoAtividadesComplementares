@@ -1,4 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 import { RelatorioComponent } from './relatorio.component';
@@ -44,7 +46,12 @@ const relatorioVazio: RelatorioAtividades = {
 function montar(duble: Partial<RelatorioService>): ComponentFixture<RelatorioComponent> {
   TestBed.configureTestingModule({
     imports: [RelatorioComponent],
-    providers: [provideRouter([]), { provide: RelatorioService, useValue: duble }]
+    providers: [
+      provideRouter([]),
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: RelatorioService, useValue: duble }
+    ]
   });
   return TestBed.createComponent(RelatorioComponent);
 }
@@ -88,5 +95,19 @@ describe('RelatorioComponent', () => {
 
     expect(fixture.componentInstance.carregando()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Carregando');
+  });
+
+  it('exibe a acao de enviar para validacao quando ha atividades', () => {
+    const fixture = montar({ obterRelatorio: () => of(relatorioComDados) });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-submissao-solicitacao')).toBeTruthy();
+  });
+
+  it('nao exibe a acao de enviar para validacao no empty state', () => {
+    const fixture = montar({ obterRelatorio: () => of(relatorioVazio) });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-submissao-solicitacao')).toBeNull();
   });
 });

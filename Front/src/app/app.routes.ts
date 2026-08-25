@@ -8,6 +8,7 @@ import { authGuard } from './autenticacao/auth.guard';
 import { CadastroAtividadeComponent } from './atividades/cadastro/cadastro-atividade.component';
 import { ListagemAtividadesComponent } from './atividades/listagem/listagem-atividades.component';
 import { RelatorioComponent } from './relatorio/relatorio.component';
+import { AcompanhamentoSolicitacoesComponent } from './solicitacao/acompanhamento/acompanhamento-solicitacoes.component';
 import { EdicaoAtividadeComponent } from './atividades/edicao/edicao-atividade.component';
 import { LandingComponent } from './landing/landing.component';
 import { GestaoRegulamentosComponent } from './regulamentos/gestao-regulamentos.component';
@@ -28,6 +29,7 @@ export const routes: Routes = [
         canActivate: [authGuard, roleGuard(['ADMINISTRADOR', 'AVALIADOR'])]
     },
     { path: 'relatorio', component: RelatorioComponent, canActivate: [authGuard] },
+    { path: 'solicitacoes', component: AcompanhamentoSolicitacoesComponent, canActivate: [authGuard] },
     { path: 'logout', component: LogoutComponent, canActivate: [authGuard] },
     { path: '**', redirectTo: 'login' }
 ];

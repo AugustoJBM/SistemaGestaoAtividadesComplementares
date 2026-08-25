@@ -118,19 +118,42 @@ cd ../Front && npm ci && npm test && npm run build
 
 ## 🔐 Variáveis de ambiente
 
-O backend usa algumas variáveis de ambiente para configuração local e de produção:
+O backend carrega um arquivo `.env` a partir do diretório de execução (`backend/`).
+Use `backend/.env.example` como ponto de partida:
 
-- **`JWT_SECRET`**: segredo usado para assinar os tokens JWT.
-  Valor padrão em desenvolvimento: `SenhaDeTeste==123==EssaSenhaSoServeParaTestes`
-- **`DB_PASSWORD`**: senha do PostgreSQL quando o perfil `prod` está ativo.
+```bash
+cd backend
+cp .env.example .env
+```
+
+### Obrigatória
+
+- **`JWT_SECRET`**: segredo usado para assinar os tokens JWT (HS256). **Não possui valor padrão**:
+  fora do perfil de testes, a aplicação não inicia sem ele. Precisa ser Base64 válido e ter no
+  mínimo 256 bits. Gere o seu com `openssl rand -base64 32` e nunca versione o valor.
+
+### Perfil `prod`
+
+- **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`**, **`SPRING_DATASOURCE_PASSWORD`**:
+  dados de conexão com o PostgreSQL.
+- **`CORS_ALLOWED_ORIGINS`**: origens exatas permitidas no CORS, separadas por vírgula
+  (ex.: `https://gestaoatividadescomplementares.onrender.com`). Curingas não são aceitos porque a
+  API responde com credenciais. No perfil `dev` o valor padrão é `http://localhost:4200`, definido
+  em `application.properties`.
+- **`JWT_EXPIRATION`**: validade do token em milissegundos (padrão: `86400000`).
+- **`PORT`**: porta HTTP da aplicação (padrão: `8080`).
+
+### Opcionais
+
+- **`GROQ_API_KEY`** e **`HUGGINGFACE_API_KEY`**: integrações de IA.
 - **`SPRING_PROFILES_ACTIVE`**: controla o perfil ativo do Spring.
-  - `dev` → usa H2 em memória
+  - `dev` → usa H2 em memória (padrão)
   - `prod` → usa PostgreSQL
 
 Exemplo de uso em desenvolvimento:
 
 ```bash
-export JWT_SECRET="SenhaDeTeste==123==EssaSenhaSoServeParaTestes"
+export JWT_SECRET="$(openssl rand -base64 32)"
 ```
 
 ---
@@ -147,7 +170,8 @@ O projeto está configurado para dois cenários:
 **Produção: PostgreSQL**
 - Arquivo de configuração: `application-prod.properties`
 - URL: `jdbc:postgresql://localhost:5432/gestao_atividades_complementares`
-- Requer a variável `DB_PASSWORD` configurada
+- Requer as variáveis `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e
+  `SPRING_DATASOURCE_PASSWORD` configuradas
 
 O arquivo `application.properties` usa o perfil `dev` por padrão, então a execução local padrão do projeto continua em H2.
 
