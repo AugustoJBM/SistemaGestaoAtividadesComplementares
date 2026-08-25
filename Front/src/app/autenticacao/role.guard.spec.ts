@@ -33,6 +33,19 @@ describe('roleGuard', () => {
         expect(routerSpy.parseUrl).toHaveBeenCalledWith('/login');
     });
 
+    it('deve redirecionar para /dashboard quando a role estiver ausente no token', () => {
+        authServiceSpy.isAuthenticated.mockReturnValue(true);
+        authServiceSpy.getRole.mockReturnValue(null);
+        const dummyUrlTree = {} as UrlTree;
+        routerSpy.parseUrl.mockReturnValue(dummyUrlTree);
+
+        const guard = roleGuard(['ADMINISTRADOR', 'AVALIADOR']);
+        const result = runInInjectionContext(testInjector, () => guard({} as any, {} as any));
+
+        expect(result).toBe(dummyUrlTree);
+        expect(routerSpy.parseUrl).toHaveBeenCalledWith('/dashboard');
+    });
+
     it('deve permitir o acesso quando o usuário possui papel permitido', () => {
         authServiceSpy.isAuthenticated.mockReturnValue(true);
         authServiceSpy.getRole.mockReturnValue('ADMINISTRADOR');
