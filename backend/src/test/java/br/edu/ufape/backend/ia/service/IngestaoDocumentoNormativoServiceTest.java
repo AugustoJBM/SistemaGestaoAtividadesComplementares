@@ -1,7 +1,17 @@
 package br.edu.ufape.backend.ia.service;
 
-import br.edu.ufape.backend.ia.dto.IngestaoNormativaResponseDTO;
-import br.edu.ufape.backend.ia.repository.RegulamentoChunkRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,12 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import tools.jackson.databind.ObjectMapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
+import br.edu.ufape.backend.ia.dto.IngestaoNormativaResponseDTO;
+import br.edu.ufape.backend.ia.dto.RegulamentoChunkResponseDTO;
+import br.edu.ufape.backend.ia.model.RegulamentoChunk;
+import br.edu.ufape.backend.ia.repository.RegulamentoChunkRepository;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class IngestaoDocumentoNormativoServiceTest {
@@ -31,8 +41,13 @@ class IngestaoDocumentoNormativoServiceTest {
     @InjectMocks
     private IngestaoDocumentoNormativoService service;
 
+    @BeforeEach
+    void setUp() {
+        lenient().when(embeddingService.gerarEmbedding(any())).thenReturn(new float[384]);
+    }
+
     @Test
-    @DisplayName("Deve retornar mensagem de erro quando o arquivo for vazio")
+    @DisplayName("Deve retornar ERRO ao submeter arquivo vazio")
     void deveRetornarErroQuandoArquivoVazio() {
         MockMultipartFile arquivoVazio = new MockMultipartFile(
                 "arquivo", "vazio.txt", "text/plain", new byte[0]);
@@ -42,26 +57,44 @@ class IngestaoDocumentoNormativoServiceTest {
         assertNotNull(resultado);
         assertEquals("ERRO", resultado.status());
         assertEquals(0, resultado.totalChunksExtraidos());
+        verify(regulamentoRepository, never()).deleteAll();
     }
 
     @Test
-    @DisplayName("Deve ingerir e segmentar texto normativo com sucesso usando fallback determinístico")
-    void deveIngerirDocumentoComTexto() {
-        // O texto precisa ser longo o suficiente (> 50 chars) e respeitar o padrão do
-        // título para virar um chunk válido
-        String texto = "7.10 ATIVIDADES COMPLEMENTARES\n" +
-                "Este é um texto longo o suficiente para passar na validação de tamanho mínimo de 50 caracteres para ser considerado um chunk normativo da base de conhecimento da IA.\n";
+    @DisplayName("Deve extrair Resoluções, Seções e Quadro de Horas com sucesso via fallback determinístico")
+    void deveIngerirDocumentoComSecoesEResolucoes() {
+        String texto = """
+                7.10 ATIVIDADES COMPLEMENTARES
+                As atividades complementares possuem limite semestral de 40 horas para monitoria e 60 horas para pesquisa.
+                
+                Resolução Nº 08/2024 CONSEPE
+                Aprova as diretrizes curriculares de extensão para cursos de bacharelado.
+                
+                Quadro 5 - Síntese da Carga Horária
+                Carga Horária Obrigatória: ACC = 90 horas e ACEX = 320 horas.
+                """;
 
         MockMultipartFile arquivo = new MockMultipartFile(
-                "arquivo", "norma.txt", "text/plain", texto.getBytes());
+                "arquivo", "ppc_bcc.txt", "text/plain", texto.getBytes());
 
-        // Usamos lenient() para evitar UnnecessaryStubbingException caso ocorra alguma
-        // variação de regex do sistema operacional
-        lenient().when(embeddingService.gerarEmbedding(any())).thenReturn(new float[384]);
-
-        IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivo, false);
+        IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivo, true);
 
         assertNotNull(resultado);
         assertEquals("SUCESSO", resultado.status());
+        verify(regulamentoRepository, times(1)).deleteAll();
+        verify(regulamentoRepository, times(resultado.totalChunksExtraidos())).save(any(RegulamentoChunk.class));
+    }
+
+    @Test
+    @DisplayName("Deve listar todos os chunks persistidos")
+    void deveListarChunks() {
+        RegulamentoChunk chunk = new RegulamentoChunk("Art. 12", "Monitoria até 40h", "[0.1, 0.2]");
+        when(regulamentoRepository.findAll()).thenReturn(List.of(chunk));
+
+        List<RegulamentoChunkResponseDTO> lista = service.listarChunks();
+
+        assertEquals(1, lista.size());
+        assertEquals("Art. 12", lista.get(0).artigo());
+        assertEquals("Monitoria até 40h", lista.get(0).conteudoTexto());
     }
 }
