@@ -27,7 +27,11 @@
     <url/>
   </scm>
   <properties>
-    <sonar.organization>sgac-sistemagestaoatividadescomplementares</sonar.organization>
+    <java.version>21</java.version>
+    <!-- Configurações do SonarCloud -->
+    <sonar.organization>sgac-gestaoatividadecomplementarorg</sonar.organization>
+    <sonar.projectKey>sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg</sonar.projectKey>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.coverage.jacoco.xmlReportPaths>
         ${project.build.directory}/site/jacoco/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
@@ -154,6 +158,12 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>5.7.0.6970</version>
       </plugin>
     </plugins>
   </build>
