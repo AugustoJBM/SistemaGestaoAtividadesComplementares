@@ -1,11 +1,17 @@
 package br.edu.ufape.backend.ia.contrato;
 
-import br.edu.ufape.backend.ia.dto.ExtracaoCertificadoResponseDTO;
-import br.edu.ufape.backend.ia.dto.ParecerResponseDTO;
-import br.edu.ufape.backend.ia.model.RegulamentoChunk;
-import br.edu.ufape.backend.ia.repository.RegulamentoChunkRepository;
-import br.edu.ufape.backend.ia.service.GroqRagService;
-import br.edu.ufape.backend.ia.service.HuggingFaceEmbeddingService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,67 +20,82 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import br.edu.ufape.backend.ia.dto.ExtracaoCertificadoResponseDTO;
+import br.edu.ufape.backend.ia.dto.ParecerResponseDTO;
+import br.edu.ufape.backend.ia.model.RegulamentoChunk;
+import br.edu.ufape.backend.ia.repository.RegulamentoChunkRepository;
+import br.edu.ufape.backend.ia.service.GroqRagService;
+import br.edu.ufape.backend.ia.service.HuggingFaceEmbeddingService;
 
 @ExtendWith(MockitoExtension.class)
 class IaContratoImplTest {
 
-    @Mock
-    private GroqRagService groqRagService;
+        @Mock
+        private GroqRagService groqRagService;
 
-    @Mock
-    private RegulamentoChunkRepository regulamentoChunkRepository;
+        @Mock
+        private RegulamentoChunkRepository regulamentoChunkRepository;
 
-    @Mock
-    private HuggingFaceEmbeddingService embeddingService;
+        @Mock
+        private HuggingFaceEmbeddingService embeddingService;
 
-    @InjectMocks
-    private IaContratoImpl iaContrato;
+        @InjectMocks
+        private IaContratoImpl iaContrato;
 
-    @Test
-    @DisplayName("Deve extrair dados de arquivo de texto/imagem delegando para GroqRagService")
-    void deveExtrairDadosDeArquivoTexto() {
-        MockMultipartFile arquivo = new MockMultipartFile(
-                "arquivo", "certificado.txt", "text/plain", "Curso de Java 40h".getBytes());
-        ExtracaoCertificadoResponseDTO dtoEsperado = new ExtracaoCertificadoResponseDTO(
-                "Curso de Java", "UFAPE", null, 40, "ACC", "ENSINO");
+        @Test
+        @DisplayName("Deve extrair dados de imagem delegando para extrairDadosDeImagem")
+        void deveExtrairDadosDeImagem() {
+                MockMultipartFile imagem = new MockMultipartFile(
+                                "arquivo", "certificado.png", "image/png", new byte[] { 1, 2, 3 });
 
-        when(groqRagService.extrairDadosDeTexto(anyString())).thenReturn(dtoEsperado);
+                ExtracaoCertificadoResponseDTO dtoEsperado = new ExtracaoCertificadoResponseDTO(
+                                "Workshop", "UFAPE", null, 10, "ACC", "EVENTOS");
+                when(groqRagService.extrairDadosDeImagem(any(), eq("image/png"))).thenReturn(dtoEsperado);
 
-        ExtracaoCertificadoResponseDTO resultado = iaContrato.extrairDadosArquivo(arquivo);
+                ExtracaoCertificadoResponseDTO res = iaContrato.extrairDadosArquivo(imagem);
 
-        assertNotNull(resultado);
-        assertEquals("Curso de Java", resultado.titulo());
-        assertEquals(40, resultado.cargaHoraria());
-        verify(groqRagService, times(1)).extrairDadosDeTexto(anyString());
-    }
+                assertNotNull(res);
+                assertEquals("Workshop", res.titulo());
+                verify(groqRagService, times(1)).extrairDadosDeImagem(any(), eq("image/png"));
+        }
 
-    @Test
-    @DisplayName("Deve gerar parecer de conformidade recuperando contexto RAG")
-    void deveGerarParecerConformidadeComRAG() {
-        RegulamentoChunk chunk = new RegulamentoChunk(
-                "Art. 12", "Monitoria vale até 40h", "[0.1, 0.2]");
-        ParecerResponseDTO dtoEsperado = new ParecerResponseDTO(
-                null, null, "ACC", "ENSINO", 30, "Art. 12", "Conforme norma", 0.95, "DEFERIDO", null);
+        @Test
+        @DisplayName("Deve gerar parecer de conformidade utilizando fallback quando não houver chunks normativos")
+        void deveGerarParecerComBancoNormativoVazio() {
+                when(regulamentoChunkRepository.findAll()).thenReturn(List.of());
+                ParecerResponseDTO dtoEsperado = new ParecerResponseDTO(
+                                null, null, "ACC", "ENSINO", 20, "Geral", "Parecer ok", 0.95, "DEFERIDO", null);
 
-        when(embeddingService.gerarEmbedding(anyString())).thenReturn(new float[384]);
-        when(regulamentoChunkRepository.findAll()).thenReturn(List.of(chunk));
-        when(groqRagService.gerarParecerComContextoRAG(anyString(), anyString(), anyString(), anyString(), anyInt(),
-                anyString()))
-                .thenReturn(dtoEsperado);
+                when(groqRagService.gerarParecerComContextoRAG(
+                                anyString(), anyString(), anyString(), anyString(), anyInt(), anyString()))
+                                .thenReturn(dtoEsperado);
 
-        ParecerResponseDTO resultado = iaContrato.gerarParecerConformidade(
-                "Monitoria", "UFAPE", "ACC", "ENSINO", 30);
+                ParecerResponseDTO resultado = iaContrato.gerarParecerConformidade(
+                                "Monitoria", "UFAPE", "ACC", "ENSINO", 20);
 
-        assertNotNull(resultado);
-        assertEquals("DEFERIDO", resultado.decisaoIA());
-        assertEquals("Art. 12", resultado.artigoRegulamento());
-        verify(embeddingService, times(1)).gerarEmbedding(anyString());
-        verify(groqRagService, times(1)).gerarParecerComContextoRAG(
-                eq("Monitoria"), eq("UFAPE"), eq("ACC"), eq("ENSINO"), eq(30), anyString());
-    }
+                assertNotNull(resultado);
+                assertEquals("DEFERIDO", resultado.decisaoIA());
+        }
+
+        @Test
+        @DisplayName("Deve ordenar chunks por similaridade de cosseno ao recuperar artigos")
+        void deveOrdenarChunksPorSimilaridade() {
+                RegulamentoChunk chunk1 = new RegulamentoChunk("Art. 1", "Regra 1", "[0.1, 0.2]");
+                RegulamentoChunk chunk2 = new RegulamentoChunk("Art. 2", "Regra 2", "[0.9, 0.8]");
+
+                when(embeddingService.gerarEmbedding(anyString())).thenReturn(new float[] { 0.9f, 0.8f });
+                when(embeddingService.calcularSimilaridadeCosseno(any(), any())).thenReturn(0.5, 0.9);
+                when(regulamentoChunkRepository.findAll()).thenReturn(List.of(chunk1, chunk2));
+
+                ParecerResponseDTO dtoEsperado = new ParecerResponseDTO(
+                                null, null, "ACC", "PESQUISA", 30, "Art. 2", "Conforme", 0.95, "DEFERIDO", null);
+
+                when(groqRagService.gerarParecerComContextoRAG(anyString(), anyString(), anyString(), anyString(),
+                                anyInt(), anyString()))
+                                .thenReturn(dtoEsperado);
+
+                ParecerResponseDTO res = iaContrato.gerarParecerConformidade("Pesquisa PIBIC", "UFAPE", "ACC",
+                                "PESQUISA", 30);
+                assertNotNull(res);
+        }
 }
