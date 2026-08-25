@@ -162,7 +162,7 @@ jobs:
           ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.token="${SONAR_TOKEN}" \
             -Dsonar.organization="sgac-gestaoatividadecomplementarorg" \
-            -Dsonar.projectKey="sgac-gestaoatividadecomplementarorg-backend" \
+            -Dsonar.projectKey="sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-backend" \
             -Dsonar.host.url="https://sonarcloud.io" \
             -Dsonar.java.binaries="target/classes" \
             -Dsonar.java.test.binaries="target/test-classes" \
