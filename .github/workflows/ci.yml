@@ -14,7 +14,6 @@ permissions:
   contents: read
 
 jobs:
-
   # ============================================================
   # BACKEND
   # ============================================================
@@ -37,7 +36,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Build, testes e JaCoCo
@@ -49,7 +48,6 @@ jobs:
             echo "ERRO: relatório JaCoCo não encontrado."
             exit 1
           fi
-
           echo "Relatório JaCoCo encontrado:"
           ls -lh target/site/jacoco/jacoco.xml
 
@@ -61,7 +59,6 @@ jobs:
           path: backend/target/site/jacoco/
           if-no-files-found: warn
           retention-days: 14
-
 
   # ============================================================
   # FRONTEND
@@ -82,7 +79,7 @@ jobs:
       - name: Configurar Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: Front/package-lock.json
 
@@ -101,14 +98,8 @@ jobs:
             exit 1
           fi
 
-          echo "LCOV encontrado em:"
-          echo "$LCOV_FILE"
-
           mkdir -p coverage/sonar
           cp "$LCOV_FILE" coverage/sonar/lcov.info
-
-          echo ""
-          echo "LCOV preparado para o SonarCloud:"
           ls -lh coverage/sonar/lcov.info
 
       - name: Publicar relatório de cobertura
@@ -123,18 +114,14 @@ jobs:
       - name: Build
         run: npm run build
 
-
   # ============================================================
-  # SONARCLOUD
+  # SONARCLOUD - BACKEND E FRONTEND
   # ============================================================
 
-  sonarcloud:
-    name: SonarCloud - Análise
+  sonarcloud-backend:
+    name: SonarCloud - Backend Scan
     runs-on: ubuntu-latest
-
-    needs:
-      - backend
-      - frontend
+    needs: backend
 
     steps:
       - name: Checkout
@@ -146,7 +133,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Cache SonarCloud
@@ -154,16 +141,7 @@ jobs:
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
-          restore-keys: |
-            ${{ runner.os }}-sonar
-
-      - name: Cache Maven
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-sonar
 
       - name: Baixar cobertura do backend
         uses: actions/download-artifact@v4
@@ -171,38 +149,11 @@ jobs:
           name: backend-coverage
           path: backend/target/site/jacoco/
 
-      - name: Baixar cobertura do frontend
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-coverage
-          path: Front/coverage/
+      - name: Compilar classes Java
+        working-directory: backend
+        run: ./mvnw compile test-compile
 
-      - name: Verificar arquivos de cobertura
-        run: |
-          echo "========================================"
-          echo "        COBERTURA DO BACKEND"
-          echo "========================================"
-
-          if [ ! -f backend/target/site/jacoco/jacoco.xml ]; then
-            echo "ERRO: jacoco.xml não encontrado."
-            exit 1
-          fi
-
-          ls -lh backend/target/site/jacoco/jacoco.xml
-
-          echo ""
-          echo "========================================"
-          echo "        COBERTURA DO FRONTEND"
-          echo "========================================"
-
-          if [ ! -f Front/coverage/sonar/lcov.info ]; then
-            echo "ERRO: lcov.info não encontrado."
-            exit 1
-          fi
-
-          ls -lh Front/coverage/sonar/lcov.info
-
-      - name: SonarCloud Scan
+      - name: Executar Sonar Backend
         working-directory: backend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -211,7 +162,33 @@ jobs:
           ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.token="${SONAR_TOKEN}" \
             -Dsonar.organization="sgac-gestaoatividadecomplementarorg" \
-            -Dsonar.projectKey="sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg" \
+            -Dsonar.projectKey="sgac-gestaoatividadecomplementarorg_backend" \
             -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml" \
-            -Dsonar.javascript.lcov.reportPaths="../Front/coverage/sonar/lcov.info"
+            -Dsonar.java.binaries="target/classes" \
+            -Dsonar.java.test.binaries="target/test-classes" \
+            -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+
+  sonarcloud-frontend:
+    name: SonarCloud - Frontend Scan
+    runs-on: ubuntu-latest
+    needs: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Baixar cobertura do frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: Front/coverage/
+
+      - name: Executar Sonar Frontend
+        uses: sonarsource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: Front
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
