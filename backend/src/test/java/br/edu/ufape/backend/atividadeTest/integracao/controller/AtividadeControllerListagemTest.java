@@ -37,7 +37,7 @@ import br.edu.ufape.backend.usuario.model.Role;
 
 @SpringBootTest
 @Transactional
-class AtividadeComplementarControllerListagemTest {
+class AtividadeControllerListagemTest {
 
     private static final String URL_LISTAGEM = "/api/v1/atividades";
 

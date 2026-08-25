@@ -12,8 +12,9 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
         }
 
         const role = authService.getRole();
-        // Se a role estiver presente no token e não for permitida, redireciona ao dashboard
-        if (role && !allowedRoles.includes(role)) {
+
+        // Se a role não existir no token ou não estiver na lista permitida, bloqueia o acesso
+        if (!role || !allowedRoles.includes(role)) {
             return router.parseUrl('/dashboard');
         }
 

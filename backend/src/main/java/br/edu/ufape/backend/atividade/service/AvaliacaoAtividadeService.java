@@ -35,6 +35,13 @@ public class AvaliacaoAtividadeService {
         AtividadeComplementar atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException("Atividade não encontrada."));
 
+        // Bloqueio de reavaliação de atividades em estado terminal
+        if (atividade.getStatus() != null && atividade.getStatus() != StatusAtividade.PENDENTE) {
+            throw new IllegalArgumentException(
+                    String.format("A atividade #%d já foi finalizada como %s e não pode ser reavaliada.",
+                            atividadeId, atividade.getStatus()));
+        }
+
         // Garante que o parecer da IA exista para a atividade
         ParecerConformidade parecer = auditoriaConformidadeService.auditarOuObterParecer(atividade);
 
@@ -42,7 +49,8 @@ public class AvaliacaoAtividadeService {
         parecer.setDecisaoFinalAvaliador(request.decisao());
 
         // Confronta decisão do avaliador com a recomendação da IA
-        boolean concordou = (request.decisao() == DecisaoAvaliador.DEFERIDO && parecer.getDecisaoIA() == DecisaoIA.DEFERIDO)
+        boolean concordou = (request.decisao() == DecisaoAvaliador.DEFERIDO
+                && parecer.getDecisaoIA() == DecisaoIA.DEFERIDO)
                 || (request.decisao() == DecisaoAvaliador.INDEFERIDO && parecer.getDecisaoIA() == DecisaoIA.INDEFERIDO);
         parecer.setAvaliadorConcordouComIA(concordou);
 
@@ -55,7 +63,6 @@ public class AvaliacaoAtividadeService {
 
         atividadeRepository.save(atividade);
         ParecerConformidade salvo = parecerRepository.save(parecer);
-
         return ParecerResponseDTO.fromEntity(salvo);
     }
 }

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Component;
 import br.edu.ufape.backend.usuario.model.Administrador;
 import br.edu.ufape.backend.usuario.model.Avaliador;
 import br.edu.ufape.backend.usuario.model.Estudante;
-import br.edu.ufape.backend.usuario.model.Usuario;
 import br.edu.ufape.backend.usuario.repository.UsuarioRepository;
 
 @Component
+@Profile("dev")
 @Order(1)
 public class UsuarioDataInitializerService implements ApplicationRunner {
 
@@ -30,52 +31,44 @@ public class UsuarioDataInitializerService implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        String senhaHash = passwordEncoder.encode("senha1234");
+        log.info("Inicializando contas de teste no ambiente de desenvolvimento...");
+        String senhaHashPadrao = passwordEncoder.encode("senha1234");
 
         // 1. Avaliador
-        salvarOuAtualizarAvaliador("avaliador@ufape.edu.br", senhaHash);
+        criarAvaliadorSeNaoExistir("avaliador@ufape.edu.br", senhaHashPadrao);
 
         // 2. Administrador
-        salvarOuAtualizarAdmin("admin@ufape.edu.br", senhaHash);
+        criarAdminSeNaoExistir("admin@ufape.edu.br", senhaHashPadrao);
 
         // 3. Estudantes
-        salvarOuAtualizarEstudante("aluno1@ufape.edu.br", "Lucas Gabriel Silva", "2026000001", senhaHash);
-        salvarOuAtualizarEstudante("aluno2@ufape.edu.br", "Beatriz Lima Santos", "2026000002", senhaHash);
+        criarEstudanteSeNaoExistir("aluno1@ufape.edu.br", "Lucas Gabriel Silva", "2026000001", senhaHashPadrao);
+        criarEstudanteSeNaoExistir("aluno2@ufape.edu.br", "Beatriz Lima Santos", "2026000002", senhaHashPadrao);
     }
 
-    private void salvarOuAtualizarAvaliador(String email, String senhaHash) {
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElse(null);
-        if (usuario == null) {
-            usuario = new Avaliador("Professor Avaliador", email.toLowerCase(), senhaHash, "REG-UFAPE-01", "Ciência da Computação");
-        } else {
-            usuario.setSenhaHash(senhaHash);
-            usuario.setIsActive(true);
+    private void criarAvaliadorSeNaoExistir(String email, String senhaHash) {
+        if (!usuarioRepository.existsByEmailIgnoreCase(email)) {
+            Avaliador avaliador = new Avaliador(
+                    "Professor Avaliador", email.toLowerCase(), senhaHash, "REG-UFAPE-01", "Ciência da Computação");
+            usuarioRepository.save(avaliador);
+            log.info("Conta de teste (Avaliador) criada: {}", email);
         }
-        usuarioRepository.save(usuario);
-        log.info(">>> CONTA PRONTA: {} | Senha: senha1234", email);
     }
 
-    private void salvarOuAtualizarAdmin(String email, String senhaHash) {
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElse(null);
-        if (usuario == null) {
-            usuario = new Administrador("Administrador Geral", email.toLowerCase(), senhaHash, "TOTALPODER", "Coordenação Acadêmica");
-        } else {
-            usuario.setSenhaHash(senhaHash);
-            usuario.setIsActive(true);
+    private void criarAdminSeNaoExistir(String email, String senhaHash) {
+        if (!usuarioRepository.existsByEmailIgnoreCase(email)) {
+            Administrador admin = new Administrador(
+                    "Administrador Geral", email.toLowerCase(), senhaHash, "TOTALPODER", "Coordenação Acadêmica");
+            usuarioRepository.save(admin);
+            log.info("Conta de teste (Administrador) criada: {}", email);
         }
-        usuarioRepository.save(usuario);
-        log.info(">>> CONTA PRONTA: {} | Senha: senha1234", email);
     }
 
-    private void salvarOuAtualizarEstudante(String email, String nome, String matricula, String senhaHash) {
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElse(null);
-        if (usuario == null) {
-            usuario = new Estudante(nome, email.toLowerCase(), senhaHash, matricula, "Bacharelado em Ciência da Computação");
-        } else {
-            usuario.setSenhaHash(senhaHash);
-            usuario.setIsActive(true);
+    private void criarEstudanteSeNaoExistir(String email, String nome, String matricula, String senhaHash) {
+        if (!usuarioRepository.existsByEmailIgnoreCase(email)) {
+            Estudante estudante = new Estudante(
+                    nome, email.toLowerCase(), senhaHash, matricula, "Bacharelado em Ciência da Computação");
+            usuarioRepository.save(estudante);
+            log.info("Conta de teste (Estudante) criada: {}", email);
         }
-        usuarioRepository.save(usuario);
-        log.info(">>> CONTA PRONTA: {} | Senha: senha1234", email);
     }
 }
