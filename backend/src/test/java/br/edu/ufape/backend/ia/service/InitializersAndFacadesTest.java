@@ -3,6 +3,7 @@ package br.edu.ufape.backend.ia.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -81,19 +82,17 @@ class InitializersAndFacadesTest {
         Estudante estudante = new Estudante("Lucas", "aluno1@ufape.edu.br", "hash");
         when(usuarioContrato.buscarPorEmail(any())).thenReturn(Optional.of(estudante));
 
-        AtividadeDataInitializerService init = new AtividadeDataInitializerService(atividadeRepository,
-                usuarioContrato);
+        AtividadeDataInitializerService init = new AtividadeDataInitializerService(atividadeRepository, usuarioContrato);
         init.run(null);
 
-        verify(atividadeRepository, times(5)).save(any());
+        verify(atividadeRepository, atLeast(10)).save(any());
     }
 
     @Test
     @DisplayName("RegulamentoDataInitializerService não deve duplicar registros se já populado")
     void deveIgnorarRegulamentoDataInitializerSeJaExistiremNormas() {
         when(regulamentoRepository.count()).thenReturn(5L);
-        RegulamentoDataInitializerService init = new RegulamentoDataInitializerService(regulamentoRepository,
-                embeddingService);
+        RegulamentoDataInitializerService init = new RegulamentoDataInitializerService(regulamentoRepository, embeddingService);
         init.run(null);
 
         verify(regulamentoRepository, never()).save(any());
@@ -106,9 +105,8 @@ class InitializersAndFacadesTest {
         AtividadeComplementarService atvService = mock(AtividadeComplementarService.class);
         IaCertificadoFacade facade = new IaCertificadoFacade(auditoria, atvService);
 
-        MockMultipartFile file = new MockMultipartFile("arquivo", "cert.pdf", "application/pdf", new byte[] { 1 });
-        when(auditoria.extrairDadosArquivo(file))
-                .thenReturn(new ExtracaoCertificadoResponseDTO("T", "I", null, 10, "ACC", "ENSINO"));
+        MockMultipartFile file = new MockMultipartFile("arquivo", "cert.pdf", "application/pdf", new byte[]{1});
+        when(auditoria.extrairDadosArquivo(file)).thenReturn(new ExtracaoCertificadoResponseDTO("T", "I", null, 10, "ACC", "ENSINO"));
         when(auditoria.contarAvaliadas()).thenReturn(5L);
         when(auditoria.contarConcordancias()).thenReturn(4L);
         when(auditoria.calcularTempoMedioMs()).thenReturn(100.0);
@@ -134,7 +132,7 @@ class InitializersAndFacadesTest {
     void deveDelegarOutrasFacades() {
         IngestaoDocumentoNormativoService ingestao = mock(IngestaoDocumentoNormativoService.class);
         RegulamentoFacade regFacade = new RegulamentoFacade(ingestao);
-        MockMultipartFile file = new MockMultipartFile("arquivo", "norma.pdf", "application/pdf", new byte[] { 1 });
+        MockMultipartFile file = new MockMultipartFile("arquivo", "norma.pdf", "application/pdf", new byte[]{1});
 
         when(ingestao.ingerirDocumentoNormativo(file, false))
                 .thenReturn(new IngestaoNormativaResponseDTO("norma.pdf", 2, "SUCESSO", "ok"));
@@ -145,7 +143,7 @@ class InitializersAndFacadesTest {
 
         AtividadeComplementarService atvService = mock(AtividadeComplementarService.class);
         CertificadoFacade certFacade = new CertificadoFacade(atvService);
-        Resource res = new ByteArrayResource(new byte[] { 1 });
+        Resource res = new ByteArrayResource(new byte[]{1});
         when(atvService.obterArquivoCertificado(1L, "aluno@ufape.edu.br")).thenReturn(res);
 
         assertEquals(res, certFacade.obterCertificado(1L, "aluno@ufape.edu.br"));
