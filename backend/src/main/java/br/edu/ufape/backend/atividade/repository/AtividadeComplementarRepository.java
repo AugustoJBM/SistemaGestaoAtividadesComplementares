@@ -12,6 +12,8 @@ public interface AtividadeComplementarRepository extends JpaRepository<Atividade
 
         List<AtividadeComplementar> findByEstudante(Usuario estudante);
 
+        List<AtividadeComplementar> findByEstudante_Id(Long estudanteId);
+
         List<AtividadeComplementar> findByEstudanteAndNatureza(Usuario estudante, Natureza natureza);
 
         List<AtividadeComplementar> findByEstudanteAndCategoria(Usuario estudante, Categoria categoria);

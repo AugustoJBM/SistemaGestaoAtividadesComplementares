@@ -77,6 +77,10 @@ public class AtividadeComplementarService {
         return atividadeRepository.findByEstudanteComFiltros(estudante, natureza, categoria);
     }
 
+    public List<AtividadeComplementar> listarAtividadesDoEstudante(Long estudanteId) {
+        return atividadeRepository.findByEstudante_Id(estudanteId);
+    }
+
     public Resource obterArquivoCertificado(Long id, String emailEstudante) {
         Estudante estudante = obterEstudante(emailEstudante);
         AtividadeComplementar atividade = atividadeRepository.findById(id)

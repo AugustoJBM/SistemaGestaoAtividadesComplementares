@@ -112,6 +112,10 @@ public class SecurityConfig {
                                                         "/api/v1/relatorios/**")
                                                         .hasRole("ESTUDANTE");
 
+                                        // Rotas de solicitacoes
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/solicitacoes")
+                                                        .hasRole("ESTUDANTE");
+
                                         // outras rotas autenticadas
                                         auth.anyRequest().authenticated();
                                 })

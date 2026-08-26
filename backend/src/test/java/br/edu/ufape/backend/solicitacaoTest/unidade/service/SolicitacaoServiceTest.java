@@ -1,0 +1,155 @@
+package br.edu.ufape.backend.solicitacaoTest.unidade.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
+import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.atividade.model.Categoria;
+import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.atividade.model.StatusAtividade;
+import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
+import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
+import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
+import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
+import br.edu.ufape.backend.solicitacao.repository.SolicitacaoValidacaoRepository;
+import br.edu.ufape.backend.solicitacao.service.SolicitacaoService;
+
+@ExtendWith(MockitoExtension.class)
+class SolicitacaoServiceTest {
+
+    @Mock
+    private SolicitacaoValidacaoRepository solicitacaoValidacaoRepository;
+
+    @Mock
+    private AtividadeContrato atividadeContrato;
+
+    private SolicitacaoService solicitacaoService;
+
+    @BeforeEach
+    void setUp() {
+        solicitacaoService = new SolicitacaoService(solicitacaoValidacaoRepository, atividadeContrato);
+    }
+
+    @Test
+    @DisplayName("Caminho feliz: Deve submeter nova solicitação criando snapshots imutáveis com status SUBMETIDA")
+    void deveSubmeterSolicitacaoComSucesso() {
+        Long estudanteId = 100L;
+        List<AtividadeResponseDTO> atividades = List.of(
+                new AtividadeResponseDTO(1L, "Curso de Java", "UFAPE", LocalDate.now(), 40, Natureza.ACC, Categoria.ENSINO, LocalDateTime.now(), "estudante@ufape.edu.br", StatusAtividade.PENDENTE),
+                new AtividadeResponseDTO(2L, "Projeto de Extensão", "UFAPE", LocalDate.now(), 60, Natureza.ACEX, Categoria.EXTENSAO, LocalDateTime.now(), "estudante@ufape.edu.br", StatusAtividade.PENDENTE)
+        );
+
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(false);
+        when(atividadeContrato.buscarPorEstudante(estudanteId))
+                .thenReturn(atividades);
+        when(solicitacaoValidacaoRepository.save(any(SolicitacaoValidacao.class)))
+                .thenAnswer(invocation -> {
+                    SolicitacaoValidacao sol = invocation.getArgument(0);
+                    sol.setId(1L);
+                    return sol;
+                });
+
+        SolicitacaoValidacao resultado = solicitacaoService.submeter(estudanteId);
+
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getId());
+        assertEquals(estudanteId, resultado.getEstudanteId());
+        assertEquals(StatusSolicitacao.SUBMETIDA, resultado.getStatus());
+        assertNotNull(resultado.getDataSubmissao());
+        assertEquals(2, resultado.getItens().size());
+
+        SolicitacaoAtividade item1 = resultado.getItens().get(0);
+        assertEquals(1L, item1.getAtividadeId());
+        assertEquals("Curso de Java", item1.getTitulo());
+        assertEquals(40, item1.getCargaHoraria());
+        assertEquals("ACC", item1.getNatureza());
+
+        SolicitacaoAtividade item2 = resultado.getItens().get(1);
+        assertEquals(2L, item2.getAtividadeId());
+        assertEquals("Projeto de Extensão", item2.getTitulo());
+        assertEquals(60, item2.getCargaHoraria());
+        assertEquals("ACEX", item2.getNatureza());
+
+        ArgumentCaptor<SolicitacaoValidacao> captor = ArgumentCaptor.forClass(SolicitacaoValidacao.class);
+        verify(solicitacaoValidacaoRepository).save(captor.capture());
+        assertEquals(StatusSolicitacao.SUBMETIDA, captor.getValue().getStatus());
+        assertEquals(estudanteId, captor.getValue().getEstudanteId());
+    }
+
+    @Test
+    @DisplayName("Regra 1: Deve lançar SolicitacaoEmAbertoException se o estudante já tiver solicitação em aberto")
+    void deveLancarExcecaoQuandoJaExisteSolicitacaoEmAberto() {
+        Long estudanteId = 100L;
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(true);
+
+        assertThrows(SolicitacaoEmAbertoException.class, () -> solicitacaoService.submeter(estudanteId));
+
+        verify(atividadeContrato, never()).buscarPorEstudante(anyLong());
+        verify(solicitacaoValidacaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Regra 3: Deve lançar EstudanteSemAtividadesException se o estudante não possuir atividades")
+    void deveLancarExcecaoQuandoEstudanteNaoPossuiAtividades() {
+        Long estudanteId = 100L;
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(false);
+        when(atividadeContrato.buscarPorEstudante(estudanteId))
+                .thenReturn(List.of());
+
+        assertThrows(EstudanteSemAtividadesException.class, () -> solicitacaoService.submeter(estudanteId));
+
+        verify(solicitacaoValidacaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Contrato: Deve verificar existência de solicitação em aberto com atividade")
+    void deveVerificarExistenciaDeSolicitacaoEmAbertoComAtividade() {
+        Long atividadeId = 10L;
+        when(solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(eq(atividadeId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(true);
+
+        boolean resultado = solicitacaoService.existeSolicitacaoEmAbertoComAtividade(atividadeId);
+
+        assertTrue(resultado);
+        verify(solicitacaoValidacaoRepository).existsByAtividadeIdAndStatusIn(atividadeId, StatusSolicitacao.STATUS_EM_ABERTO);
+    }
+
+    @Test
+    @DisplayName("Contrato: Deve verificar existência de solicitação em aberto do estudante")
+    void deveVerificarExistenciaDeSolicitacaoEmAbertoDoEstudante() {
+        Long estudanteId = 100L;
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(true);
+
+        boolean resultado = solicitacaoService.existeSolicitacaoEmAbertoDoEstudante(estudanteId);
+
+        assertTrue(resultado);
+        verify(solicitacaoValidacaoRepository).existsByEstudanteIdAndStatusIn(estudanteId, StatusSolicitacao.STATUS_EM_ABERTO);
+    }
+}
+
