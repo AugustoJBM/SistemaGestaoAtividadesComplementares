@@ -39,6 +39,8 @@ public class AtividadeComplementarService {
     private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem listar atividades complementares.";
     private static final String MENSAGEM_ACESSO_NEGADO_EDICAO = "Você não tem permissão para editar esta atividade.";
     private static final String MENSAGEM_ACESSO_NEGADO_EXCLUSAO = "Atividade não encontrada ou não pertence ao estudante autenticado.";
+    private static final String MENSAGEM_ARQUIVO_FISICO_NAO_ENCONTRADO =
+            "Arquivo físico do certificado não encontrado no servidor.";
 
     private final AtividadeComplementarRepository atividadeRepository;
     private final UsuarioContrato usuarioContrato;
@@ -92,16 +94,24 @@ public class AtividadeComplementarService {
         try {
             Path caminho = Paths.get(certificado.getReferencia()).toAbsolutePath().normalize();
             if (!caminho.startsWith(diretorioCertificados)) {
-                throw new AtividadeNaoEncontradaException("Arquivo físico do certificado não encontrado no servidor.");
+                throw new AtividadeNaoEncontradaException(MENSAGEM_ARQUIVO_FISICO_NAO_ENCONTRADO);
             }
-            Resource resource = new UrlResource(caminho.toUri());
+
+            Path raizReal = diretorioCertificados.toRealPath();
+            Path caminhoReal = caminho.toRealPath();
+            if (!caminhoReal.startsWith(raizReal)) {
+                throw new AtividadeNaoEncontradaException(MENSAGEM_ARQUIVO_FISICO_NAO_ENCONTRADO);
+            }
+
+            Resource resource = new UrlResource(caminhoReal.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;
-            } else {
-                throw new AtividadeNaoEncontradaException("Arquivo físico do certificado não encontrado no servidor.");
             }
+            throw new AtividadeNaoEncontradaException(MENSAGEM_ARQUIVO_FISICO_NAO_ENCONTRADO);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Erro ao recuperar arquivo do certificado", e);
+        } catch (IOException e) {
+            throw new AtividadeNaoEncontradaException(MENSAGEM_ARQUIVO_FISICO_NAO_ENCONTRADO);
         }
     }
 
