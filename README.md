@@ -110,7 +110,7 @@ O frontend inicia em: `http://localhost:4200`
 ### 3) Validar testes e build
 
 ```bash
-cd backend && ./mvnw test
+cd backend && ./mvnw test -Dspring.profiles.active=test
 cd ../Front && npm ci && npm test && npm run build
 ```
 
@@ -125,6 +125,8 @@ Use `backend/.env.example` como ponto de partida:
 cd backend
 cp .env.example .env
 ```
+
+Observação: a carga do `.env` acontece no `main()` da aplicação. Para executar os testes com Spring Boot via Maven, use o perfil `test` (ex.: `./mvnw test -Dspring.profiles.active=test`) ou exporte `JWT_SECRET` no ambiente.
 
 ### Obrigatória
 

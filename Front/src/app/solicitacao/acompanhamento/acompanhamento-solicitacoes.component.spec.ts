@@ -1,6 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { AcompanhamentoSolicitacoesComponent } from './acompanhamento-solicitacoes.component';
 import { SolicitacaoService } from '../solicitacao.service';
 import { SolicitacaoDetalhe, SolicitacaoResumo } from '../solicitacao.model';
@@ -91,6 +91,98 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('Monitoria');
     expect(texto).toContain('Certificado ilegível.');
+  });
+
+  it('ignora resposta atrasada de solicitacao que nao esta mais selecionada', () => {
+    const primeiraResposta = new Subject<SolicitacaoDetalhe>();
+    const segundaResposta = new Subject<SolicitacaoDetalhe>();
+    const detalheAntigo: SolicitacaoDetalhe = {
+      ...detalheMock,
+      id: 7,
+      status: 'SUBMETIDA',
+      justificativa: undefined,
+      itens: []
+    };
+
+    const fixture = montar({
+      listar: () => of(solicitacoesMock),
+      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable()
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.selecionar(solicitacoesMock[0]);
+    fixture.componentInstance.selecionar(solicitacoesMock[1]);
+    segundaResposta.next(detalheMock);
+    primeiraResposta.next(detalheAntigo);
+
+    expect(fixture.componentInstance.idSelecionado()).toBe(8);
+    expect(fixture.componentInstance.detalheSelecionado()).toEqual(detalheMock);
+    expect(fixture.componentInstance.carregandoDetalhe()).toBe(false);
+  });
+
+  it('ignora resposta atrasada de requisicao anterior para a mesma solicitacao', () => {
+    const primeiraResposta = new Subject<SolicitacaoDetalhe>();
+    const segundaResposta = new Subject<SolicitacaoDetalhe>();
+    const detalheAntigo: SolicitacaoDetalhe = {
+      ...detalheMock,
+      justificativa: 'Resposta antiga'
+    };
+
+    const fixture = montar({
+      listar: () => of(solicitacoesMock),
+      detalhar: (() => {
+        const respostas = [primeiraResposta, segundaResposta];
+        return () => respostas.shift()?.asObservable() ?? throwError(() => new Error('Chamada inesperada'));
+      })()
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.selecionar(solicitacoesMock[1]);
+    fixture.componentInstance.selecionar(solicitacoesMock[1]);
+    segundaResposta.next(detalheMock);
+    primeiraResposta.next(detalheAntigo);
+
+    expect(fixture.componentInstance.idSelecionado()).toBe(8);
+    expect(fixture.componentInstance.detalheSelecionado()).toEqual(detalheMock);
+    expect(fixture.componentInstance.carregandoDetalhe()).toBe(false);
+  });
+
+  it('ignora erro atrasado de solicitacao que nao esta mais selecionada', () => {
+    const primeiraResposta = new Subject<SolicitacaoDetalhe>();
+    const segundaResposta = new Subject<SolicitacaoDetalhe>();
+    const fixture = montar({
+      listar: () => of(solicitacoesMock),
+      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable()
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.selecionar(solicitacoesMock[0]);
+    fixture.componentInstance.selecionar(solicitacoesMock[1]);
+    segundaResposta.next(detalheMock);
+    primeiraResposta.error(new Error('Erro antigo'));
+
+    expect(fixture.componentInstance.idSelecionado()).toBe(8);
+    expect(fixture.componentInstance.detalheSelecionado()).toEqual(detalheMock);
+    expect(fixture.componentInstance.erroDetalhe()).toBeNull();
+    expect(fixture.componentInstance.carregandoDetalhe()).toBe(false);
+  });
+
+  it('limpa carregamento do detalhe ao fechar a visualizacao', () => {
+    const fixture = montar({
+      listar: () => of(solicitacoesMock),
+      detalhar: () => new Observable<SolicitacaoDetalhe>(() => {})
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.selecionar(solicitacoesMock[0]);
+    expect(fixture.componentInstance.carregandoDetalhe()).toBe(true);
+
+    fixture.componentInstance.fecharDetalhe();
+
+    expect(fixture.componentInstance.idSelecionado()).toBeNull();
+    expect(fixture.componentInstance.detalheSelecionado()).toBeNull();
+    expect(fixture.componentInstance.erroDetalhe()).toBeNull();
+    expect(fixture.componentInstance.carregandoDetalhe()).toBe(false);
   });
 
   it('exibe erro do detalhe sem derrubar a lista', () => {

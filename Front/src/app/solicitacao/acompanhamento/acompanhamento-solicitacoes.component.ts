@@ -15,6 +15,7 @@ import { DetalheSolicitacaoComponent } from '../detalhe/detalhe-solicitacao.comp
 })
 export class AcompanhamentoSolicitacoesComponent implements OnInit {
   private readonly solicitacaoService = inject(SolicitacaoService);
+  private detalheRequisicaoAtual = 0;
 
   readonly carregando = signal(true);
   readonly mensagemErro = signal<string | null>(null);
@@ -45,17 +46,24 @@ export class AcompanhamentoSolicitacoesComponent implements OnInit {
   }
 
   selecionar(solicitacao: SolicitacaoResumo): void {
-    this.idSelecionado.set(solicitacao.id);
+    const id = solicitacao.id;
+    const requisicao = ++this.detalheRequisicaoAtual;
+
+    this.idSelecionado.set(id);
     this.detalheSelecionado.set(null);
     this.erroDetalhe.set(null);
     this.carregandoDetalhe.set(true);
 
-    this.solicitacaoService.detalhar(solicitacao.id).subscribe({
+    this.solicitacaoService.detalhar(id).subscribe({
       next: (detalhe) => {
+        if (this.idSelecionado() !== id || this.detalheRequisicaoAtual !== requisicao) return;
+
         this.detalheSelecionado.set(detalhe);
         this.carregandoDetalhe.set(false);
       },
       error: (erro: Error) => {
+        if (this.idSelecionado() !== id || this.detalheRequisicaoAtual !== requisicao) return;
+
         this.erroDetalhe.set(erro.message);
         this.carregandoDetalhe.set(false);
       }
@@ -63,9 +71,11 @@ export class AcompanhamentoSolicitacoesComponent implements OnInit {
   }
 
   fecharDetalhe(): void {
+    this.detalheRequisicaoAtual += 1;
     this.idSelecionado.set(null);
     this.detalheSelecionado.set(null);
     this.erroDetalhe.set(null);
+    this.carregandoDetalhe.set(false);
   }
 
   readonly rotuloStatus = rotuloStatus;
