@@ -1,7 +1,6 @@
 package br.edu.ufape.backend.solicitacao.dto;
 
 import java.time.LocalDateTime;
-
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
 
@@ -10,7 +9,7 @@ public record SolicitacaoResumoResponseDTO(
         StatusSolicitacao status,
         LocalDateTime dataSubmissao,
         LocalDateTime dataAvaliacao,
-        int totalAtividades
+        Long totalAtividades
 ) {
     public SolicitacaoResumoResponseDTO(SolicitacaoValidacao solicitacao) {
         this(
@@ -18,7 +17,7 @@ public record SolicitacaoResumoResponseDTO(
                 solicitacao.getStatus(),
                 solicitacao.getDataSubmissao(),
                 solicitacao.getDataAvaliacao(),
-                solicitacao.getItens() != null ? solicitacao.getItens().size() : 0
+                solicitacao.getItens() != null ? (long) solicitacao.getItens().size() : 0L
         );
     }
 }

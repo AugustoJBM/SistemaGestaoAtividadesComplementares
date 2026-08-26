@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
-import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResponseDTO;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.service.SolicitacaoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
@@ -38,10 +38,7 @@ public class SolicitacaoFacade {
 
     public List<SolicitacaoResumoResponseDTO> listarDoEstudante(String emailEstudante) {
         Usuario usuario = obterEstudante(emailEstudante);
-        List<SolicitacaoValidacao> solicitacoes = solicitacaoService.listarDoEstudante(usuario.getId());
-        return solicitacoes.stream()
-                .map(SolicitacaoResumoResponseDTO::new)
-                .toList();
+        return solicitacaoService.listarDoEstudante(usuario.getId());
     }
 
     public SolicitacaoDetalheResponseDTO detalhar(String emailEstudante, Long solicitacaoId) {

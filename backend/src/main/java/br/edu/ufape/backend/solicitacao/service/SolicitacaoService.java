@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
@@ -66,8 +67,8 @@ public class SolicitacaoService {
     }
 
     @Transactional(readOnly = true)
-    public List<SolicitacaoValidacao> listarDoEstudante(Long estudanteId) {
-        return solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+    public List<SolicitacaoResumoResponseDTO> listarDoEstudante(Long estudanteId) {
+        return solicitacaoValidacaoRepository.findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
     }
 
     @Transactional(readOnly = true)

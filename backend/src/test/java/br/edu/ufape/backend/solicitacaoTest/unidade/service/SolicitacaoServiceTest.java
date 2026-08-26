@@ -29,7 +29,7 @@ import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
-import br.edu.ufape.backend.atividade.model.StatusAtividade;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
@@ -56,84 +56,107 @@ class SolicitacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Caminho feliz: Deve submeter nova solicitação criando snapshots imutáveis com status SUBMETIDA")
+    @DisplayName("Deve submeter solicitacao com sucesso criando snapshots imutaveis das atividades")
     void deveSubmeterSolicitacaoComSucesso() {
-        Long estudanteId = 100L;
+        Long estudanteId = 1L;
+
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
+                eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(false);
+
         List<AtividadeResponseDTO> atividades = List.of(
-                new AtividadeResponseDTO(1L, "Curso de Java", "UFAPE", LocalDate.now(), 40, Natureza.ACC, Categoria.ENSINO, LocalDateTime.now(), "estudante@ufape.edu.br", StatusAtividade.PENDENTE),
-                new AtividadeResponseDTO(2L, "Projeto de Extensão", "UFAPE", LocalDate.now(), 60, Natureza.ACEX, Categoria.EXTENSAO, LocalDateTime.now(), "estudante@ufape.edu.br", StatusAtividade.PENDENTE)
+                new AtividadeResponseDTO(
+                        10L, "Curso de Java", "SENAI", LocalDate.now(), 40,
+                        Natureza.ACC, Categoria.ENSINO, LocalDateTime.now(), "estudante@ufape.edu.br"
+                ),
+                new AtividadeResponseDTO(
+                        11L, "Projeto de Pesquisa", "UFAPE", LocalDate.now(), 60,
+                        Natureza.ACEX, Categoria.PESQUISA, LocalDateTime.now(), "estudante@ufape.edu.br"
+                )
         );
 
-        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
-                .thenReturn(false);
-        when(atividadeContrato.buscarPorEstudante(estudanteId))
-                .thenReturn(atividades);
-        when(solicitacaoValidacaoRepository.save(any(SolicitacaoValidacao.class)))
-                .thenAnswer(invocation -> {
-                    SolicitacaoValidacao sol = invocation.getArgument(0);
-                    sol.setId(1L);
-                    return sol;
-                });
+        when(atividadeContrato.buscarPorEstudante(estudanteId)).thenReturn(atividades);
+
+        SolicitacaoValidacao solicitacaoSalva = new SolicitacaoValidacao();
+        solicitacaoSalva.setId(100L);
+        solicitacaoSalva.setStatus(StatusSolicitacao.SUBMETIDA);
+        when(solicitacaoValidacaoRepository.save(any(SolicitacaoValidacao.class))).thenAnswer(invocation -> {
+            SolicitacaoValidacao s = invocation.getArgument(0);
+            s.setId(100L);
+            return s;
+        });
 
         SolicitacaoValidacao resultado = solicitacaoService.submeter(estudanteId);
 
         assertNotNull(resultado);
-        assertEquals(1L, resultado.getId());
-        assertEquals(estudanteId, resultado.getEstudanteId());
+        assertEquals(100L, resultado.getId());
         assertEquals(StatusSolicitacao.SUBMETIDA, resultado.getStatus());
+        assertEquals(estudanteId, resultado.getEstudanteId());
         assertNotNull(resultado.getDataSubmissao());
         assertEquals(2, resultado.getItens().size());
 
         SolicitacaoAtividade item1 = resultado.getItens().get(0);
-        assertEquals(1L, item1.getAtividadeId());
+        assertEquals(10L, item1.getAtividadeId());
         assertEquals("Curso de Java", item1.getTitulo());
         assertEquals(40, item1.getCargaHoraria());
         assertEquals("ACC", item1.getNatureza());
 
         SolicitacaoAtividade item2 = resultado.getItens().get(1);
-        assertEquals(2L, item2.getAtividadeId());
-        assertEquals("Projeto de Extensão", item2.getTitulo());
+        assertEquals(11L, item2.getAtividadeId());
+        assertEquals("Projeto de Pesquisa", item2.getTitulo());
         assertEquals(60, item2.getCargaHoraria());
         assertEquals("ACEX", item2.getNatureza());
 
         ArgumentCaptor<SolicitacaoValidacao> captor = ArgumentCaptor.forClass(SolicitacaoValidacao.class);
         verify(solicitacaoValidacaoRepository).save(captor.capture());
-        assertEquals(StatusSolicitacao.SUBMETIDA, captor.getValue().getStatus());
-        assertEquals(estudanteId, captor.getValue().getEstudanteId());
+        SolicitacaoValidacao capturada = captor.getValue();
+        assertEquals(StatusSolicitacao.SUBMETIDA, capturada.getStatus());
     }
 
     @Test
-    @DisplayName("Regra 1: Deve lançar SolicitacaoEmAbertoException se o estudante já tiver solicitação em aberto")
+    @DisplayName("Deve lancar SolicitacaoEmAbertoException quando ja houver solicitacao em aberto")
     void deveLancarExcecaoQuandoJaExisteSolicitacaoEmAberto() {
-        Long estudanteId = 100L;
-        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+        Long estudanteId = 1L;
+
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
+                eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
                 .thenReturn(true);
 
-        assertThrows(SolicitacaoEmAbertoException.class, () -> solicitacaoService.submeter(estudanteId));
+        assertThrows(
+                SolicitacaoEmAbertoException.class,
+                () -> solicitacaoService.submeter(estudanteId)
+        );
 
         verify(atividadeContrato, never()).buscarPorEstudante(anyLong());
         verify(solicitacaoValidacaoRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Regra 3: Deve lançar EstudanteSemAtividadesException se o estudante não possuir atividades")
+    @DisplayName("Deve lancar EstudanteSemAtividadesException quando estudante nao possuir atividades")
     void deveLancarExcecaoQuandoEstudanteNaoPossuiAtividades() {
-        Long estudanteId = 100L;
-        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
-                .thenReturn(false);
-        when(atividadeContrato.buscarPorEstudante(estudanteId))
-                .thenReturn(List.of());
+        Long estudanteId = 1L;
 
-        assertThrows(EstudanteSemAtividadesException.class, () -> solicitacaoService.submeter(estudanteId));
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
+                eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+                .thenReturn(false);
+
+        when(atividadeContrato.buscarPorEstudante(estudanteId)).thenReturn(List.of());
+
+        assertThrows(
+                EstudanteSemAtividadesException.class,
+                () -> solicitacaoService.submeter(estudanteId)
+        );
 
         verify(solicitacaoValidacaoRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Contrato: Deve verificar existência de solicitação em aberto com atividade")
-    void deveVerificarExistenciaDeSolicitacaoEmAbertoComAtividade() {
-        Long atividadeId = 10L;
-        when(solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(eq(atividadeId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+    @DisplayName("Deve verificar se existe solicitacao em aberto com determinada atividade")
+    void deveVerificarExisteSolicitacaoEmAbertoComAtividade() {
+        Long atividadeId = 5L;
+
+        when(solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(
+                atividadeId, StatusSolicitacao.STATUS_EM_ABERTO))
                 .thenReturn(true);
 
         boolean resultado = solicitacaoService.existeSolicitacaoEmAbertoComAtividade(atividadeId);
@@ -143,10 +166,12 @@ class SolicitacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Contrato: Deve verificar existência de solicitação em aberto do estudante")
-    void deveVerificarExistenciaDeSolicitacaoEmAbertoDoEstudante() {
-        Long estudanteId = 100L;
-        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(eq(estudanteId), eq(StatusSolicitacao.STATUS_EM_ABERTO)))
+    @DisplayName("Deve verificar se existe solicitacao em aberto do estudante")
+    void deveVerificarExisteSolicitacaoEmAbertoDoEstudante() {
+        Long estudanteId = 1L;
+
+        when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
+                estudanteId, StatusSolicitacao.STATUS_EM_ABERTO))
                 .thenReturn(true);
 
         boolean resultado = solicitacaoService.existeSolicitacaoEmAbertoDoEstudante(estudanteId);
@@ -156,38 +181,36 @@ class SolicitacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Listagem: Deve listar solicitações do estudante ordenadas por data de submissão desc")
+    @DisplayName("Listagem: Deve listar resumos de solicitações do estudante ordenadas por data de submissão desc")
     void deveListarSolicitacoesDoEstudanteOrdenadasPorDataSubmissaoDesc() {
         Long estudanteId = 100L;
-        SolicitacaoValidacao s1 = new SolicitacaoValidacao(estudanteId, LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, List.of());
-        s1.setId(1L);
-        SolicitacaoValidacao s2 = new SolicitacaoValidacao(estudanteId, LocalDateTime.now().minusDays(1), StatusSolicitacao.SUBMETIDA, List.of());
-        s2.setId(2L);
+        SolicitacaoResumoResponseDTO r1 = new SolicitacaoResumoResponseDTO(1L, StatusSolicitacao.APROVADA, LocalDateTime.now().minusDays(2), LocalDateTime.now(), 3L);
+        SolicitacaoResumoResponseDTO r2 = new SolicitacaoResumoResponseDTO(2L, StatusSolicitacao.SUBMETIDA, LocalDateTime.now().minusDays(1), null, 2L);
 
-        when(solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
-                .thenReturn(List.of(s2, s1));
+        when(solicitacaoValidacaoRepository.findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
+                .thenReturn(List.of(r2, r1));
 
-        List<SolicitacaoValidacao> resultado = solicitacaoService.listarDoEstudante(estudanteId);
+        List<SolicitacaoResumoResponseDTO> resultado = solicitacaoService.listarDoEstudante(estudanteId);
 
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
-        assertEquals(2L, resultado.get(0).getId());
-        assertEquals(1L, resultado.get(1).getId());
-        verify(solicitacaoValidacaoRepository).findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+        assertEquals(2L, resultado.get(0).id());
+        assertEquals(1L, resultado.get(1).id());
+        verify(solicitacaoValidacaoRepository).findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
     }
 
     @Test
     @DisplayName("Listagem: Deve retornar lista vazia quando o estudante não possuir solicitações")
     void deveRetornarListaVaziaQuandoEstudanteNaoPossuiSolicitacoes() {
         Long estudanteId = 100L;
-        when(solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
+        when(solicitacaoValidacaoRepository.findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
                 .thenReturn(List.of());
 
-        List<SolicitacaoValidacao> resultado = solicitacaoService.listarDoEstudante(estudanteId);
+        List<SolicitacaoResumoResponseDTO> resultado = solicitacaoService.listarDoEstudante(estudanteId);
 
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
-        verify(solicitacaoValidacaoRepository).findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+        verify(solicitacaoValidacaoRepository).findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
     }
 
     @Test
@@ -201,8 +224,7 @@ class SolicitacaoServiceTest {
                 )
         );
         solicitacao.setId(solicitacaoId);
-        solicitacao.setJustificativa("Falta assinatura no certificado");
-        solicitacao.setDataAvaliacao(LocalDateTime.now().minusDays(1));
+        solicitacao.setJustificativa("Certificado ilegível");
 
         when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId))
                 .thenReturn(Optional.of(solicitacao));
@@ -211,23 +233,25 @@ class SolicitacaoServiceTest {
 
         assertNotNull(resultado);
         assertEquals(solicitacaoId, resultado.getId());
+        assertEquals(estudanteId, resultado.getEstudanteId());
         assertEquals(StatusSolicitacao.COM_PENDENCIAS, resultado.getStatus());
-        assertEquals("Falta assinatura no certificado", resultado.getJustificativa());
-        assertNotNull(resultado.getDataAvaliacao());
+        assertEquals("Certificado ilegível", resultado.getJustificativa());
         assertEquals(1, resultado.getItens().size());
         verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoId, estudanteId);
     }
 
     @Test
-    @DisplayName("Detalhe: Deve retornar solicitação aprovada sem justificativa sem falhas")
+    @DisplayName("Detalhe: Deve retornar solicitação aprovada sem justificativa")
     void deveDetalharSolicitacaoAprovadaSemJustificativa() {
         Long estudanteId = 100L;
-        Long solicitacaoId = 10L;
+        Long solicitacaoId = 11L;
         SolicitacaoValidacao solicitacao = new SolicitacaoValidacao(
-                estudanteId, LocalDateTime.now().minusDays(3), StatusSolicitacao.APROVADA, List.of()
+                estudanteId, LocalDateTime.now().minusDays(1), StatusSolicitacao.APROVADA, List.of(
+                        new SolicitacaoAtividade(2L, "Monitoria", 40, "ACC")
+                )
         );
         solicitacao.setId(solicitacaoId);
-        solicitacao.setJustificativa(null);
+        solicitacao.setDataAvaliacao(LocalDateTime.now());
 
         when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId))
                 .thenReturn(Optional.of(solicitacao));
@@ -235,22 +259,26 @@ class SolicitacaoServiceTest {
         SolicitacaoValidacao resultado = solicitacaoService.detalhar(estudanteId, solicitacaoId);
 
         assertNotNull(resultado);
-        assertEquals(solicitacaoId, resultado.getId());
         assertEquals(StatusSolicitacao.APROVADA, resultado.getStatus());
         assertNull(resultado.getJustificativa());
+        assertNotNull(resultado.getDataAvaliacao());
         verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoId, estudanteId);
     }
 
     @Test
-    @DisplayName("Detalhe: Deve lançar SolicitacaoNaoEncontradaException quando solicitação não existir ou for de outro estudante")
-    void deveLancarExcecaoQuandoSolicitacaoNaoPertencerAoEstudante() {
+    @DisplayName("Detalhe: Deve lançar SolicitacaoNaoEncontradaException quando não pertencer ao estudante ou não existir")
+    void deveLancarExcecaoQuandoSolicitacaoNaoPertencerAoEstudanteOuNaoExistir() {
         Long estudanteId = 100L;
-        Long solicitacaoIdInvalida = 999L;
+        Long solicitacaoId = 999L;
 
-        when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoIdInvalida, estudanteId))
+        when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(SolicitacaoNaoEncontradaException.class, () -> solicitacaoService.detalhar(estudanteId, solicitacaoIdInvalida));
-        verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoIdInvalida, estudanteId);
+        assertThrows(
+                SolicitacaoNaoEncontradaException.class,
+                () -> solicitacaoService.detalhar(estudanteId, solicitacaoId)
+        );
+
+        verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoId, estudanteId);
     }
 }
