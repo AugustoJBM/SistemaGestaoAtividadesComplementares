@@ -59,9 +59,10 @@ public class AtividadeComplementarService {
         this.armazenamentoCertificadoService = armazenamentoCertificadoService;
         this.auditoriaConformidadeService = auditoriaConformidadeService;
         this.parecerConformidadeRepository = parecerConformidadeRepository;
-        this.diretorioCertificados = Path
-                .of(diretorioCertificados != null ? diretorioCertificados : "certificados")
-                .toAbsolutePath().normalize();
+        String raizCertificados = diretorioCertificados != null && !diretorioCertificados.isBlank()
+                ? diretorioCertificados
+                : "certificados";
+        this.diretorioCertificados = Path.of(raizCertificados).toAbsolutePath().normalize();
     }
 
     public ParecerConformidade auditarOuObterParecer(AtividadeComplementar atividade) {
