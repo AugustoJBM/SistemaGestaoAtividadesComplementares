@@ -112,7 +112,7 @@ public class SecurityConfig {
                                         auth.requestMatchers(HttpMethod.POST, "/api/v1/solicitacoes")
                                                         .hasRole("ESTUDANTE");
                                         auth.requestMatchers(HttpMethod.GET, "/api/v1/solicitacoes",
-                                                        "/api/v1/solicitacoes/**")
+                                                        "/api/v1/solicitacoes/{id:[0-9]+}")
                                                         .hasRole("ESTUDANTE");
 
                                         // outras rotas autenticadas

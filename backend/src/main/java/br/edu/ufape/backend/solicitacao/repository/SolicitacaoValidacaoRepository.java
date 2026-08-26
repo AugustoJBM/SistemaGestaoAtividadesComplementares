@@ -23,7 +23,9 @@ public interface SolicitacaoValidacaoRepository extends JpaRepository<Solicitaca
 
     List<SolicitacaoValidacao> findByEstudanteId(Long estudanteId);
 
-    List<SolicitacaoValidacao> findByEstudanteIdOrderByDataSubmissaoDesc(Long estudanteId);
+    @Query("SELECT DISTINCT s FROM SolicitacaoValidacao s LEFT JOIN FETCH s.itens WHERE s.estudanteId = :estudanteId ORDER BY s.dataSubmissao DESC")
+    List<SolicitacaoValidacao> findByEstudanteIdOrderByDataSubmissaoDesc(@Param("estudanteId") Long estudanteId);
 
-    Optional<SolicitacaoValidacao> findByIdAndEstudanteId(Long id, Long estudanteId);
+    @Query("SELECT s FROM SolicitacaoValidacao s LEFT JOIN FETCH s.itens WHERE s.id = :id AND s.estudanteId = :estudanteId")
+    Optional<SolicitacaoValidacao> findByIdAndEstudanteId(@Param("id") Long id, @Param("estudanteId") Long estudanteId);
 }
