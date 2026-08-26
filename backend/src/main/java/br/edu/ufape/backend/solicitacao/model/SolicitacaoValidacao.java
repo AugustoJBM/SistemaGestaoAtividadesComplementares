@@ -122,4 +122,3 @@ public class SolicitacaoValidacao {
         this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
     }
 }
-

@@ -1,6 +1,8 @@
 package br.edu.ufape.backend.solicitacaoTest.integracao.controller;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,10 +20,12 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.edu.ufape.backend.atividade.model.Categoria;
@@ -155,11 +159,123 @@ class SolicitacaoEstudanteControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/solicitacoes: Deve retornar lista de solicitações do estudante autenticado (200 OK)")
+    void deveListarSolicitacoesDoEstudante() throws Exception {
+        String email = "estudante.lista@ufape.edu.br";
+        String token = cadastrarEstudanteERetornarToken(email);
+
+        cadastrarAtividade(token, "Atividade Listagem", Natureza.ACC, Categoria.ENSINO, 10);
+
+        mockMvc.perform(post(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].status").value("SUBMETIDA"))
+                .andExpect(jsonPath("$[0].dataSubmissao").exists())
+                .andExpect(jsonPath("$[0].dataAvaliacao").value(nullValue()))
+                .andExpect(jsonPath("$[0].totalAtividades").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/solicitacoes: Estudante sem solicitações deve receber lista vazia (200 OK)")
+    void deveRetornarListaVaziaQuandoNaoPossuiSolicitacoes() throws Exception {
+        String email = "estudante.sem.solicitacoes@ufape.edu.br";
+        String token = cadastrarEstudanteERetornarToken(email);
+
+        mockMvc.perform(get(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/solicitacoes/{id}: Deve retornar detalhe completo da solicitação com snapshot (200 OK)")
+    void deveDetalharSolicitacaoComSucesso() throws Exception {
+        String email = "estudante.detalhe@ufape.edu.br";
+        String token = cadastrarEstudanteERetornarToken(email);
+
+        cadastrarAtividade(token, "Atividade Detalhe 1", Natureza.ACC, Categoria.ENSINO, 20);
+        cadastrarAtividade(token, "Atividade Detalhe 2", Natureza.ACEX, Categoria.EXTENSAO, 30);
+
+        MvcResult result = mockMvc.perform(post(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        long solicitacaoId = jsonNode.get("id").asLong();
+
+        mockMvc.perform(get(URL_SOLICITACOES + "/" + solicitacaoId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(solicitacaoId))
+                .andExpect(jsonPath("$.status").value("SUBMETIDA"))
+                .andExpect(jsonPath("$.dataSubmissao").exists())
+                .andExpect(jsonPath("$.dataAvaliacao").value(nullValue()))
+                .andExpect(jsonPath("$.justificativa").value(nullValue()))
+                .andExpect(jsonPath("$.itens", hasSize(2)))
+                .andExpect(jsonPath("$.itens[0].titulo").value("Atividade Detalhe 1"))
+                .andExpect(jsonPath("$.itens[0].cargaHoraria").value(20))
+                .andExpect(jsonPath("$.itens[0].natureza").value("ACC"))
+                .andExpect(jsonPath("$.itens[1].titulo").value("Atividade Detalhe 2"))
+                .andExpect(jsonPath("$.itens[1].cargaHoraria").value(30))
+                .andExpect(jsonPath("$.itens[1].natureza").value("ACEX"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/solicitacoes/{id}: Solicitação de outro estudante deve retornar 404 Not Found")
+    void deveRetornar404AoAcessarSolicitacaoDeOutroEstudante() throws Exception {
+        String tokenDono = cadastrarEstudanteERetornarToken("dono@ufape.edu.br");
+        String tokenOutro = cadastrarEstudanteERetornarToken("outro@ufape.edu.br");
+
+        cadastrarAtividade(tokenDono, "Atividade Dono", Natureza.ACC, Categoria.ENSINO, 10);
+
+        MvcResult result = mockMvc.perform(post(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDono))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        long solicitacaoId = jsonNode.get("id").asLong();
+
+        mockMvc.perform(get(URL_SOLICITACOES + "/" + solicitacaoId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenOutro))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Solicitação não encontrada."));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/solicitacoes/{id}: Solicitação inexistente deve retornar 404 Not Found")
+    void deveRetornar404ParaSolicitacaoInexistente() throws Exception {
+        String token = cadastrarEstudanteERetornarToken("estudante.inexistente@ufape.edu.br");
+
+        mockMvc.perform(get(URL_SOLICITACOES + "/999999")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Solicitação não encontrada."));
+    }
+
+    @Test
     @DisplayName("Segurança: Usuário não-estudante (ex: AVALIADOR) deve receber 403 Forbidden")
     void deveRetornar403ParaAvaliador() throws Exception {
         String token = criarAvaliadorERetornarToken("avaliador.bloqueado@ufape.edu.br");
 
         mockMvc.perform(post(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get(URL_SOLICITACOES)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get(URL_SOLICITACOES + "/1")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
@@ -170,6 +286,13 @@ class SolicitacaoEstudanteControllerTest {
         mockMvc.perform(post(URL_SOLICITACOES))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
+
+        mockMvc.perform(get(URL_SOLICITACOES))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
+
+        mockMvc.perform(get(URL_SOLICITACOES + "/1"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
     }
 }
-

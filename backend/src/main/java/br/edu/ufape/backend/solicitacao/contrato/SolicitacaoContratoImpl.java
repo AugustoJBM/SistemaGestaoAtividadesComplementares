@@ -23,4 +23,3 @@ public class SolicitacaoContratoImpl implements SolicitacaoContrato {
         return solicitacaoService.existeSolicitacaoEmAbertoDoEstudante(estudanteId);
     }
 }
-

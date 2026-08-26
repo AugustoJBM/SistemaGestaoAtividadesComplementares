@@ -2,6 +2,7 @@ package br.edu.ufape.backend.solicitacao.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,5 +22,8 @@ public interface SolicitacaoValidacaoRepository extends JpaRepository<Solicitaca
             @Param("statusList") Collection<StatusSolicitacao> statusList);
 
     List<SolicitacaoValidacao> findByEstudanteId(Long estudanteId);
-}
 
+    List<SolicitacaoValidacao> findByEstudanteIdOrderByDataSubmissaoDesc(Long estudanteId);
+
+    Optional<SolicitacaoValidacao> findByIdAndEstudanteId(Long id, Long estudanteId);
+}

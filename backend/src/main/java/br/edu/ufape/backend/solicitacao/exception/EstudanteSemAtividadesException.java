@@ -10,4 +10,3 @@ public class EstudanteSemAtividadesException extends RuntimeException {
         super("Não é possível submeter solicitação sem atividades complementares cadastradas.");
     }
 }
-

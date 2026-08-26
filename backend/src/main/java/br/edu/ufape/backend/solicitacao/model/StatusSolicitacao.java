@@ -19,4 +19,3 @@ public enum StatusSolicitacao {
         return STATUS_EM_ABERTO.contains(this);
     }
 }
-

@@ -11,6 +11,7 @@ import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
@@ -65,6 +66,17 @@ public class SolicitacaoService {
     }
 
     @Transactional(readOnly = true)
+    public List<SolicitacaoValidacao> listarDoEstudante(Long estudanteId) {
+        return solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+    }
+
+    @Transactional(readOnly = true)
+    public SolicitacaoValidacao detalhar(Long estudanteId, Long solicitacaoId) {
+        return solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId)
+                .orElseThrow(() -> new SolicitacaoNaoEncontradaException("Solicitação não encontrada."));
+    }
+
+    @Transactional(readOnly = true)
     public boolean existeSolicitacaoEmAbertoComAtividade(Long atividadeId) {
         return solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(
                 atividadeId, StatusSolicitacao.STATUS_EM_ABERTO);
@@ -76,4 +88,3 @@ public class SolicitacaoService {
                 estudanteId, StatusSolicitacao.STATUS_EM_ABERTO);
     }
 }
-

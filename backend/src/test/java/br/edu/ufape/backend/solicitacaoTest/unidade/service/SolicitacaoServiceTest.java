@@ -2,6 +2,7 @@ package br.edu.ufape.backend.solicitacaoTest.unidade.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,7 @@ import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.model.StatusAtividade;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
@@ -151,5 +154,103 @@ class SolicitacaoServiceTest {
         assertTrue(resultado);
         verify(solicitacaoValidacaoRepository).existsByEstudanteIdAndStatusIn(estudanteId, StatusSolicitacao.STATUS_EM_ABERTO);
     }
-}
 
+    @Test
+    @DisplayName("Listagem: Deve listar solicitações do estudante ordenadas por data de submissão desc")
+    void deveListarSolicitacoesDoEstudanteOrdenadasPorDataSubmissaoDesc() {
+        Long estudanteId = 100L;
+        SolicitacaoValidacao s1 = new SolicitacaoValidacao(estudanteId, LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, List.of());
+        s1.setId(1L);
+        SolicitacaoValidacao s2 = new SolicitacaoValidacao(estudanteId, LocalDateTime.now().minusDays(1), StatusSolicitacao.SUBMETIDA, List.of());
+        s2.setId(2L);
+
+        when(solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
+                .thenReturn(List.of(s2, s1));
+
+        List<SolicitacaoValidacao> resultado = solicitacaoService.listarDoEstudante(estudanteId);
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.size());
+        assertEquals(2L, resultado.get(0).getId());
+        assertEquals(1L, resultado.get(1).getId());
+        verify(solicitacaoValidacaoRepository).findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+    }
+
+    @Test
+    @DisplayName("Listagem: Deve retornar lista vazia quando o estudante não possuir solicitações")
+    void deveRetornarListaVaziaQuandoEstudanteNaoPossuiSolicitacoes() {
+        Long estudanteId = 100L;
+        when(solicitacaoValidacaoRepository.findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId))
+                .thenReturn(List.of());
+
+        List<SolicitacaoValidacao> resultado = solicitacaoService.listarDoEstudante(estudanteId);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+        verify(solicitacaoValidacaoRepository).findByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+    }
+
+    @Test
+    @DisplayName("Detalhe: Deve retornar solicitação detalhada quando pertencer ao estudante autenticado")
+    void deveDetalharSolicitacaoPertencenteAoEstudante() {
+        Long estudanteId = 100L;
+        Long solicitacaoId = 10L;
+        SolicitacaoValidacao solicitacao = new SolicitacaoValidacao(
+                estudanteId, LocalDateTime.now().minusDays(3), StatusSolicitacao.COM_PENDENCIAS, List.of(
+                        new SolicitacaoAtividade(1L, "Curso", 20, "ACC")
+                )
+        );
+        solicitacao.setId(solicitacaoId);
+        solicitacao.setJustificativa("Falta assinatura no certificado");
+        solicitacao.setDataAvaliacao(LocalDateTime.now().minusDays(1));
+
+        when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId))
+                .thenReturn(Optional.of(solicitacao));
+
+        SolicitacaoValidacao resultado = solicitacaoService.detalhar(estudanteId, solicitacaoId);
+
+        assertNotNull(resultado);
+        assertEquals(solicitacaoId, resultado.getId());
+        assertEquals(StatusSolicitacao.COM_PENDENCIAS, resultado.getStatus());
+        assertEquals("Falta assinatura no certificado", resultado.getJustificativa());
+        assertNotNull(resultado.getDataAvaliacao());
+        assertEquals(1, resultado.getItens().size());
+        verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoId, estudanteId);
+    }
+
+    @Test
+    @DisplayName("Detalhe: Deve retornar solicitação aprovada sem justificativa sem falhas")
+    void deveDetalharSolicitacaoAprovadaSemJustificativa() {
+        Long estudanteId = 100L;
+        Long solicitacaoId = 10L;
+        SolicitacaoValidacao solicitacao = new SolicitacaoValidacao(
+                estudanteId, LocalDateTime.now().minusDays(3), StatusSolicitacao.APROVADA, List.of()
+        );
+        solicitacao.setId(solicitacaoId);
+        solicitacao.setJustificativa(null);
+
+        when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId))
+                .thenReturn(Optional.of(solicitacao));
+
+        SolicitacaoValidacao resultado = solicitacaoService.detalhar(estudanteId, solicitacaoId);
+
+        assertNotNull(resultado);
+        assertEquals(solicitacaoId, resultado.getId());
+        assertEquals(StatusSolicitacao.APROVADA, resultado.getStatus());
+        assertNull(resultado.getJustificativa());
+        verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoId, estudanteId);
+    }
+
+    @Test
+    @DisplayName("Detalhe: Deve lançar SolicitacaoNaoEncontradaException quando solicitação não existir ou for de outro estudante")
+    void deveLancarExcecaoQuandoSolicitacaoNaoPertencerAoEstudante() {
+        Long estudanteId = 100L;
+        Long solicitacaoIdInvalida = 999L;
+
+        when(solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoIdInvalida, estudanteId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(SolicitacaoNaoEncontradaException.class, () -> solicitacaoService.detalhar(estudanteId, solicitacaoIdInvalida));
+        verify(solicitacaoValidacaoRepository).findByIdAndEstudanteId(solicitacaoIdInvalida, estudanteId);
+    }
+}

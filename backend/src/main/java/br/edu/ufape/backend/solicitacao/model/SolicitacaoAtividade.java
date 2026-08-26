@@ -77,4 +77,3 @@ public class SolicitacaoAtividade {
         this.natureza = natureza;
     }
 }
-
