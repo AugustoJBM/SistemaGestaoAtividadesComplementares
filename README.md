@@ -1,17 +1,36 @@
 [![CI](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/ci.yml)
 [![DEPLOY](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/deploy.yml/badge.svg)](https://github.com/GestaoAtividadeComplementarOrg/GestaoAtividadesComplementares/actions/workflows/deploy.yml)
 
-[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=arayumi3_GestaoAtividadesComplementares&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
-
-[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=arayumi3_GestaoAtividadesComplementares)
-
 
 ## Deploy em Produção (Render)
 
 - **Frontend (SPA):** [https://sgac-frontend.onrender.com](https://gestaoatividadescomplementares.onrender.com)
 - **Backend (API REST):** [https://sgac-backend-3rub.onrender.com](https://gestaoatividadescomplementares-backend.onrender.com)
-- **SonarCloud:** [https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares](https://sonarcloud.io/project/overview?id=arayumi3_GestaoAtividadesComplementares)
-- **Banco de Dados:** PostgreSQL (Render)
+
+### SonarCloud Backend
+- **SonarCloud - Backend:** [https://sonarcloud.io/project/overview?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg](https://sonarcloud.io/project/overview?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=bugs)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+[![software_quality_security_issues](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=software_quality_security_issues)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg)
+
+
+
+### SonarCloud Frontend
+- **SonarCloud - Frontend:** [https://sonarcloud.io/project/overview?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend](https://sonarcloud.io/project/overview?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=coverage&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=bugs&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=code_smells&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=duplicated_lines_density&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+[![software_quality_security_issues](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=software_quality_security_issues&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend&metric=vulnerabilities&token=bfbab122920e18af2a4951347fd8fe849e20783c)](https://sonarcloud.io/summary/new_code?id=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend)
+
+### BD
+- **Banco de Dados:** PostgreSQL (Render) -> Migração Futura para o Supabase Postgre
 
 ### SENHA DE ACESSO PADRÃO
 - **LOGIN:** test@test.test
