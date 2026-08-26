@@ -1,6 +1,8 @@
 package br.edu.ufape.backend.atividadeTest.unidade.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -11,6 +13,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -91,6 +94,14 @@ class AtividadeComplementarServiceCertificadoPathTest {
         return atividade;
     }
 
+    private void criarSymlink(Path link, Path alvo) {
+        try {
+            Files.createSymbolicLink(link, alvo);
+        } catch (IOException | UnsupportedOperationException e) {
+            Assumptions.abort("Ambiente nao suporta criacao de symlinks: " + e.getClass().getSimpleName());
+        }
+    }
+
     @Test
     @DisplayName("Deve baixar certificado legitimo armazenado dentro do diretorio configurado")
     void deveBaixarCertificadoLegitimoDentroDoDiretorio() throws IOException {
@@ -123,5 +134,79 @@ class AtividadeComplementarServiceCertificadoPathTest {
         assertThrows(
                 AtividadeNaoEncontradaException.class,
                 () -> service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL));
+    }
+
+    @Test
+    @DisplayName("Deve recusar symlink dentro do diretorio que aponta para arquivo fora da raiz")
+    void deveRecusarSymlinkApontandoParaForaDaRaiz() throws IOException {
+        Path arquivoExterno = Files.writeString(
+                diretorioCertificados.resolveSibling("externo-" + System.nanoTime() + ".pdf"),
+                "SEGREDO");
+        Path link = diretorioCertificados.resolve("link.pdf");
+        criarSymlink(link, arquivoExterno);
+
+        AtividadeComplementar atividade = criarAtividadeComCertificado(link.toString());
+        when(atividadeRepository.findById(ID_ATIVIDADE)).thenReturn(Optional.of(atividade));
+
+        AtividadeNaoEncontradaException excecao = assertThrows(
+                AtividadeNaoEncontradaException.class,
+                () -> service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL));
+
+        assertEquals("Arquivo físico do certificado não encontrado no servidor.", excecao.getMessage());
+        assertFalse(excecao.getMessage().contains(arquivoExterno.toString()));
+    }
+
+    @Test
+    @DisplayName("Deve baixar certificado quando o symlink aponta para arquivo dentro da propria raiz")
+    void devePermitirSymlinkDentroDaRaiz() throws IOException {
+        Path alvo = diretorioCertificados.resolve("alvo.pdf");
+        Files.writeString(alvo, "PDF-INTERNO");
+        Path link = diretorioCertificados.resolve("interno-link.pdf");
+        criarSymlink(link, alvo);
+
+        AtividadeComplementar atividade = criarAtividadeComCertificado(link.toString());
+        when(atividadeRepository.findById(ID_ATIVIDADE)).thenReturn(Optional.of(atividade));
+
+        Resource resource = service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL);
+
+        assertTrue(resource.exists());
+        assertEquals("PDF-INTERNO", new String(resource.getInputStream().readAllBytes()));
+    }
+
+    @Test
+    @DisplayName("Deve tratar arquivo inexistente dentro da raiz como nao encontrado sem vazar detalhes do filesystem")
+    void deveTratarArquivoInexistenteComoNaoEncontrado() {
+        Path inexistente = diretorioCertificados.resolve("nao-existe.pdf");
+
+        AtividadeComplementar atividade = criarAtividadeComCertificado(inexistente.toString());
+        when(atividadeRepository.findById(ID_ATIVIDADE)).thenReturn(Optional.of(atividade));
+
+        AtividadeNaoEncontradaException excecao = assertThrows(
+                AtividadeNaoEncontradaException.class,
+                () -> service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL));
+
+        assertEquals("Arquivo físico do certificado não encontrado no servidor.", excecao.getMessage());
+        assertFalse(excecao.getMessage().contains(inexistente.toString()));
+        assertNull(excecao.getCause());
+    }
+
+    @Test
+    @DisplayName("Deve retornar a mesma mensagem para symlink quebrado, sem expor o alvo")
+    void deveTratarSymlinkQuebradoComoNaoEncontrado() throws IOException {
+        Path alvoRemovido = diretorioCertificados.resolve("alvo-removido.pdf");
+        Files.writeString(alvoRemovido, "TEMP");
+        Path link = diretorioCertificados.resolve("quebrado.pdf");
+        criarSymlink(link, alvoRemovido);
+        Files.delete(alvoRemovido);
+
+        AtividadeComplementar atividade = criarAtividadeComCertificado(link.toString());
+        when(atividadeRepository.findById(ID_ATIVIDADE)).thenReturn(Optional.of(atividade));
+
+        AtividadeNaoEncontradaException excecao = assertThrows(
+                AtividadeNaoEncontradaException.class,
+                () -> service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL));
+
+        assertEquals("Arquivo físico do certificado não encontrado no servidor.", excecao.getMessage());
+        assertFalse(excecao.getMessage().contains(alvoRemovido.toString()));
     }
 }

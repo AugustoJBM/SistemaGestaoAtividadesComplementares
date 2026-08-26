@@ -53,6 +53,19 @@ class AtividadeContratoImplTest {
     }
 
     @Test
+    @DisplayName("Deve delegar busca de atividades por id do estudante para o service")
+    void deveDelegarBuscaPorEstudanteId() {
+        Long estudanteId = 123L;
+        when(atividadeComplementarService.listarAtividadesDoEstudante(estudanteId))
+                .thenReturn(List.of());
+
+        List<AtividadeResponseDTO> resultado = atividadeContrato.buscarPorEstudante(estudanteId);
+
+        assertTrue(resultado.isEmpty());
+        verify(atividadeComplementarService).listarAtividadesDoEstudante(estudanteId);
+    }
+
+    @Test
     @DisplayName("Deve delegar busca de atividades por estudante e natureza para o service")
     void deveDelegarBuscaPorEstudanteENatureza() {
         when(atividadeComplementarService.listarAtividadesDoEstudante(EMAIL, Natureza.ACC, null))

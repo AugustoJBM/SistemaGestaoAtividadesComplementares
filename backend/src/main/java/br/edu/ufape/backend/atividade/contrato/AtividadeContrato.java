@@ -13,6 +13,8 @@ public interface AtividadeContrato {
      */
     List<AtividadeResponseDTO> buscarPorEstudante(String emailEstudante);
 
+    List<AtividadeResponseDTO> buscarPorEstudante(Long estudanteId);
+
     /**
      * @throws AcessoNegadoAtividadeException se o email não existir
      * ou não pertencer a um Estudante
