@@ -6,17 +6,21 @@ import java.util.List;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
 
-public record SolicitacaoResponseDTO(
+public record SolicitacaoDetalheResponseDTO(
         Long id,
         StatusSolicitacao status,
         LocalDateTime dataSubmissao,
+        LocalDateTime dataAvaliacao,
+        String justificativa,
         List<SolicitacaoAtividadeResponseDTO> itens
 ) {
-    public SolicitacaoResponseDTO(SolicitacaoValidacao solicitacao) {
+    public SolicitacaoDetalheResponseDTO(SolicitacaoValidacao solicitacao) {
         this(
                 solicitacao.getId(),
                 solicitacao.getStatus(),
                 solicitacao.getDataSubmissao(),
+                solicitacao.getDataAvaliacao(),
+                solicitacao.getJustificativa(),
                 solicitacao.getItens() != null
                         ? solicitacao.getItens().stream().map(SolicitacaoAtividadeResponseDTO::new).toList()
                         : List.of()

@@ -51,4 +51,3 @@ class SolicitacaoContratoImplTest {
         verify(solicitacaoService).existeSolicitacaoEmAbertoDoEstudante(estudanteId);
     }
 }
-

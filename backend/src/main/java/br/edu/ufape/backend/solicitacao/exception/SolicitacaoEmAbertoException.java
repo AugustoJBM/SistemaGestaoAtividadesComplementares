@@ -10,4 +10,3 @@ public class SolicitacaoEmAbertoException extends RuntimeException {
         super("Já existe uma solicitação de validação em aberto para este estudante.");
     }
 }
-
