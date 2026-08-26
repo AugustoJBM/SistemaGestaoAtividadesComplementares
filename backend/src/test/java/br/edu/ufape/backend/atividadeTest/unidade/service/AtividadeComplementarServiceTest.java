@@ -598,4 +598,17 @@ class AtividadeComplementarServiceTest {
                 "O novo arquivo gravado deveria ter sido removido na compensacao");
         assertTrue(Files.exists(arquivoAntigo), "O arquivo antigo deve ser preservado se a transacao falhar");
     }
+
+    @Test
+    @DisplayName("Deve listar atividades por estudanteId delegando para o repository")
+    void deveListarAtividadesPorEstudanteId() {
+        Long estudanteId = 10L;
+        when(atividadeRepository.findByEstudante_Id(estudanteId)).thenReturn(List.of());
+
+        List<AtividadeComplementar> resultado = service.listarAtividadesDoEstudante(estudanteId);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+        verify(atividadeRepository).findByEstudante_Id(estudanteId);
+    }
 }
