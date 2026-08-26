@@ -20,6 +20,9 @@ import br.edu.ufape.backend.autenticacao.exception.EmailJaCadastradoException;
 import br.edu.ufape.backend.autenticacao.exception.PerfilNaoPermitidoException;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
 import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
+import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -91,6 +94,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponse> tratarEmailDuplicado(EmailJaCadastradoException ex) {
         ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(SolicitacaoEmAbertoException.class)
+    public ResponseEntity<ErroResponse> tratarSolicitacaoEmAberto(SolicitacaoEmAbertoException ex) {
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(EstudanteSemAtividadesException.class)
+    public ResponseEntity<ErroResponse> tratarEstudanteSemAtividades(EstudanteSemAtividadesException ex) {
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(erro);
+    }
+
+    @ExceptionHandler(SolicitacaoNaoEncontradaException.class)
+    public ResponseEntity<ErroResponse> tratarSolicitacaoNaoEncontrada(SolicitacaoNaoEncontradaException ex) {
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 
     @ExceptionHandler(UnauthorizedException.class)

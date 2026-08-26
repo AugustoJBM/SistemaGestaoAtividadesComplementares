@@ -25,6 +25,9 @@ import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
 import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.comum.exception.ErroResponse;
 import br.edu.ufape.backend.comum.exception.GlobalExceptionHandler;
+import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
+import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
 
 class GlobalExceptionHandlerTest {
 
@@ -136,6 +139,48 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.getBody());
         assertEquals(ex.getMessage(), response.getBody().message());
         assertEquals(409, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
+    }
+
+    @Test
+    @DisplayName("Deve tratar SolicitacaoEmAbertoException retornando 409")
+    void deveTratarSolicitacaoEmAberto() {
+        SolicitacaoEmAbertoException ex = new SolicitacaoEmAbertoException("Já existe solicitação em aberto");
+
+        ResponseEntity<ErroResponse> response = exceptionHandler.tratarSolicitacaoEmAberto(ex);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Já existe solicitação em aberto", response.getBody().message());
+        assertEquals(409, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
+    }
+
+    @Test
+    @DisplayName("Deve tratar EstudanteSemAtividadesException retornando 422")
+    void deveTratarEstudanteSemAtividades() {
+        EstudanteSemAtividadesException ex = new EstudanteSemAtividadesException("Sem atividades para submeter");
+
+        ResponseEntity<ErroResponse> response = exceptionHandler.tratarEstudanteSemAtividades(ex);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Sem atividades para submeter", response.getBody().message());
+        assertEquals(422, response.getBody().status());
+        assertNotNull(response.getBody().timestamp());
+    }
+
+    @Test
+    @DisplayName("Deve tratar SolicitacaoNaoEncontradaException retornando 404")
+    void deveTratarSolicitacaoNaoEncontrada() {
+        SolicitacaoNaoEncontradaException ex = new SolicitacaoNaoEncontradaException("Solicitação não encontrada.");
+
+        ResponseEntity<ErroResponse> response = exceptionHandler.tratarSolicitacaoNaoEncontrada(ex);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Solicitação não encontrada.", response.getBody().message());
+        assertEquals(404, response.getBody().status());
         assertNotNull(response.getBody().timestamp());
     }
 
