@@ -1,0 +1,36 @@
+<section class="bg-white rounded-xl border border-[#e1e3e4] p-5">
+  <div class="flex items-center justify-between gap-3 border-b border-[#e1e3e4] pb-3 mb-4">
+    <h2 class="text-base font-bold text-[#191c1d]">Solicitação #{{ detalhe().id }}</h2>
+    <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold" [class]="classeStatus(detalhe().status)">
+      {{ rotuloStatus(detalhe().status) }}
+    </span>
+  </div>
+
+  <p class="text-xs text-[#707974] mb-4">
+    Enviada em {{ dataFormatada(detalhe().dataSubmissao) }}
+    @if (detalhe().dataAvaliacao; as dataAvaliacao) {
+    <span> • Avaliada em {{ dataFormatada(dataAvaliacao) }}</span>
+    }
+  </p>
+
+  @if (mostraJustificativa()) {
+  <div data-testid="justificativa" role="note"
+    class="mb-4 p-4 bg-[#fff3d6] text-[#7a5900] rounded-lg border border-[#7a5900]/20 text-sm">
+    <p class="font-semibold mb-1">Retorno do avaliador</p>
+    <p>{{ detalhe().justificativa }}</p>
+  </div>
+  }
+
+  <h3 class="text-sm font-semibold text-[#404945] mb-2">Atividades submetidas</h3>
+  <ul class="flex flex-col gap-2">
+    @for (item of detalhe().itens; track item.atividadeId) {
+    <li class="bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg p-3 flex justify-between items-center gap-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-[#191c1d] truncate">{{ item.titulo }}</p>
+        <p class="text-xs text-[#707974]">{{ item.natureza }}</p>
+      </div>
+      <span class="text-sm font-bold text-[#003629] shrink-0">{{ item.cargaHoraria }}h</span>
+    </li>
+    }
+  </ul>
+</section>

@@ -79,6 +79,12 @@ describe('routes', () => {
     expect(rota?.canActivate).toEqual([authGuard]);
   });
 
+  it('deve proteger a rota solicitacoes com authGuard', () => {
+    const rota = routes.find((r: Route) => r.path === 'solicitacoes');
+    expect(rota).toBeTruthy();
+    expect(rota?.canActivate).toEqual([authGuard]);
+  });
+
   it('deve manter a rota curinga como a última entrada redirecionando para login', () => {
     const ultimaRota = routes[routes.length - 1];
     expect(ultimaRota.path).toBe('**');

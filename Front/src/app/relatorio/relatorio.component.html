@@ -7,6 +7,7 @@
       </div>
       <div class="flex items-center gap-3">
         @if (!semAtividades() && !carregando()) {
+        <app-submissao-solicitacao />
         <button type="button" (click)="imprimirRelatorio()"
           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#1b4d3e] transition-colors shadow-sm">
           <span class="material-symbols-outlined text-[16px]">print</span>
