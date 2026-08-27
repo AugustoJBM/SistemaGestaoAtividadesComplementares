@@ -4,7 +4,7 @@ import java.util.Optional;
 import br.edu.ufape.backend.usuario.model.Usuario;
 
 public interface UsuarioContrato {
-    Optional<Usuario> buscarPorEmail(String email);
-    boolean existePorEmail(String email);
-    Usuario salvar(Usuario usuario);
+	Optional<Usuario> buscarPorEmail(String email);
+	boolean existePorEmail(String email);
+	Usuario salvar(Usuario usuario);
 }

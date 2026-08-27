@@ -10,12 +10,12 @@ import java.util.Optional;
 @Repository
 public interface ParecerConformidadeRepository extends JpaRepository<ParecerConformidade, Long> {
 
-    Optional<ParecerConformidade> findByAtividadeId(Long atividadeId);
+	Optional<ParecerConformidade> findByAtividadeId(Long atividadeId);
 
-    long countByDecisaoFinalAvaliadorIsNotNull();
+	long countByDecisaoFinalAvaliadorIsNotNull();
 
-    long countByAvaliadorConcordouComIATrue();
+	long countByAvaliadorConcordouComIATrue();
 
-    @Query("SELECT COALESCE(AVG(p.tempoProcessamentoMs), 0.0) FROM ParecerConformidade p")
-    Double calcularTempoMedioMs();
+	@Query("SELECT COALESCE(AVG(p.tempoProcessamentoMs), 0.0) FROM ParecerConformidade p")
+	Double calcularTempoMedioMs();
 }

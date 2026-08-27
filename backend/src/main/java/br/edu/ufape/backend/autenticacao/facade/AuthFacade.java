@@ -11,21 +11,21 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 @Component
 public class AuthFacade {
 
-    private final AuthService authService;
+	private final AuthService authService;
 
-    public AuthFacade(AuthService authService) {
-        this.authService = authService;
-    }
+	public AuthFacade(AuthService authService) {
+		this.authService = authService;
+	}
 
-    public Usuario cadastrarUsuario(CadastroUsuarioRequest request) {
-        return authService.cadastrarUsuario(request);
-    }
+	public Usuario cadastrarUsuario(CadastroUsuarioRequest request) {
+		return authService.cadastrarUsuario(request);
+	}
 
-    public LoginResponse login(LoginRequest request) {
-        return authService.login(request);
-    }
+	public LoginResponse login(LoginRequest request) {
+		return authService.login(request);
+	}
 
-    public void logout(String authorizationHeader) {
-        authService.logout(authorizationHeader);
-    }
+	public void logout(String authorizationHeader) {
+		authService.logout(authorizationHeader);
+	}
 }

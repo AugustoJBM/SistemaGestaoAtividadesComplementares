@@ -1,6 +1,7 @@
 package br.edu.ufape.backend.solicitacao.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
+import br.edu.ufape.backend.solicitacao.model.DecisaoAvaliacao;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
@@ -21,71 +23,88 @@ import br.edu.ufape.backend.solicitacao.repository.SolicitacaoValidacaoRepositor
 @Service
 public class SolicitacaoService {
 
-    private final SolicitacaoValidacaoRepository solicitacaoValidacaoRepository;
-    private final AtividadeContrato atividadeContrato;
+	private final SolicitacaoValidacaoRepository solicitacaoValidacaoRepository;
+	private final AtividadeContrato atividadeContrato;
 
-    public SolicitacaoService(
-            SolicitacaoValidacaoRepository solicitacaoValidacaoRepository,
-            AtividadeContrato atividadeContrato) {
-        this.solicitacaoValidacaoRepository = solicitacaoValidacaoRepository;
-        this.atividadeContrato = atividadeContrato;
-    }
+	public SolicitacaoService(SolicitacaoValidacaoRepository solicitacaoValidacaoRepository,
+			AtividadeContrato atividadeContrato) {
+		this.solicitacaoValidacaoRepository = solicitacaoValidacaoRepository;
+		this.atividadeContrato = atividadeContrato;
+	}
 
-    @Transactional
-    public SolicitacaoValidacao submeter(Long estudanteId) {
-        // Regra 1: Verificar se ja existe solicitacao em aberto para este estudante
-        if (solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId, StatusSolicitacao.STATUS_EM_ABERTO)) {
-            throw new SolicitacaoEmAbertoException("Já existe uma solicitação de validação em aberto para este estudante.");
-        }
+	// ---- Submissao pelo estudante ----
 
-        // Regra 2: Buscar atividades via AtividadeContrato (interface publica do modulo de atividades)
-        List<AtividadeResponseDTO> atividades = atividadeContrato.buscarPorEstudante(estudanteId);
+	@Transactional
+	public SolicitacaoValidacao submeter(Long estudanteId) {
+		if (solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId,
+				StatusSolicitacao.STATUS_EM_ABERTO)) {
+			throw new SolicitacaoEmAbertoException(
+					"Ja existe uma solicitacao de validacao em aberto para este estudante.");
+		}
 
-        // Regra 3: Se nao possuir nenhuma atividade, lancar excecao de negocio (422)
-        if (atividades == null || atividades.isEmpty()) {
-            throw new EstudanteSemAtividadesException("Não é possível submeter solicitação sem atividades complementares cadastradas.");
-        }
+		List<AtividadeResponseDTO> atividades = atividadeContrato.buscarPorEstudante(estudanteId);
 
-        // Regra 4: Criar SolicitacaoValidacao e converter atividades para snapshots imutaveis (SolicitacaoAtividade)
-        List<SolicitacaoAtividade> itensSnapshot = atividades.stream()
-                .map(a -> new SolicitacaoAtividade(
-                        a.id(),
-                        a.titulo(),
-                        a.cargaHorariaEmHoras(),
-                        a.natureza() != null ? a.natureza().name() : null
-                ))
-                .toList();
+		if (atividades == null || atividades.isEmpty()) {
+			throw new EstudanteSemAtividadesException(
+					"Nao e possivel submeter solicitacao sem atividades complementares cadastradas.");
+		}
 
-        SolicitacaoValidacao solicitacao = new SolicitacaoValidacao(
-                estudanteId,
-                LocalDateTime.now(),
-                StatusSolicitacao.SUBMETIDA,
-                new ArrayList<>(itensSnapshot)
-        );
+		List<SolicitacaoAtividade> itensSnapshot = atividades.stream().map(a -> new SolicitacaoAtividade(a.id(),
+				a.titulo(), a.cargaHorariaEmHoras(), a.natureza() != null ? a.natureza().name() : null)).toList();
 
-        return solicitacaoValidacaoRepository.save(solicitacao);
-    }
+		SolicitacaoValidacao solicitacao = new SolicitacaoValidacao(estudanteId,
+				LocalDateTime.now(ZoneId.of("America/Recife")), StatusSolicitacao.SUBMETIDA,
+				new ArrayList<>(itensSnapshot));
 
-    @Transactional(readOnly = true)
-    public List<SolicitacaoResumoResponseDTO> listarDoEstudante(Long estudanteId) {
-        return solicitacaoValidacaoRepository.findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
-    }
+		return solicitacaoValidacaoRepository.save(solicitacao);
+	}
 
-    @Transactional(readOnly = true)
-    public SolicitacaoValidacao detalhar(Long estudanteId, Long solicitacaoId) {
-        return solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId)
-                .orElseThrow(() -> new SolicitacaoNaoEncontradaException("Solicitação não encontrada."));
-    }
+	// ---- Avaliacao pelo avaliador ----
 
-    @Transactional(readOnly = true)
-    public boolean existeSolicitacaoEmAbertoComAtividade(Long atividadeId) {
-        return solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(
-                atividadeId, StatusSolicitacao.STATUS_EM_ABERTO);
-    }
+	@Transactional
+	public SolicitacaoValidacao avaliar(Long solicitacaoId, Long avaliadorId, DecisaoAvaliacao decisao,
+			String justificativa) {
+		SolicitacaoValidacao solicitacao = solicitacaoValidacaoRepository.findById(solicitacaoId)
+				.orElseThrow(() -> new SolicitacaoNaoEncontradaException(solicitacaoId));
 
-    @Transactional(readOnly = true)
-    public boolean existeSolicitacaoEmAbertoDoEstudante(Long estudanteId) {
-        return solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
-                estudanteId, StatusSolicitacao.STATUS_EM_ABERTO);
-    }
+		StatusSolicitacao novoStatus = decisao.toStatus();
+		MaquinaEstadosSolicitacao.validar(solicitacao.getStatus(), novoStatus);
+
+		if ((novoStatus == StatusSolicitacao.REJEITADA || novoStatus == StatusSolicitacao.COM_PENDENCIAS)
+				&& (justificativa == null || justificativa.isBlank())) {
+			throw new IllegalArgumentException("Justificativa e obrigatoria para decisao " + novoStatus);
+		}
+
+		solicitacao.setStatus(novoStatus);
+		solicitacao.setJustificativa(justificativa);
+		solicitacao.setAvaliadorId(avaliadorId);
+		solicitacao.setDataAvaliacao(LocalDateTime.now(ZoneId.of("America/Recife")));
+
+		return solicitacaoValidacaoRepository.save(solicitacao);
+	}
+
+	// ---- Metodos do contrato publico ----
+
+	@Transactional(readOnly = true)
+	public List<SolicitacaoResumoResponseDTO> listarDoEstudante(Long estudanteId) {
+		return solicitacaoValidacaoRepository.findResumosByEstudanteIdOrderByDataSubmissaoDesc(estudanteId);
+	}
+
+	@Transactional(readOnly = true)
+	public SolicitacaoValidacao detalhar(Long estudanteId, Long solicitacaoId) {
+		return solicitacaoValidacaoRepository.findByIdAndEstudanteId(solicitacaoId, estudanteId)
+				.orElseThrow(() -> new SolicitacaoNaoEncontradaException("Solicitação não encontrada."));
+	}
+
+	@Transactional(readOnly = true)
+	public boolean existeSolicitacaoEmAbertoComAtividade(Long atividadeId) {
+		return solicitacaoValidacaoRepository.existsByAtividadeIdAndStatusIn(atividadeId,
+				StatusSolicitacao.STATUS_EM_ABERTO);
+	}
+
+	@Transactional(readOnly = true)
+	public boolean existeSolicitacaoEmAbertoDoEstudante(Long estudanteId) {
+		return solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId,
+				StatusSolicitacao.STATUS_EM_ABERTO);
+	}
 }

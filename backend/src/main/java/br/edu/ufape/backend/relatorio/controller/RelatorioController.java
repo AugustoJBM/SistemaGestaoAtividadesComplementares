@@ -13,16 +13,16 @@ import br.edu.ufape.backend.relatorio.facade.RelatorioFacade;
 @RequestMapping("/api/v1/relatorios")
 public class RelatorioController {
 
-    private final RelatorioFacade relatorioFacade;
+	private final RelatorioFacade relatorioFacade;
 
-    public RelatorioController(RelatorioFacade relatorioFacade) {
-        this.relatorioFacade = relatorioFacade;
-    }
+	public RelatorioController(RelatorioFacade relatorioFacade) {
+		this.relatorioFacade = relatorioFacade;
+	}
 
-    @GetMapping("/atividades")
-    public ResponseEntity<RelatorioAtividadesResponse> atividades(Authentication authentication) {
-        String emailEstudante = authentication.getName();
-        RelatorioAtividadesResponse response = relatorioFacade.gerarRelatorio(emailEstudante);
-        return ResponseEntity.ok(response);
-    }
+	@GetMapping("/atividades")
+	public ResponseEntity<RelatorioAtividadesResponse> atividades(Authentication authentication) {
+		String emailEstudante = authentication.getName();
+		RelatorioAtividadesResponse response = relatorioFacade.gerarRelatorio(emailEstudante);
+		return ResponseEntity.ok(response);
+	}
 }

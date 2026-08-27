@@ -32,79 +32,68 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/atividades")
 public class AtividadeController {
 
-    private final AtividadeFacade atividadeFacade;
+	private final AtividadeFacade atividadeFacade;
 
-    public AtividadeController(AtividadeFacade atividadeFacade) {
-        this.atividadeFacade = atividadeFacade;
-    }
+	public AtividadeController(AtividadeFacade atividadeFacade) {
+		this.atividadeFacade = atividadeFacade;
+	}
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AtividadeResponseDTO> cadastrar(
-            @Valid @ModelAttribute CadastroAtividadeRequestDTO request,
-            @RequestPart("arquivo") MultipartFile arquivo,
-            Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        AtividadeResponseDTO response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<AtividadeResponseDTO> cadastrar(@Valid @ModelAttribute CadastroAtividadeRequestDTO request,
+			@RequestPart("arquivo") MultipartFile arquivo, Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		AtividadeResponseDTO response = atividadeFacade.cadastrarAtividade(request, arquivo, emailEstudante);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
 
-    @GetMapping
-    public ResponseEntity<List<AtividadeResponseDTO>> listar(
-            @RequestParam(required = false) Natureza natureza,
-            @RequestParam(required = false) Categoria categoria,
-            Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        List<AtividadeResponseDTO> atividades = atividadeFacade.listarAtividadesDoEstudante(
-                emailEstudante, natureza, categoria);
-        return ResponseEntity.ok(atividades);
-    }
+	@GetMapping
+	public ResponseEntity<List<AtividadeResponseDTO>> listar(@RequestParam(required = false) Natureza natureza,
+			@RequestParam(required = false) Categoria categoria, Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		List<AtividadeResponseDTO> atividades = atividadeFacade.listarAtividadesDoEstudante(emailEstudante, natureza,
+				categoria);
+		return ResponseEntity.ok(atividades);
+	}
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AtividadeResponseDTO> atualizar(
-            @PathVariable Long id,
-            @Valid @ModelAttribute AtualizarAtividadeRequestDTO request,
-            @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
-            Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        AtividadeResponseDTO response = atividadeFacade.atualizarAtividade(id, request, arquivo, emailEstudante);
-        return ResponseEntity.ok(response);
-    }
+	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<AtividadeResponseDTO> atualizar(@PathVariable Long id,
+			@Valid @ModelAttribute AtualizarAtividadeRequestDTO request,
+			@RequestParam(value = "arquivo", required = false) MultipartFile arquivo, Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		AtividadeResponseDTO response = atividadeFacade.atualizarAtividade(id, request, arquivo, emailEstudante);
+		return ResponseEntity.ok(response);
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(
-            @PathVariable Long id,
-            Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        atividadeFacade.excluirAtividade(id, emailEstudante);
-        return ResponseEntity.noContent().build();
-    }
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> excluir(@PathVariable Long id, Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		atividadeFacade.excluirAtividade(id, emailEstudante);
+		return ResponseEntity.noContent().build();
+	}
 
-    @ExceptionHandler(BindException.class)
-    public ResponseEntity<Map<String, String>> tratarFalhaDeValidacao(BindException ex) {
-        String mensagem = ex.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
-                .orElse("Dados de cadastro inválidos");
-        return ResponseEntity.badRequest().body(Map.of("message", mensagem));
-    }
+	@ExceptionHandler(BindException.class)
+	public ResponseEntity<Map<String, String>> tratarFalhaDeValidacao(BindException ex) {
+		String mensagem = ex.getBindingResult().getFieldErrors().stream().findFirst()
+				.map(erro -> erro.getField() + ": " + erro.getDefaultMessage()).orElse("Dados de cadastro inválidos");
+		return ResponseEntity.badRequest().body(Map.of("message", mensagem));
+	}
 
-    @PostMapping("/{id}/avaliar")
-    public ResponseEntity<br.edu.ufape.backend.ia.dto.ParecerResponseDTO> avaliar(
-            @PathVariable Long id,
-            @Valid @RequestBody br.edu.ufape.backend.atividade.dto.AvaliacaoDecisaoRequestDTO request) {
-        br.edu.ufape.backend.ia.dto.ParecerResponseDTO response = atividadeFacade.avaliarAtividade(id, request);
-        return ResponseEntity.ok(response);
-    }
+	@PostMapping("/{id}/avaliar")
+	public ResponseEntity<br.edu.ufape.backend.ia.dto.ParecerResponseDTO> avaliar(@PathVariable Long id,
+			@Valid @RequestBody br.edu.ufape.backend.atividade.dto.AvaliacaoDecisaoRequestDTO request) {
+		br.edu.ufape.backend.ia.dto.ParecerResponseDTO response = atividadeFacade.avaliarAtividade(id, request);
+		return ResponseEntity.ok(response);
+	}
 }

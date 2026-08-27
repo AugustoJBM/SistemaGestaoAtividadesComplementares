@@ -19,20 +19,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class MetricasPesquisaControllerTest {
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @Mock
-    private IaCertificadoFacade iaCertificadoFacade;
+	@Mock
+	private IaCertificadoFacade iaCertificadoFacade;
 
-    @InjectMocks
-    private MetricasPesquisaController controller;
+	@InjectMocks
+	private MetricasPesquisaController controller;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    }
+	@BeforeEach
+	void setUp() {
+		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+	}
 
-    @Test
+	@Test
     @DisplayName("Deve retornar métricas empíricas de concordância e tempo médio")
     void deveRetornarMetricasEmpiricas() throws Exception {
         when(iaCertificadoFacade.contarAvaliadas()).thenReturn(100L);

@@ -17,9 +17,9 @@ const CLASSES_STATUS: Record<StatusSolicitacao, string> = {
 };
 
 export function rotuloStatus(status: StatusSolicitacao): string {
-  return ROTULOS_STATUS[status];
+  return ROTULOS_STATUS[status] ?? status;
 }
 
 export function classeStatus(status: StatusSolicitacao): string {
-  return CLASSES_STATUS[status];
+  return CLASSES_STATUS[status] ?? '';
 }

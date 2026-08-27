@@ -19,28 +19,28 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-    
-    private final AuthFacade authFacade;
 
-    public AuthController(AuthFacade authFacade) {
-        this.authFacade = authFacade;
-    }
+	private final AuthFacade authFacade;
 
-    @PostMapping("/cadastro")
-    public ResponseEntity<UsuarioResponse> cadastrar(@Valid @RequestBody CadastroUsuarioRequest request) {
-        Usuario usuario = authFacade.cadastrarUsuario(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(usuario));
-    }
+	public AuthController(AuthFacade authFacade) {
+		this.authFacade = authFacade;
+	}
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse loginResponse = authFacade.login(request);
-        return ResponseEntity.ok(loginResponse);
-    }
+	@PostMapping("/cadastro")
+	public ResponseEntity<UsuarioResponse> cadastrar(@Valid @RequestBody CadastroUsuarioRequest request) {
+		Usuario usuario = authFacade.cadastrarUsuario(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(usuario));
+	}
 
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader(name = "Authorization", required = false) String authorization) {
-        authFacade.logout(authorization);
-        return ResponseEntity.ok().build();
-    }
+	@PostMapping("/login")
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+		LoginResponse loginResponse = authFacade.login(request);
+		return ResponseEntity.ok(loginResponse);
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(@RequestHeader(name = "Authorization", required = false) String authorization) {
+		authFacade.logout(authorization);
+		return ResponseEntity.ok().build();
+	}
 }

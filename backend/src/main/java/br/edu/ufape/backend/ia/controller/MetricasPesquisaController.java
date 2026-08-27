@@ -11,23 +11,20 @@ import br.edu.ufape.backend.ia.facade.IaCertificadoFacade;
 @RequestMapping("/api/v1/metricas-pesquisa")
 public class MetricasPesquisaController {
 
-    private final IaCertificadoFacade iaCertificadoFacade;
+	private final IaCertificadoFacade iaCertificadoFacade;
 
-    public MetricasPesquisaController(IaCertificadoFacade iaCertificadoFacade) {
-        this.iaCertificadoFacade = iaCertificadoFacade;
-    }
+	public MetricasPesquisaController(IaCertificadoFacade iaCertificadoFacade) {
+		this.iaCertificadoFacade = iaCertificadoFacade;
+	}
 
-    @GetMapping("/concordancia-kappa")
-    public ResponseEntity<Map<String, Object>> obterMetricasEmpiricas() {
-        long totalAvaliadas = iaCertificadoFacade.contarAvaliadas();
-        long concordancias = iaCertificadoFacade.contarConcordancias();
-        double tempoMedioMs = iaCertificadoFacade.calcularTempoMedioMs();
-        
-        double concordanciaObservada = totalAvaliadas > 0 ? (double) concordancias / totalAvaliadas : 0.0;
-        return ResponseEntity.ok(Map.of(
-                "totalAmostrasAvaliadas", totalAvaliadas,
-                "totalConcordancias", concordancias,
-                "acuraciaObservada", concordanciaObservada,
-                "tempoMedioInferenciaMs", tempoMedioMs));
-    }
+	@GetMapping("/concordancia-kappa")
+	public ResponseEntity<Map<String, Object>> obterMetricasEmpiricas() {
+		long totalAvaliadas = iaCertificadoFacade.contarAvaliadas();
+		long concordancias = iaCertificadoFacade.contarConcordancias();
+		double tempoMedioMs = iaCertificadoFacade.calcularTempoMedioMs();
+
+		double concordanciaObservada = totalAvaliadas > 0 ? (double) concordancias / totalAvaliadas : 0.0;
+		return ResponseEntity.ok(Map.of("totalAmostrasAvaliadas", totalAvaliadas, "totalConcordancias", concordancias,
+				"acuraciaObservada", concordanciaObservada, "tempoMedioInferenciaMs", tempoMedioMs));
+	}
 }
