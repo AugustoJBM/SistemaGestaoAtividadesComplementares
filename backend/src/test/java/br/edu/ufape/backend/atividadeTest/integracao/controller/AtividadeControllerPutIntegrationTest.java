@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -121,7 +123,8 @@ class AtividadeControllerPutIntegrationTest {
                                                 .param("dataRealizacao", "2026-05-10")
                                                 .param("cargaHoraria", "10")
                                                 .param("natureza", "ACC")
-                                                .param("categoria", "ENSINO"))
+                                                .param("categoria", "ENSINO")
+                                                .param("instituicaoResponsavel", "UFAPE"))
                                 .andExpect(status().isForbidden());
         }
 
@@ -148,7 +151,8 @@ class AtividadeControllerPutIntegrationTest {
                                                 .param("dataRealizacao", "2026-05-10")
                                                 .param("cargaHoraria", "10")
                                                 .param("natureza", "ACC")
-                                                .param("categoria", "ENSINO"))
+                                                .param("categoria", "ENSINO")
+                                                .param("instituicaoResponsavel", "UFAPE"))
                                 .andExpect(status().isNotFound());
         }
 
@@ -179,7 +183,50 @@ class AtividadeControllerPutIntegrationTest {
                                                 .param("dataRealizacao", "2026-05-10")
                                                 .param("cargaHoraria", "10")
                                                 .param("natureza", "ACC")
-                                                .param("categoria", "ENSINO"))
+                                                .param("categoria", "ENSINO")
+                                                .param("instituicaoResponsavel", "UFAPE"))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "", " " })
+        @DisplayName("Deve retornar 400 quando a instituição responsável estiver em branco")
+        void deveRetornar400QuandoInstituicaoResponsavelEstiverEmBranco(String instituicaoResponsavel)
+                        throws Exception {
+                mockMvc.perform(
+                                MockMvcRequestBuilders.multipart(
+                                                HttpMethod.PUT,
+                                                "/api/v1/atividades/1")
+                                                .principal(new UsernamePasswordAuthenticationToken(
+                                                                "estudante@ufape.edu.br", "password"))
+                                                .param("titulo", "Título Válido")
+                                                .param("dataRealizacao", "2026-05-10")
+                                                .param("cargaHoraria", "15")
+                                                .param("natureza", "ACC")
+                                                .param("categoria", "ENSINO")
+                                                .param("instituicaoResponsavel", instituicaoResponsavel))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message")
+                                                .value("instituicaoResponsavel: A instituição responsável é obrigatória."));
+        }
+
+        @Test
+        @DisplayName("Deve retornar 400 quando a data de realização estiver no futuro")
+        void deveRetornar400QuandoDataRealizacaoEstiverNoFuturo() throws Exception {
+                mockMvc.perform(
+                                MockMvcRequestBuilders.multipart(
+                                                HttpMethod.PUT,
+                                                "/api/v1/atividades/1")
+                                                .principal(new UsernamePasswordAuthenticationToken(
+                                                                "estudante@ufape.edu.br", "password"))
+                                                .param("titulo", "Título Válido")
+                                                .param("dataRealizacao", LocalDate.now().plusDays(1).toString())
+                                                .param("cargaHoraria", "10")
+                                                .param("natureza", "ACC")
+                                                .param("categoria", "ENSINO")
+                                                .param("instituicaoResponsavel", "UFAPE"))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message")
+                                                .value("dataRealizacao: Data de realização não pode ser no futuro."));
         }
 }
