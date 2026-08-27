@@ -14,15 +14,15 @@ import br.edu.ufape.backend.ia.facade.IaCertificadoFacade;
 @RequestMapping("/api/v1/atividades/extrair-certificado")
 public class ExtracaoCertificadoController {
 
-    private final IaCertificadoFacade iaCertificadoFacade;
+	private final IaCertificadoFacade iaCertificadoFacade;
 
-    public ExtracaoCertificadoController(IaCertificadoFacade iaCertificadoFacade) {
-        this.iaCertificadoFacade = iaCertificadoFacade;
-    }
+	public ExtracaoCertificadoController(IaCertificadoFacade iaCertificadoFacade) {
+		this.iaCertificadoFacade = iaCertificadoFacade;
+	}
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ExtracaoCertificadoResponseDTO> extrairCertificado(
-            @RequestPart("arquivo") MultipartFile arquivo) {
-        return ResponseEntity.ok(iaCertificadoFacade.extrairDadosCertificado(arquivo));
-    }
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ExtracaoCertificadoResponseDTO> extrairCertificado(
+			@RequestPart("arquivo") MultipartFile arquivo) {
+		return ResponseEntity.ok(iaCertificadoFacade.extrairDadosCertificado(arquivo));
+	}
 }

@@ -1,6 +1,7 @@
 package br.edu.ufape.backend.autenticacao.service;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,60 +16,50 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+	@Value("${jwt.secret}")
+	private String jwtSecret;
 
-    @Value("${jwt.expiration-ms}")
-    private long jwtExpirationMs;
+	@Value("${jwt.expiration-ms}")
+	private long jwtExpirationMs;
 
-    public String generateToken(String subject) {
-        return generateToken(subject, null);
-    }
+	public String generateToken(String subject) {
+		return generateToken(subject, null);
+	}
 
-    public String generateToken(String subject, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        if (role != null) {
-            claims.put("role", role);
-        }
-        return buildToken(claims, subject);
-    }
+	public String generateToken(String subject, String role) {
+		Map<String, Object> claims = new HashMap<>();
+		if (role != null) {
+			claims.put("role", role);
+		}
+		return buildToken(claims, subject);
+	}
 
-    private String buildToken(Map<String, Object> claims, String subject) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+	private String buildToken(Map<String, Object> claims, String subject) {
+		Instant now = Instant.now();
+		Instant expiryDate = now.plusMillis(jwtExpirationMs);
+		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(Date.from(now))
+				.setExpiration(Date.from(expiryDate)).signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
+	}
 
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+	public boolean isTokenValid(String token) {
+		try {
+			extractAllClaims(token);
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
+	}
 
-    public boolean isTokenValid(String token) {
-        try {
-            extractAllClaims(token);
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
+	public String extractUsername(String token) {
+		return extractAllClaims(token).getSubject();
+	}
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
-    }
+	private Claims extractAllClaims(String token) {
+		return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+	}
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+	private Key getSigningKey() {
+		byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+		return Keys.hmacShaKeyFor(keyBytes);
+	}
 }

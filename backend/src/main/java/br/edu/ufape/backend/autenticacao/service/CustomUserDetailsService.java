@@ -13,20 +13,18 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UsuarioContrato usuarioContrato;
+	private final UsuarioContrato usuarioContrato;
 
-    public CustomUserDetailsService(UsuarioContrato usuarioContrato) {
-        this.usuarioContrato = usuarioContrato;
-    }
+	public CustomUserDetailsService(UsuarioContrato usuarioContrato) {
+		this.usuarioContrato = usuarioContrato;
+	}
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario = usuarioContrato.buscarPorEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + email));
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		Usuario usuario = usuarioContrato.buscarPorEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + email));
 
-        return User.withUsername(usuario.getEmail())
-                .password(usuario.getSenhaHash())
-                .authorities(Collections.singletonList(() -> "ROLE_" + usuario.getRole().name()))
-                .build();
-    }
+		return User.withUsername(usuario.getEmail()).password(usuario.getSenhaHash())
+				.authorities(Collections.singletonList(() -> "ROLE_" + usuario.getRole().name())).build();
+	}
 }

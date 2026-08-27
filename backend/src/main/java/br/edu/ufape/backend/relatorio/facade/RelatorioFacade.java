@@ -8,13 +8,13 @@ import br.edu.ufape.backend.relatorio.service.RelatorioService;
 @Component
 public class RelatorioFacade {
 
-    private final RelatorioService relatorioService;
+	private final RelatorioService relatorioService;
 
-    public RelatorioFacade(RelatorioService relatorioService) {
-        this.relatorioService = relatorioService;
-    }
+	public RelatorioFacade(RelatorioService relatorioService) {
+		this.relatorioService = relatorioService;
+	}
 
-    public RelatorioAtividadesResponse gerarRelatorio(String emailEstudante) {
-        return relatorioService.gerarRelatorio(emailEstudante);
-    }
+	public RelatorioAtividadesResponse gerarRelatorio(String emailEstudante) {
+		return relatorioService.gerarRelatorio(emailEstudante);
+	}
 }

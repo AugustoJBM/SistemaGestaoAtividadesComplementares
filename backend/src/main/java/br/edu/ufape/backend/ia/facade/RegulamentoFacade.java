@@ -11,17 +11,17 @@ import java.util.List;
 @Component
 public class RegulamentoFacade {
 
-    private final IngestaoDocumentoNormativoService ingestaoService;
+	private final IngestaoDocumentoNormativoService ingestaoService;
 
-    public RegulamentoFacade(IngestaoDocumentoNormativoService ingestaoService) {
-        this.ingestaoService = ingestaoService;
-    }
+	public RegulamentoFacade(IngestaoDocumentoNormativoService ingestaoService) {
+		this.ingestaoService = ingestaoService;
+	}
 
-    public IngestaoNormativaResponseDTO ingerirDocumentoNormativo(MultipartFile arquivo, boolean substituirExistentes) {
-        return ingestaoService.ingerirDocumentoNormativo(arquivo, substituirExistentes);
-    }
+	public IngestaoNormativaResponseDTO ingerirDocumentoNormativo(MultipartFile arquivo, boolean substituirExistentes) {
+		return ingestaoService.ingerirDocumentoNormativo(arquivo, substituirExistentes);
+	}
 
-    public List<RegulamentoChunkResponseDTO> listarChunks() {
-        return ingestaoService.listarChunks();
-    }
+	public List<RegulamentoChunkResponseDTO> listarChunks() {
+		return ingestaoService.listarChunks();
+	}
 }

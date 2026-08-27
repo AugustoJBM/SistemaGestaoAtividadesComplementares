@@ -25,37 +25,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class ExtracaoCertificadoControllerTest {
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @Mock
-    private IaCertificadoFacade iaCertificadoFacade;
+	@Mock
+	private IaCertificadoFacade iaCertificadoFacade;
 
-    @InjectMocks
-    private ExtracaoCertificadoController controller;
+	@InjectMocks
+	private ExtracaoCertificadoController controller;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    }
+	@BeforeEach
+	void setUp() {
+		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+	}
 
-    @Test
-    @DisplayName("Deve extrair dados de certificado com sucesso e retornar 200 OK")
-    void deveExtrairDadosDeCertificadoComSucesso() throws Exception {
-        MockMultipartFile arquivo = new MockMultipartFile(
-                "arquivo", "certificado.pdf", MediaType.APPLICATION_PDF_VALUE, "PDF-DUMMY".getBytes());
+	@Test
+	@DisplayName("Deve extrair dados de certificado com sucesso e retornar 200 OK")
+	void deveExtrairDadosDeCertificadoComSucesso() throws Exception {
+		MockMultipartFile arquivo = new MockMultipartFile("arquivo", "certificado.pdf", MediaType.APPLICATION_PDF_VALUE,
+				"PDF-DUMMY".getBytes());
 
-        ExtracaoCertificadoResponseDTO dtoEsperado = new ExtracaoCertificadoResponseDTO(
-                "Curso Spring Boot", "UFAPE", LocalDate.of(2026, 5, 10), 20, "ACC", "ENSINO");
+		ExtracaoCertificadoResponseDTO dtoEsperado = new ExtracaoCertificadoResponseDTO("Curso Spring Boot", "UFAPE",
+				LocalDate.of(2026, 5, 10), 20, "ACC", "ENSINO");
 
-        when(iaCertificadoFacade.extrairDadosCertificado(any())).thenReturn(dtoEsperado);
+		when(iaCertificadoFacade.extrairDadosCertificado(any())).thenReturn(dtoEsperado);
 
-        mockMvc.perform(multipart("/api/v1/atividades/extrair-certificado")
-                        .file(arquivo))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.titulo").value("Curso Spring Boot"))
-                .andExpect(jsonPath("$.instituicaoResponsavel").value("UFAPE"))
-                .andExpect(jsonPath("$.cargaHoraria").value(20))
-                .andExpect(jsonPath("$.natureza").value("ACC"))
-                .andExpect(jsonPath("$.categoria").value("ENSINO"));
-    }
+		mockMvc.perform(multipart("/api/v1/atividades/extrair-certificado").file(arquivo)).andExpect(status().isOk())
+				.andExpect(jsonPath("$.titulo").value("Curso Spring Boot"))
+				.andExpect(jsonPath("$.instituicaoResponsavel").value("UFAPE"))
+				.andExpect(jsonPath("$.cargaHoraria").value(20)).andExpect(jsonPath("$.natureza").value("ACC"))
+				.andExpect(jsonPath("$.categoria").value("ENSINO"));
+	}
 }

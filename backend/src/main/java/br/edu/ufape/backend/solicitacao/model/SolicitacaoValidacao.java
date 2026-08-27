@@ -23,81 +23,115 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "solicitacoes_validacao")
 public class SolicitacaoValidacao {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Version
-    @Column(nullable = false)
-    private Long version = 0L;
+	@Version
+	@Column(nullable = false)
+	private Long version = 0L;
 
-    @Column(name = "estudante_id", nullable = false)
-    private Long estudanteId;
+	@Column(name = "estudante_id", nullable = false)
+	private Long estudanteId;
 
-    @CreationTimestamp
-    @Column(name = "data_submissao", nullable = false)
-    private LocalDateTime dataSubmissao;
+	@CreationTimestamp
+	@Column(name = "data_submissao", nullable = false)
+	private LocalDateTime dataSubmissao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private StatusSolicitacao status = StatusSolicitacao.SUBMETIDA;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private StatusSolicitacao status = StatusSolicitacao.SUBMETIDA;
 
-    @Column(name = "justificativa")
-    private String justificativa;
+	@Column(name = "justificativa")
+	private String justificativa;
 
-    @Column(name = "avaliador_id")
-    private Long avaliadorId;
+	@Column(name = "avaliador_id")
+	private Long avaliadorId;
 
-    @Column(name = "data_avaliacao")
-    private LocalDateTime dataAvaliacao;
+	@Column(name = "data_avaliacao")
+	private LocalDateTime dataAvaliacao;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "solicitacao_id", nullable = false)
-    private List<SolicitacaoAtividade> itens = new ArrayList<>();
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "solicitacao_id", nullable = false)
+	private List<SolicitacaoAtividade> itens = new ArrayList<>();
 
-    public SolicitacaoValidacao() {
-    }
+	public SolicitacaoValidacao() {
+	}
 
-    /** Construtor completo — usado pela camada de servico ao submeter. */
-    public SolicitacaoValidacao(Long estudanteId, LocalDateTime dataSubmissao,
-                                StatusSolicitacao status, List<SolicitacaoAtividade> itens) {
-        this.estudanteId = estudanteId;
-        this.dataSubmissao = dataSubmissao;
-        this.status = status != null ? status : StatusSolicitacao.SUBMETIDA;
-        this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
-    }
+	/** Construtor completo — usado pela camada de servico ao submeter. */
+	public SolicitacaoValidacao(Long estudanteId, LocalDateTime dataSubmissao, StatusSolicitacao status,
+			List<SolicitacaoAtividade> itens) {
+		this.estudanteId = estudanteId;
+		this.dataSubmissao = dataSubmissao;
+		this.status = status != null ? status : StatusSolicitacao.SUBMETIDA;
+		this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
+	}
 
-    /** Construtor simplificado — usado em testes e cenarios sem itens. */
-    public SolicitacaoValidacao(Long estudanteId) {
-        this.estudanteId = estudanteId;
-    }
+	/** Construtor simplificado — usado em testes e cenarios sem itens. */
+	public SolicitacaoValidacao(Long estudanteId) {
+		this.estudanteId = estudanteId;
+	}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
+	public Long getVersion() {
+		return version;
+	}
+	public void setVersion(Long version) {
+		this.version = version;
+	}
 
-    public Long getEstudanteId() { return estudanteId; }
-    public void setEstudanteId(Long estudanteId) { this.estudanteId = estudanteId; }
+	public Long getEstudanteId() {
+		return estudanteId;
+	}
+	public void setEstudanteId(Long estudanteId) {
+		this.estudanteId = estudanteId;
+	}
 
-    public LocalDateTime getDataSubmissao() { return dataSubmissao; }
-    public void setDataSubmissao(LocalDateTime dataSubmissao) { this.dataSubmissao = dataSubmissao; }
+	public LocalDateTime getDataSubmissao() {
+		return dataSubmissao;
+	}
+	public void setDataSubmissao(LocalDateTime dataSubmissao) {
+		this.dataSubmissao = dataSubmissao;
+	}
 
-    public StatusSolicitacao getStatus() { return status; }
-    public void setStatus(StatusSolicitacao status) { this.status = status; }
+	public StatusSolicitacao getStatus() {
+		return status;
+	}
+	public void setStatus(StatusSolicitacao status) {
+		this.status = status;
+	}
 
-    public String getJustificativa() { return justificativa; }
-    public void setJustificativa(String justificativa) { this.justificativa = justificativa; }
+	public String getJustificativa() {
+		return justificativa;
+	}
+	public void setJustificativa(String justificativa) {
+		this.justificativa = justificativa;
+	}
 
-    public Long getAvaliadorId() { return avaliadorId; }
-    public void setAvaliadorId(Long avaliadorId) { this.avaliadorId = avaliadorId; }
+	public Long getAvaliadorId() {
+		return avaliadorId;
+	}
+	public void setAvaliadorId(Long avaliadorId) {
+		this.avaliadorId = avaliadorId;
+	}
 
-    public LocalDateTime getDataAvaliacao() { return dataAvaliacao; }
-    public void setDataAvaliacao(LocalDateTime dataAvaliacao) { this.dataAvaliacao = dataAvaliacao; }
+	public LocalDateTime getDataAvaliacao() {
+		return dataAvaliacao;
+	}
+	public void setDataAvaliacao(LocalDateTime dataAvaliacao) {
+		this.dataAvaliacao = dataAvaliacao;
+	}
 
-    public List<SolicitacaoAtividade> getItens() { return itens; }
-    public void setItens(List<SolicitacaoAtividade> itens) {
-        this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
-    }
+	public List<SolicitacaoAtividade> getItens() {
+		return itens;
+	}
+	public void setItens(List<SolicitacaoAtividade> itens) {
+		this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
+	}
 }

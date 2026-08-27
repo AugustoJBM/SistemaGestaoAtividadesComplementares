@@ -7,17 +7,17 @@ import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.Natureza;
 
 public interface AtividadeContrato {
-    /**
-     * @throws AcessoNegadoAtividadeException se o email não existir
-     * ou não pertencer a um Estudante
-     */
-    List<AtividadeResponseDTO> buscarPorEstudante(String emailEstudante);
+	/**
+	 * @throws AcessoNegadoAtividadeException
+	 *             se o email não existir ou não pertencer a um Estudante
+	 */
+	List<AtividadeResponseDTO> buscarPorEstudante(String emailEstudante);
 
-    List<AtividadeResponseDTO> buscarPorEstudante(Long estudanteId);
+	List<AtividadeResponseDTO> buscarPorEstudante(Long estudanteId);
 
-    /**
-     * @throws AcessoNegadoAtividadeException se o email não existir
-     * ou não pertencer a um Estudante
-     */
-    List<AtividadeResponseDTO> buscarPorEstudanteENatureza(String emailEstudante, Natureza natureza);
+	/**
+	 * @throws AcessoNegadoAtividadeException
+	 *             se o email não existir ou não pertencer a um Estudante
+	 */
+	List<AtividadeResponseDTO> buscarPorEstudanteENatureza(String emailEstudante, Natureza natureza);
 }

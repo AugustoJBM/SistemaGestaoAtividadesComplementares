@@ -17,59 +17,57 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 @Service
 public class AuthService {
 
-    private final UsuarioContrato usuarioContrato;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenBlacklistService tokenBlacklistService;
+	private final UsuarioContrato usuarioContrato;
+	private final JwtService jwtService;
+	private final PasswordEncoder passwordEncoder;
+	private final TokenBlacklistService tokenBlacklistService;
 
-    public AuthService(UsuarioContrato usuarioContrato,
-            JwtService jwtService,
-            PasswordEncoder passwordEncoder,
-            TokenBlacklistService tokenBlacklistService) {
-        this.usuarioContrato = usuarioContrato;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenBlacklistService = tokenBlacklistService;
-    }
+	public AuthService(UsuarioContrato usuarioContrato, JwtService jwtService, PasswordEncoder passwordEncoder,
+			TokenBlacklistService tokenBlacklistService) {
+		this.usuarioContrato = usuarioContrato;
+		this.jwtService = jwtService;
+		this.passwordEncoder = passwordEncoder;
+		this.tokenBlacklistService = tokenBlacklistService;
+	}
 
-    public Usuario cadastrarUsuario(CadastroUsuarioRequest request) {
-        if (usuarioContrato.existePorEmail(request.getEmail())) {
-            throw new EmailJaCadastradoException(request.getEmail());
-        }
+	public Usuario cadastrarUsuario(CadastroUsuarioRequest request) {
+		if (usuarioContrato.existePorEmail(request.getEmail())) {
+			throw new EmailJaCadastradoException(request.getEmail());
+		}
 
-        if (request.getRole() != null && request.getRole() != Role.ESTUDANTE) {
-            throw new PerfilNaoPermitidoException();
-        }
+		if (request.getRole() != null && request.getRole() != Role.ESTUDANTE) {
+			throw new PerfilNaoPermitidoException();
+		}
 
-        String senhaHash = passwordEncoder.encode(request.getSenha());
+		String senhaHash = passwordEncoder.encode(request.getSenha());
 
-        Estudante estudante = new Estudante(request.getNome(), request.getEmail(), senhaHash);
+		Estudante estudante = new Estudante(request.getNome(), request.getEmail(), senhaHash);
 
-        return usuarioContrato.salvar(estudante);
-    }
+		return usuarioContrato.salvar(estudante);
+	}
 
-    public LoginResponse login(LoginRequest request) {
-        String emailTratado = request.getUsuario() != null ? request.getUsuario().trim().toLowerCase() : "";
+	public LoginResponse login(LoginRequest request) {
+		String emailTratado = request.getUsuario() != null ? request.getUsuario().trim().toLowerCase() : "";
 
-        Usuario usuario = usuarioContrato.buscarPorEmail(emailTratado)
-                .orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
+		Usuario usuario = usuarioContrato.buscarPorEmail(emailTratado)
+				.orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
 
-        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {
-            throw new UnauthorizedException("Credenciais inválidas");
-        }
+		if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {
+			throw new UnauthorizedException("Credenciais inválidas");
+		}
 
-        String token = jwtService.generateToken(usuario.getEmail(), usuario.getRole().name());
-        return new LoginResponse(token, "Bearer");
-    }
+		String token = jwtService.generateToken(usuario.getEmail(), usuario.getRole().name());
+		return new LoginResponse(token, "Bearer");
+	}
 
-    public void logout(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw new UnauthorizedException("Token ausente ou inválido");
-        }
-        String token = authorizationHeader.substring(7);
-        if (!jwtService.isTokenValid(token)) {
-            throw new UnauthorizedException("Token inválido ou expirado");
-        }
-        tokenBlacklistService.blacklistToken(token);
-    }
+	public void logout(String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			throw new UnauthorizedException("Token ausente ou inválido");
+		}
+		String token = authorizationHeader.substring(7);
+		if (!jwtService.isTokenValid(token)) {
+			throw new UnauthorizedException("Token inválido ou expirado");
+		}
+		tokenBlacklistService.blacklistToken(token);
+	}
 }

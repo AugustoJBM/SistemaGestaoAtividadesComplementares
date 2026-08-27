@@ -7,21 +7,21 @@ import br.edu.ufape.backend.usuario.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
-    private final UsuarioRepository usuarioRepository;
+	private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+	public UsuarioService(UsuarioRepository usuarioRepository) {
+		this.usuarioRepository = usuarioRepository;
+	}
 
-    public Usuario salvar(Usuario usuario) {
-        return usuarioRepository.save(usuario);
-    }
+	public Usuario salvar(Usuario usuario) {
+		return usuarioRepository.save(usuario);
+	}
 
-    public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmailIgnoreCase(email);
-    }
+	public Optional<Usuario> buscarPorEmail(String email) {
+		return usuarioRepository.findByEmailIgnoreCase(email);
+	}
 
-    public boolean existePorEmail(String email) {
-        return usuarioRepository.existsByEmailIgnoreCase(email);
-    }
+	public boolean existePorEmail(String email) {
+		return usuarioRepository.existsByEmailIgnoreCase(email);
+	}
 }

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.FORBIDDEN)
 public class AcessoNegadoAtividadeException extends RuntimeException {
-    public AcessoNegadoAtividadeException(String message) {
-        super(message);
-    }
+	public AcessoNegadoAtividadeException(String message) {
+		super(message);
+	}
 }

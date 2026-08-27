@@ -29,72 +29,70 @@ import tools.jackson.databind.ObjectMapper;
 @ExtendWith(MockitoExtension.class)
 class IngestaoDocumentoNormativoServiceTest {
 
-    @Mock
-    private RegulamentoChunkRepository regulamentoRepository;
+	@Mock
+	private RegulamentoChunkRepository regulamentoRepository;
 
-    @Mock
-    private HuggingFaceEmbeddingService embeddingService;
+	@Mock
+	private HuggingFaceEmbeddingService embeddingService;
 
-    @Mock
-    private ObjectMapper objectMapper;
+	@Mock
+	private ObjectMapper objectMapper;
 
-    @InjectMocks
-    private IngestaoDocumentoNormativoService service;
+	@InjectMocks
+	private IngestaoDocumentoNormativoService service;
 
-    @BeforeEach
-    void setUp() {
-        lenient().when(embeddingService.gerarEmbedding(any())).thenReturn(new float[384]);
-    }
+	@BeforeEach
+	void setUp() {
+		lenient().when(embeddingService.gerarEmbedding(any())).thenReturn(new float[384]);
+	}
 
-    @Test
-    @DisplayName("Deve retornar ERRO ao submeter arquivo vazio")
-    void deveRetornarErroQuandoArquivoVazio() {
-        MockMultipartFile arquivoVazio = new MockMultipartFile(
-                "arquivo", "vazio.txt", "text/plain", new byte[0]);
+	@Test
+	@DisplayName("Deve retornar ERRO ao submeter arquivo vazio")
+	void deveRetornarErroQuandoArquivoVazio() {
+		MockMultipartFile arquivoVazio = new MockMultipartFile("arquivo", "vazio.txt", "text/plain", new byte[0]);
 
-        IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivoVazio, false);
+		IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivoVazio, false);
 
-        assertNotNull(resultado);
-        assertEquals("ERRO", resultado.status());
-        assertEquals(0, resultado.totalChunksExtraidos());
-        verify(regulamentoRepository, never()).deleteAll();
-    }
+		assertNotNull(resultado);
+		assertEquals("ERRO", resultado.status());
+		assertEquals(0, resultado.totalChunksExtraidos());
+		verify(regulamentoRepository, never()).deleteAll();
+	}
 
-    @Test
-    @DisplayName("Deve extrair Resoluções, Seções e Quadro de Horas com sucesso via fallback determinístico")
-    void deveIngerirDocumentoComSecoesEResolucoes() {
-        String texto = """
-                7.10 ATIVIDADES COMPLEMENTARES
-                As atividades complementares possuem limite semestral de 40 horas para monitoria e 60 horas para pesquisa.
-                
-                Resolução Nº 08/2024 CONSEPE
-                Aprova as diretrizes curriculares de extensão para cursos de bacharelado.
-                
-                Quadro 5 - Síntese da Carga Horária
-                Carga Horária Obrigatória: ACC = 90 horas e ACEX = 320 horas.
-                """;
+	@Test
+	@DisplayName("Deve extrair Resoluções, Seções e Quadro de Horas com sucesso via fallback determinístico")
+	void deveIngerirDocumentoComSecoesEResolucoes() {
+		String texto = """
+				7.10 ATIVIDADES COMPLEMENTARES
+				As atividades complementares possuem limite semestral de 40 horas para monitoria e 60 horas para pesquisa.
 
-        MockMultipartFile arquivo = new MockMultipartFile(
-                "arquivo", "ppc_bcc.txt", "text/plain", texto.getBytes());
+				Resolução Nº 08/2024 CONSEPE
+				Aprova as diretrizes curriculares de extensão para cursos de bacharelado.
 
-        IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivo, true);
+				Quadro 5 - Síntese da Carga Horária
+				Carga Horária Obrigatória: ACC = 90 horas e ACEX = 320 horas.
+				""";
 
-        assertNotNull(resultado);
-        assertEquals("SUCESSO", resultado.status());
-        verify(regulamentoRepository, times(1)).deleteAll();
-        verify(regulamentoRepository, times(resultado.totalChunksExtraidos())).save(any(RegulamentoChunk.class));
-    }
+		MockMultipartFile arquivo = new MockMultipartFile("arquivo", "ppc_bcc.txt", "text/plain", texto.getBytes());
 
-    @Test
-    @DisplayName("Deve listar todos os chunks persistidos")
-    void deveListarChunks() {
-        RegulamentoChunk chunk = new RegulamentoChunk("Art. 12", "Monitoria até 40h", "[0.1, 0.2]");
-        when(regulamentoRepository.findAll()).thenReturn(List.of(chunk));
+		IngestaoNormativaResponseDTO resultado = service.ingerirDocumentoNormativo(arquivo, true);
 
-        List<RegulamentoChunkResponseDTO> lista = service.listarChunks();
+		assertNotNull(resultado);
+		assertEquals("SUCESSO", resultado.status());
+		verify(regulamentoRepository, times(1)).deleteAll();
+		verify(regulamentoRepository, times(resultado.totalChunksExtraidos())).save(any(RegulamentoChunk.class));
+	}
 
-        assertEquals(1, lista.size());
-        assertEquals("Art. 12", lista.get(0).artigo());
-        assertEquals("Monitoria até 40h", lista.get(0).conteudoTexto());
-    }
+	@Test
+	@DisplayName("Deve listar todos os chunks persistidos")
+	void deveListarChunks() {
+		RegulamentoChunk chunk = new RegulamentoChunk("Art. 12", "Monitoria até 40h", "[0.1, 0.2]");
+		when(regulamentoRepository.findAll()).thenReturn(List.of(chunk));
+
+		List<RegulamentoChunkResponseDTO> lista = service.listarChunks();
+
+		assertEquals(1, lista.size());
+		assertEquals("Art. 12", lista.get(0).artigo());
+		assertEquals("Monitoria até 40h", lista.get(0).conteudoTexto());
+	}
 }

@@ -1,9 +1,9 @@
 package br.edu.ufape.backend.autenticacao.exception;
 
-public class EmailJaCadastradoException extends RuntimeException{
+public class EmailJaCadastradoException extends RuntimeException {
 
-    public EmailJaCadastradoException(String email) {
-        super("Já existe um usuário cadastrado com o email: " + email);
-    }
-    
+	public EmailJaCadastradoException(String email) {
+		super("Já existe um usuário cadastrado com o email: " + email);
+	}
+
 }

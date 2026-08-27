@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
 public class TransicaoEstadoInvalidaException extends RuntimeException {
-
-    public TransicaoEstadoInvalidaException(StatusSolicitacao de, StatusSolicitacao para) {
-        super("Transicao invalida: " + de + " -> " + para);
-    }
+	public TransicaoEstadoInvalidaException(StatusSolicitacao de, StatusSolicitacao para) {
+		super("Transição inválida: " + de + " -> " + para);
+	}
 }

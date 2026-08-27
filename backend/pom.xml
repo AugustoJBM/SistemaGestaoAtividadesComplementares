@@ -34,8 +34,16 @@
     <sonar.projectKey>sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg</sonar.projectKey>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.coverage.jacoco.xmlReportPaths>
-        ${project.build.directory}/site/jacoco/jacoco.xml
+      ${project.build.directory}/site/jacoco/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.exclusions>
+      src/main/java/br/edu/ufape/backend/BackendApplication.java,
+      src/main/java/br/edu/ufape/backend/**/*Config*.java,
+      src/main/java/br/edu/ufape/backend/**/*DataInitializerService.java,
+      src/main/java/br/edu/ufape/backend/**/dto/**,
+      src/main/java/br/edu/ufape/backend/**/model/**,
+      src/main/java/br/edu/ufape/backend/**/exception/**
+    </sonar.coverage.exclusions>
   </properties>
   <dependencies>
     <dependency>
@@ -165,7 +173,6 @@
         <version>0.8.12</version>
         <executions>
           <execution>
-            <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
@@ -177,13 +184,76 @@
               <goal>report</goal>
             </goals>
           </execution>
+          <execution>
+            <id>check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.70</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.80</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
         </executions>
+        <configuration>
+          <excludes>
+            <exclude>br/edu/ufape/backend/BackendApplication.class</exclude>
+            <exclude>br/edu/ufape/backend/**/*Config.class</exclude>
+            <exclude>br/edu/ufape/backend/**/*Configuration.class</exclude>
+            <exclude>br/edu/ufape/backend/**/*DataInitializerService.class</exclude>
+            <exclude>br/edu/ufape/backend/**/dto/**</exclude>
+            <exclude>br/edu/ufape/backend/**/model/**</exclude>
+            <exclude>br/edu/ufape/backend/**/exception/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
         <version>5.7.0.6970</version>
+      </plugin>
+
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.43.0</version>
+        <configuration>
+          <java>
+            <eclipse>
+            </eclipse>
+            <removeUnusedImports />
+            <trimTrailingWhitespace />
+            <endWithNewline />
+          </java>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openrewrite.maven</groupId>
+        <artifactId>rewrite-maven-plugin</artifactId>
+        <version>5.41.0</version>
+        <configuration>
+          <activeRecipes>
+            <!-- Exemplo de receita padrão para boas práticas em Java -->
+            <recipe>org.openrewrite.java.BestPractices</recipe>
+          </activeRecipes>
+        </configuration>
       </plugin>
     </plugins>
   </build>

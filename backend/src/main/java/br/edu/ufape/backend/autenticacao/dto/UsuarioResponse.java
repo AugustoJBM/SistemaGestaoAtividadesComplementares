@@ -4,32 +4,32 @@ import br.edu.ufape.backend.usuario.model.Role;
 import br.edu.ufape.backend.usuario.model.Usuario;
 
 public class UsuarioResponse {
-    
-    private final Long id;
-    private final String nome;
-    private final String email;
-    private final Role role;
 
-    public UsuarioResponse(Usuario usuario) {
-        this.id = usuario.getId();
-        this.nome = usuario.getNome();
-        this.email = usuario.getEmail();
-        this.role = usuario.getRole();
-    }
+	private final Long id;
+	private final String nome;
+	private final String email;
+	private final Role role;
 
-    public Long getId() {
-        return id;
-    }
+	public UsuarioResponse(Usuario usuario) {
+		this.id = usuario.getId();
+		this.nome = usuario.getNome();
+		this.email = usuario.getEmail();
+		this.role = usuario.getRole();
+	}
 
-    public String getNome() {
-        return nome;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getEmail() {
-        return email;
-    }
+	public String getNome() {
+		return nome;
+	}
 
-    public Role getRole() {
-        return role;
-    }
+	public String getEmail() {
+		return email;
+	}
+
+	public Role getRole() {
+		return role;
+	}
 }
