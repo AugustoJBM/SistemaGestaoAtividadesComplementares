@@ -13,15 +13,15 @@ const progressoComAtividades: ProgressoCargaHoraria = {
     horasPendentes: 0,
     horasExigidas: 60,
     horasRestantes: 30,
-    percentualConcluido: 50
+    percentualConcluido: 50,
   },
   acex: {
     horasAcumuladas: 20,
     horasPendentes: 0,
     horasExigidas: 40,
     horasRestantes: 20,
-    percentualConcluido: 50
-  }
+    percentualConcluido: 50,
+  },
 };
 
 const progressoSemAtividades: ProgressoCargaHoraria = {
@@ -30,15 +30,15 @@ const progressoSemAtividades: ProgressoCargaHoraria = {
     horasPendentes: 0,
     horasExigidas: 60,
     horasRestantes: 60,
-    percentualConcluido: 0
+    percentualConcluido: 0,
   },
   acex: {
     horasAcumuladas: 0,
     horasPendentes: 0,
     horasExigidas: 40,
     horasRestantes: 40,
-    percentualConcluido: 0
-  }
+    percentualConcluido: 0,
+  },
 };
 
 describe('ProgressoComponent', () => {
@@ -50,8 +50,8 @@ describe('ProgressoComponent', () => {
       imports: [ProgressoComponent],
       providers: [
         provideRouter([]),
-        { provide: ProgressoService, useValue: progressoServiceDuble }
-      ]
+        { provide: ProgressoService, useValue: progressoServiceDuble },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProgressoComponent);
@@ -86,7 +86,8 @@ describe('ProgressoComponent', () => {
 
   it('deve exibir a mensagem de erro devolvida pelo service quando a chamada falha', async () => {
     progressoServiceDuble = {
-      obterProgresso: () => throwError(() => new Error('Não foi possível carregar seu progresso. Tente novamente.'))
+      obterProgresso: () =>
+        throwError(() => new Error('Não foi possível carregar seu progresso. Tente novamente.')),
     };
     await configurarComponente();
 
@@ -94,7 +95,9 @@ describe('ProgressoComponent', () => {
 
     const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
     expect(fixture.componentInstance.carregando()).toBeFalsy();
-    expect(alerta.textContent).toContain('Não foi possível carregar seu progresso. Tente novamente.');
+    expect(alerta.textContent).toContain(
+      'Não foi possível carregar seu progresso. Tente novamente.',
+    );
   });
 
   it('deve exibir 0h e 0% para estudante sem atividades sem quebrar a tela', async () => {

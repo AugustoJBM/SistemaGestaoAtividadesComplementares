@@ -6,7 +6,7 @@ import { RegistroRequest, RegistroResponse } from './registro.model';
 import { API_BASE_URL } from '../../api.config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RegistroService {
   private readonly http = inject(HttpClient);
@@ -17,12 +17,16 @@ export class RegistroService {
       nome: data.fullName,
       email: data.emailOrRegistration,
       senha: data.password,
-      role: 'ESTUDANTE'
+      role: 'ESTUDANTE',
     };
 
-    return this.http.post<RegistroResponse>(`${this.apiUrl}/cadastro`, payload).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErro(error))))
-    );
+    return this.http
+      .post<RegistroResponse>(`${this.apiUrl}/cadastro`, payload)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErro(error))),
+        ),
+      );
   }
 
   private traduzirErro(error: HttpErrorResponse): string {

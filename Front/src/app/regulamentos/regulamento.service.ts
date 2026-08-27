@@ -17,18 +17,21 @@ export interface RegulamentoChunk {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RegulamentoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${API_BASE_URL}/regulamentos`;
 
-  ingerirDocumento(arquivo: File, substituirExistentes: boolean): Observable<IngestaoNormativaResponse> {
+  ingerirDocumento(
+    arquivo: File,
+    substituirExistentes: boolean,
+  ): Observable<IngestaoNormativaResponse> {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
     return this.http.post<IngestaoNormativaResponse>(
       `${this.apiUrl}/ingerir?substituirExistentes=${substituirExistentes}`,
-      formData
+      formData,
     );
   }
 

@@ -23,16 +23,16 @@ const relatorioComDados: RelatorioAtividades = {
               titulo: 'Iniciacao Cientifica',
               instituicaoResponsavel: 'UFAPE',
               dataRealizacao: '2026-03-10',
-              cargaHorariaEmHoras: 15
-            }
-          ]
-        }
-      ]
-    }
+              cargaHorariaEmHoras: 15,
+            },
+          ],
+        },
+      ],
+    },
   ],
   totalHorasAcc: 15,
   totalHorasAcex: 0,
-  totalHorasGeral: 15
+  totalHorasGeral: 15,
 };
 
 const relatorioVazio: RelatorioAtividades = {
@@ -40,7 +40,7 @@ const relatorioVazio: RelatorioAtividades = {
   naturezas: [],
   totalHorasAcc: 0,
   totalHorasAcex: 0,
-  totalHorasGeral: 0
+  totalHorasGeral: 0,
 };
 
 function montar(duble: Partial<RelatorioService>): ComponentFixture<RelatorioComponent> {
@@ -50,8 +50,8 @@ function montar(duble: Partial<RelatorioService>): ComponentFixture<RelatorioCom
       provideRouter([]),
       provideHttpClient(),
       provideHttpClientTesting(),
-      { provide: RelatorioService, useValue: duble }
-    ]
+      { provide: RelatorioService, useValue: duble },
+    ],
   });
   return TestBed.createComponent(RelatorioComponent);
 }
@@ -80,7 +80,7 @@ describe('RelatorioComponent', () => {
 
   it('mostra banner de erro com role alert quando a requisicao falha', () => {
     const fixture = montar({
-      obterRelatorio: () => throwError(() => new Error('Falha ao carregar'))
+      obterRelatorio: () => throwError(() => new Error('Falha ao carregar')),
     });
     fixture.detectChanges();
 

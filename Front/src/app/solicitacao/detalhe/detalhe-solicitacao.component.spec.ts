@@ -10,8 +10,8 @@ const base: SolicitacaoDetalhe = {
   totalAtividades: 2,
   itens: [
     { atividadeId: 1, titulo: 'Iniciacao Cientifica', cargaHoraria: 15, natureza: 'ACC' },
-    { atividadeId: 2, titulo: 'Projeto de Extensao', cargaHoraria: 20, natureza: 'ACEX' }
-  ]
+    { atividadeId: 2, titulo: 'Projeto de Extensao', cargaHoraria: 20, natureza: 'ACEX' },
+  ],
 };
 
 function montar(detalhe: SolicitacaoDetalhe): ComponentFixture<DetalheSolicitacaoComponent> {
@@ -43,7 +43,11 @@ describe('DetalheSolicitacaoComponent', () => {
   });
 
   it('exibe a justificativa quando rejeitada', () => {
-    const fixture = montar({ ...base, status: 'REJEITADA', justificativa: 'Certificado ilegível.' });
+    const fixture = montar({
+      ...base,
+      status: 'REJEITADA',
+      justificativa: 'Certificado ilegível.',
+    });
 
     expect(fixture.componentInstance.mostraJustificativa()).toBe(true);
     const bloco = fixture.nativeElement.querySelector('[data-testid="justificativa"]');
@@ -52,7 +56,11 @@ describe('DetalheSolicitacaoComponent', () => {
   });
 
   it('exibe a justificativa quando ha pendencias', () => {
-    const fixture = montar({ ...base, status: 'COM_PENDENCIAS', justificativa: 'Anexe o certificado do item 2.' });
+    const fixture = montar({
+      ...base,
+      status: 'COM_PENDENCIAS',
+      justificativa: 'Anexe o certificado do item 2.',
+    });
 
     const bloco = fixture.nativeElement.querySelector('[data-testid="justificativa"]');
     expect(bloco).toBeTruthy();

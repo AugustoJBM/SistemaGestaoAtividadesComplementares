@@ -7,29 +7,47 @@ cd backend || exit /b 1 && echo "Erro de CD backend"
 
 :: Detecta se o projeto usa o Maven Wrapper
 set MVN_CMD=mvnw.cmd
-if not exist "%MVN_CMD%" (
+if not exist "backend\%MVN_CMD%" (
     set MVN_CMD=mvn
 )
 
 echo ==================================================
-echo  [1/4] Formatando codigo e removendo imports (Spotless)...
+echo  [1/5] Formatando e lintando o Frontend...
 echo ==================================================
-call %MVN_CMD% spotless:apply
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+cd Front
+call npm run fix-all
+if %ERRORLEVEL% neq 0 (
+    cd ..
+    exit /b %ERRORLEVEL%
+)
+cd ..
 
 echo ==================================================
-echo  [2/4] Aplicando melhorias automaticas (OpenRewrite)...
+echo  [2/5] Formatando codigo backend e removendo imports (Spotless)...
+echo ==================================================
+cd backend
+call %MVN_CMD% spotless:apply
+if %ERRORLEVEL% neq 0 (
+    cd ..
+    exit /b %ERRORLEVEL%
+)
+
+echo ==================================================
+echo  [3/5] Aplicando melhorias automaticas no backend (OpenRewrite)...
 echo ==================================================
 call %MVN_CMD% rewrite:run
 
 echo ==================================================
-echo  [3/4] Executando build, testes unitarios e cobertura (JaCoCo)...
+echo  [4/5] Executando build, testes unitarios e cobertura do Backend (JaCoCo)...
 echo ==================================================
 call %MVN_CMD% clean verify
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+if %ERRORLEVEL% neq 0 (
+    cd ..
+    exit /b %ERRORLEVEL%
+)
 
 echo ==================================================
-echo  [4/4] Analisando e enviando para o SonarCloud...
+echo  [5/5] Analisando e enviando para o SonarCloud...
 echo ==================================================
 if "%SONAR_TOKEN%"=="" (
     echo Aviso: Variavel SONAR_TOKEN nao definida no Windows. Pulando a analise do SonarCloud.
@@ -40,10 +58,14 @@ if "%SONAR_TOKEN%"=="" (
       -Dsonar.projectKey=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg ^
       -Dsonar.token=%SONAR_TOKEN% ^
       -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-    if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+    if %ERRORLEVEL% neq 0 (
+        cd ..
+        exit /b %ERRORLEVEL%
+    )
 )
 
+cd ..
 echo ==================================================
-echo  SUCESSO! Pipeline de verificacao concluido.
+echo  SUCESSO! Pipeline completo (Front + Back) concluido.
 echo ==================================================
 endlocal

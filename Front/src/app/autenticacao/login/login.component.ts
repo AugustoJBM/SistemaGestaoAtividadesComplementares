@@ -9,7 +9,7 @@ import { Credenciais } from '../autenticacao.model';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -23,7 +23,7 @@ export class LoginComponent {
   readonly loginForm: FormGroup = this.fb.group({
     login: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    rememberMe: [false]
+    rememberMe: [false],
   });
 
   get loginControl() {
@@ -35,7 +35,7 @@ export class LoginComponent {
   }
 
   togglePasswordVisibility(): void {
-    this.showPassword.update(value => !value);
+    this.showPassword.update((value) => !value);
   }
 
   onSubmit(): void {
@@ -49,7 +49,7 @@ export class LoginComponent {
 
     const credenciais: Credenciais = {
       email: this.loginForm.value.login,
-      senha: this.loginForm.value.password
+      senha: this.loginForm.value.password,
     };
 
     this.authService.login(credenciais).subscribe({
@@ -67,7 +67,7 @@ export class LoginComponent {
       error: (erro: Error) => {
         this.isLoading.set(false);
         this.errorMessage.set(erro.message);
-      }
+      },
     });
   }
 }

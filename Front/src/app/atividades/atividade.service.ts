@@ -10,12 +10,12 @@ import {
   AtividadeResponse,
   ExtracaoCertificadoResponseDTO,
   FiltroAtividades,
-  ParecerResponseDTO
+  ParecerResponseDTO,
 } from './atividade.model';
 import { AtividadeEdicaoRequest } from './edicao/edicao-atividade.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AtividadeService {
   private readonly http = inject(HttpClient);
@@ -31,9 +31,13 @@ export class AtividadeService {
     formData.append('categoria', request.categoria);
     formData.append('arquivo', request.arquivo);
 
-    return this.http.post<AtividadeResponse>(this.apiUrl, formData).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroCadastro(error))))
-    );
+    return this.http
+      .post<AtividadeResponse>(this.apiUrl, formData)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroCadastro(error))),
+        ),
+      );
   }
 
   atualizar(id: number, request: AtividadeEdicaoRequest): Observable<AtividadeResponse> {
@@ -48,9 +52,13 @@ export class AtividadeService {
       formData.append('arquivo', request.arquivo);
     }
 
-    return this.http.put<AtividadeResponse>(`${this.apiUrl}/${id}`, formData).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroEdicao(error))))
-    );
+    return this.http
+      .put<AtividadeResponse>(`${this.apiUrl}/${id}`, formData)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroEdicao(error))),
+        ),
+      );
   }
 
   buscarPorId(id: number): Observable<Atividade> {
@@ -61,7 +69,7 @@ export class AtividadeService {
           throw new Error('Atividade não encontrada.');
         }
         return atividade;
-      })
+      }),
     );
   }
 
@@ -70,26 +78,37 @@ export class AtividadeService {
       catchError((error: HttpErrorResponse) => {
         const mensagem = error.error?.message || error.message || 'Erro ao carregar parecer da IA.';
         return throwError(() => new Error(mensagem));
-      })
+      }),
     );
   }
 
   extrairDadosCertificado(arquivo: File): Observable<ExtracaoCertificadoResponseDTO> {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
-    return this.http.post<ExtracaoCertificadoResponseDTO>(`${this.apiUrl}/extrair-certificado`, formData);
+    return this.http.post<ExtracaoCertificadoResponseDTO>(
+      `${this.apiUrl}/extrair-certificado`,
+      formData,
+    );
   }
 
   obterCertificado(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${id}/certificado`, { responseType: 'blob' }).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error('Não foi possível carregar o arquivo do certificado.')))
-    );
+    return this.http
+      .get(`${this.apiUrl}/${id}/certificado`, { responseType: 'blob' })
+      .pipe(
+        catchError((_) =>
+          throwError(() => new Error('Não foi possível carregar o arquivo do certificado.')),
+        ),
+      );
   }
 
   excluir(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroExclusao(error))))
-    );
+    return this.http
+      .delete<void>(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroExclusao(error))),
+        ),
+      );
   }
 
   listar(filtro: FiltroAtividades = {}): Observable<Atividade[]> {
@@ -103,7 +122,9 @@ export class AtividadeService {
 
     return this.http.get<AtividadeListagemDTO[]>(this.apiUrl, { params }).pipe(
       map((dtos) => (dtos ?? []).map((dto) => this.paraAtividade(dto))),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroListagem(error))))
+      catchError((error: HttpErrorResponse) =>
+        throwError(() => new Error(this.traduzirErroListagem(error))),
+      ),
     );
   }
 
@@ -117,38 +138,50 @@ export class AtividadeService {
       natureza: dto?.natureza ?? '',
       categoria: dto?.categoria ?? '',
       dataCadastro: dto?.dataCadastro ?? null,
-      status: dto?.status ?? 'PENDENTE'
+      status: dto?.status ?? 'PENDENTE',
     };
   }
 
   private traduzirErroCadastro(error: HttpErrorResponse): string {
     if (error.status === 401) return 'Sessão expirada. Faça login novamente.';
     if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
-    if (error.status === 403) return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem cadastrar atividades.';
-    return this.mensagemDoBackend(error) ?? 'Não foi possível cadastrar a atividade. Tente novamente.';
+    if (error.status === 403)
+      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem cadastrar atividades.';
+    return (
+      this.mensagemDoBackend(error) ?? 'Não foi possível cadastrar a atividade. Tente novamente.'
+    );
   }
 
   private traduzirErroEdicao(error: HttpErrorResponse): string {
     if (error.status === 401) return 'Sessão expirada. Faça login novamente.';
     if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
-    if (error.status === 403) return this.mensagemDoBackend(error) ?? 'Você não tem permissão para editar esta atividade.';
+    if (error.status === 403)
+      return this.mensagemDoBackend(error) ?? 'Você não tem permissão para editar esta atividade.';
     if (error.status === 404) return this.mensagemDoBackend(error) ?? 'Atividade não encontrada.';
-    return this.mensagemDoBackend(error) ?? 'Não foi possível processar a atividade. Tente novamente.';
+    return (
+      this.mensagemDoBackend(error) ?? 'Não foi possível processar a atividade. Tente novamente.'
+    );
   }
 
   private traduzirErroExclusao(error: HttpErrorResponse): string {
     if (error.status === 401) return 'Sessão expirada. Faça login novamente.';
     if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
-    if (error.status === 403) return this.mensagemDoBackend(error) ?? 'Você só pode excluir suas próprias atividades.';
+    if (error.status === 403)
+      return this.mensagemDoBackend(error) ?? 'Você só pode excluir suas próprias atividades.';
     if (error.status === 404) return this.mensagemDoBackend(error) ?? 'Atividade não encontrada.';
-    return this.mensagemDoBackend(error) ?? 'Não foi possível excluir a atividade. Tente novamente.';
+    return (
+      this.mensagemDoBackend(error) ?? 'Não foi possível excluir a atividade. Tente novamente.'
+    );
   }
 
   private traduzirErroListagem(error: HttpErrorResponse): string {
     if (error.status === 401) return 'Sessão expirada. Faça login novamente.';
     if (error.status === 0) return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
-    if (error.status === 403) return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar suas atividades.';
-    return this.mensagemDoBackend(error) ?? 'Não foi possível carregar suas atividades. Tente novamente.';
+    if (error.status === 403)
+      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar suas atividades.';
+    return (
+      this.mensagemDoBackend(error) ?? 'Não foi possível carregar suas atividades. Tente novamente.'
+    );
   }
 
   private mensagemDoBackend(error: HttpErrorResponse): string | null {

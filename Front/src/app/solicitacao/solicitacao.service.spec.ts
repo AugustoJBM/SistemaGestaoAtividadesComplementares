@@ -12,8 +12,8 @@ const detalheMock: SolicitacaoDetalhe = {
   totalAtividades: 2,
   itens: [
     { atividadeId: 1, titulo: 'Iniciacao Cientifica', cargaHoraria: 15, natureza: 'ACC' },
-    { atividadeId: 2, titulo: 'Projeto de Extensao', cargaHoraria: 20, natureza: 'ACEX' }
-  ]
+    { atividadeId: 2, titulo: 'Projeto de Extensao', cargaHoraria: 20, natureza: 'ACEX' },
+  ],
 };
 
 describe('SolicitacaoService', () => {
@@ -23,7 +23,7 @@ describe('SolicitacaoService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [SolicitacaoService, provideHttpClient(), provideHttpClientTesting()]
+      providers: [SolicitacaoService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(SolicitacaoService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -48,7 +48,9 @@ describe('SolicitacaoService', () => {
 
     httpMock.expectOne(url).flush(null, { status: 409, statusText: 'Conflict' });
 
-    expect(erro?.message).toBe('Você já possui uma solicitação em aberto. Acompanhe o andamento antes de enviar outra.');
+    expect(erro?.message).toBe(
+      'Você já possui uma solicitação em aberto. Acompanhe o andamento antes de enviar outra.',
+    );
   });
 
   it('traduz 422 para mensagem de relatorio sem atividades', () => {
@@ -57,7 +59,9 @@ describe('SolicitacaoService', () => {
 
     httpMock.expectOne(url).flush(null, { status: 422, statusText: 'Unprocessable Entity' });
 
-    expect(erro?.message).toBe('Cadastre ao menos uma atividade antes de enviar o relatório para validação.');
+    expect(erro?.message).toBe(
+      'Cadastre ao menos uma atividade antes de enviar o relatório para validação.',
+    );
   });
 
   it('traduz 400 com a mesma mensagem de relatorio sem atividades', () => {
@@ -66,21 +70,25 @@ describe('SolicitacaoService', () => {
 
     httpMock.expectOne(url).flush(null, { status: 400, statusText: 'Bad Request' });
 
-    expect(erro?.message).toBe('Cadastre ao menos uma atividade antes de enviar o relatório para validação.');
+    expect(erro?.message).toBe(
+      'Cadastre ao menos uma atividade antes de enviar o relatório para validação.',
+    );
   });
 
   it('prioriza a mensagem enviada pelo backend na submissao', () => {
     let erro: Error | undefined;
     service.submeter().subscribe({ error: (e: Error) => (erro = e) });
 
-    httpMock.expectOne(url).flush({ message: 'Regulamento vigente ausente.' }, { status: 409, statusText: 'Conflict' });
+    httpMock
+      .expectOne(url)
+      .flush({ message: 'Regulamento vigente ausente.' }, { status: 409, statusText: 'Conflict' });
 
     expect(erro?.message).toBe('Regulamento vigente ausente.');
   });
 
   it('lista as solicitacoes do estudante', () => {
     const esperado: SolicitacaoResumo[] = [
-      { id: 7, status: 'SUBMETIDA', dataSubmissao: '2026-08-20T10:30:00', totalAtividades: 2 }
+      { id: 7, status: 'SUBMETIDA', dataSubmissao: '2026-08-20T10:30:00', totalAtividades: 2 },
     ];
 
     let recebido: SolicitacaoResumo[] | undefined;

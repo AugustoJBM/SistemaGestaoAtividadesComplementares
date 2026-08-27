@@ -15,7 +15,7 @@ const atividades: Atividade[] = [
     cargaHorariaEmHoras: 30,
     natureza: 'ACC',
     categoria: 'ENSINO',
-    dataCadastro: '2026-03-11T08:00:00'
+    dataCadastro: '2026-03-11T08:00:00',
   },
   {
     id: 2,
@@ -25,8 +25,8 @@ const atividades: Atividade[] = [
     cargaHorariaEmHoras: 12,
     natureza: 'ACEX',
     categoria: 'EXTENSAO',
-    dataCadastro: null
-  }
+    dataCadastro: null,
+  },
 ];
 
 const parecerMock = {
@@ -39,7 +39,7 @@ const parecerMock = {
   justificativaTecnica: 'Atividade compatível com o regulamento de monitoria.',
   scoreConfianca: 0.95,
   decisaoIA: 'DEFERIDO',
-  tempoProcessamentoMs: 150
+  tempoProcessamentoMs: 150,
 };
 
 describe('ListagemAtividadesComponent', () => {
@@ -55,8 +55,8 @@ describe('ListagemAtividadesComponent', () => {
       imports: [ListagemAtividadesComponent],
       providers: [
         provideRouter([]),
-        { provide: AtividadeService, useValue: atividadeServiceDuble }
-      ]
+        { provide: AtividadeService, useValue: atividadeServiceDuble },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListagemAtividadesComponent);
   };
@@ -65,7 +65,7 @@ describe('ListagemAtividadesComponent', () => {
     const listagemNaoResolvida = new Subject<Atividade[]>();
     atividadeServiceDuble = {
       listar: () => listagemNaoResolvida.asObservable(),
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
@@ -77,7 +77,7 @@ describe('ListagemAtividadesComponent', () => {
   it('deve renderizar as atividades retornadas pelo service', async () => {
     atividadeServiceDuble = {
       listar: () => of(atividades),
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
@@ -97,7 +97,7 @@ describe('ListagemAtividadesComponent', () => {
   it('deve exibir o link de edicao apontando para a rota correta de cada atividade', async () => {
     atividadeServiceDuble = {
       listar: () => of(atividades),
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
@@ -110,7 +110,7 @@ describe('ListagemAtividadesComponent', () => {
   it('deve exibir o empty state quando o estudante não possui atividades e não há filtro ativo', async () => {
     atividadeServiceDuble = {
       listar: () => of([]),
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
@@ -123,14 +123,17 @@ describe('ListagemAtividadesComponent', () => {
 
   it('deve exibir a mensagem de erro devolvida pelo service em um alerta acessível', async () => {
     atividadeServiceDuble = {
-      listar: () => throwError(() => new Error('Não foi possível carregar suas atividades. Tente novamente.')),
-      obterParecer: () => of(parecerMock)
+      listar: () =>
+        throwError(() => new Error('Não foi possível carregar suas atividades. Tente novamente.')),
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
     const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
     expect(fixture.componentInstance.carregando()).toBeFalsy();
-    expect(alerta.textContent).toContain('Não foi possível carregar suas atividades. Tente novamente.');
+    expect(alerta.textContent).toContain(
+      'Não foi possível carregar suas atividades. Tente novamente.',
+    );
   });
 
   it('deve recarregar a listagem ao acionar "Tentar novamente" após uma falha', async () => {
@@ -139,10 +142,12 @@ describe('ListagemAtividadesComponent', () => {
       listar: () => {
         tentativas += 1;
         return tentativas === 1
-          ? throwError(() => new Error('Não foi possível conectar ao servidor. Verifique sua conexão.'))
+          ? throwError(
+              () => new Error('Não foi possível conectar ao servidor. Verifique sua conexão.'),
+            )
           : of(atividades);
       },
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
@@ -159,11 +164,13 @@ describe('ListagemAtividadesComponent', () => {
     const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
     atividadeServiceDuble = {
       listar: spyListar,
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
-    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    const selectNatureza = fixture.nativeElement.querySelector(
+      '#filtro-natureza',
+    ) as HTMLSelectElement;
     selectNatureza.value = Natureza.ACC;
     selectNatureza.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -175,11 +182,13 @@ describe('ListagemAtividadesComponent', () => {
     const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
     atividadeServiceDuble = {
       listar: spyListar,
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
-    const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
+    const selectCategoria = fixture.nativeElement.querySelector(
+      '#filtro-categoria',
+    ) as HTMLSelectElement;
     selectCategoria.value = Categoria.ENSINO;
     selectCategoria.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -191,20 +200,24 @@ describe('ListagemAtividadesComponent', () => {
     const spyListar = vi.fn().mockReturnValue(of([atividades[0]]));
     atividadeServiceDuble = {
       listar: spyListar,
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
-    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    const selectNatureza = fixture.nativeElement.querySelector(
+      '#filtro-natureza',
+    ) as HTMLSelectElement;
     selectNatureza.value = Natureza.ACC;
     selectNatureza.dispatchEvent(new Event('change'));
-    const selectCategoria = fixture.nativeElement.querySelector('#filtro-categoria') as HTMLSelectElement;
+    const selectCategoria = fixture.nativeElement.querySelector(
+      '#filtro-categoria',
+    ) as HTMLSelectElement;
     selectCategoria.value = Categoria.ENSINO;
     selectCategoria.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(spyListar).toHaveBeenLastCalledWith({
       natureza: Natureza.ACC,
-      categoria: Categoria.ENSINO
+      categoria: Categoria.ENSINO,
     });
   });
 
@@ -212,14 +225,16 @@ describe('ListagemAtividadesComponent', () => {
     const spyListar = vi.fn().mockReturnValue(of(atividades));
     atividadeServiceDuble = {
       listar: spyListar,
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
     fixture.componentInstance.filtroNatureza.set(Natureza.ACC);
     fixture.componentInstance.filtroCategoria.set(Categoria.ENSINO);
     fixture.detectChanges();
-    const botaoLimpar = fixture.nativeElement.querySelector('#btn-limpar-filtros') as HTMLButtonElement;
+    const botaoLimpar = fixture.nativeElement.querySelector(
+      '#btn-limpar-filtros',
+    ) as HTMLButtonElement;
     expect(botaoLimpar).toBeTruthy();
     botaoLimpar.click();
     fixture.detectChanges();
@@ -231,11 +246,13 @@ describe('ListagemAtividadesComponent', () => {
   it('deve exibir mensagem de empty state específica quando o filtro não retornar resultados', async () => {
     atividadeServiceDuble = {
       listar: () => of([]),
-      obterParecer: () => of(parecerMock)
+      obterParecer: () => of(parecerMock),
     };
     await configurarComponente();
     fixture.detectChanges();
-    const selectNatureza = fixture.nativeElement.querySelector('#filtro-natureza') as HTMLSelectElement;
+    const selectNatureza = fixture.nativeElement.querySelector(
+      '#filtro-natureza',
+    ) as HTMLSelectElement;
     selectNatureza.value = Natureza.ACEX;
     selectNatureza.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -249,12 +266,14 @@ describe('ListagemAtividadesComponent', () => {
       const spyObterParecer = vi.fn().mockReturnValue(of(parecerMock));
       atividadeServiceDuble = {
         listar: () => of(atividades),
-        obterParecer: spyObterParecer
+        obterParecer: spyObterParecer,
       };
       await configurarComponente();
       fixture.detectChanges();
 
-      const botoes = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+      const botoes = Array.from(
+        fixture.nativeElement.querySelectorAll('button'),
+      ) as HTMLButtonElement[];
       const botaoParecer = botoes.find((btn) => btn.textContent?.includes('Parecer IA'));
       expect(botaoParecer).toBeTruthy();
       botaoParecer?.click();
@@ -271,7 +290,7 @@ describe('ListagemAtividadesComponent', () => {
     it('deve fechar o modal de parecer ao acionar o botão de fechar', async () => {
       atividadeServiceDuble = {
         listar: () => of(atividades),
-        obterParecer: () => of(parecerMock)
+        obterParecer: () => of(parecerMock),
       };
       await configurarComponente();
       fixture.detectChanges();
@@ -292,11 +311,11 @@ describe('ListagemAtividadesComponent', () => {
       const duble = {
         listar: () => of(atividades),
         obterParecer: vi.fn().mockReturnValue(of(parecerMock)),
-        excluir: vi.fn(excluirDuble)
+        excluir: vi.fn(excluirDuble),
       };
       TestBed.configureTestingModule({
         imports: [ListagemAtividadesComponent],
-        providers: [provideRouter([]), { provide: AtividadeService, useValue: duble }]
+        providers: [provideRouter([]), { provide: AtividadeService, useValue: duble }],
       });
       const fixtureInstanciada = TestBed.createComponent(ListagemAtividadesComponent);
       fixtureInstanciada.detectChanges();
@@ -329,7 +348,9 @@ describe('ListagemAtividadesComponent', () => {
 
       const dialogo = f.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
       const botoesDialogo = dialogo.querySelectorAll('button');
-      const botaoCancelar = Array.from(botoesDialogo).find((btn) => (btn as HTMLElement).textContent?.trim() === 'Cancelar') as HTMLButtonElement;
+      const botaoCancelar = Array.from(botoesDialogo).find(
+        (btn) => (btn as HTMLElement).textContent?.trim() === 'Cancelar',
+      ) as HTMLButtonElement;
       botaoCancelar.click();
       f.detectChanges();
 
@@ -352,22 +373,23 @@ describe('ListagemAtividadesComponent', () => {
 
     it('erro do backend exibe mensagem em role=alert e mantem o item na lista', () => {
       const { fixture: f } = montarComExclusao(() =>
-        throwError(() => new Error('Você pode excluir suas próprias atividades.'))
+        throwError(() => new Error('Você pode excluir suas próprias atividades.')),
       );
       f.componentInstance.solicitarExclusao(atividades[0]);
       f.componentInstance.confirmarExclusao();
       f.detectChanges();
 
       expect(f.componentInstance.atividades().map((a) => a.id)).toEqual([1, 2]);
-      expect(f.componentInstance.mensagemErroExclusao())
-        .toBe('Você pode excluir suas próprias atividades.');
+      expect(f.componentInstance.mensagemErroExclusao()).toBe(
+        'Você pode excluir suas próprias atividades.',
+      );
       const alertas = f.nativeElement.querySelectorAll('[role="alert"]');
       const textos = Array.from(alertas).map((el) => (el as HTMLElement).textContent ?? '');
       expect(textos.some((t) => t.includes('suas próprias atividades'))).toBe(true);
     });
 
     it('marca estado de carregamento enquanto a exclusao esta em andamento', () => {
-      const { fixture: f } = montarComExclusao(() => new Observable<void>(() => { }));
+      const { fixture: f } = montarComExclusao(() => new Observable<void>(() => {}));
       f.componentInstance.solicitarExclusao(atividades[0]);
       f.componentInstance.confirmarExclusao();
       f.detectChanges();
@@ -376,7 +398,9 @@ describe('ListagemAtividadesComponent', () => {
       const dialogo = f.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
       expect(dialogo).toBeTruthy();
       const botoes = dialogo.querySelectorAll('button');
-      const todosDesabilitados = Array.from(botoes).every((btn) => (btn as HTMLButtonElement).disabled);
+      const todosDesabilitados = Array.from(botoes).every(
+        (btn) => (btn as HTMLButtonElement).disabled,
+      );
       expect(todosDesabilitados).toBe(true);
     });
 
@@ -388,7 +412,7 @@ describe('ListagemAtividadesComponent', () => {
 
       expect(f.componentInstance.mensagemSucesso()).toContain('excluída');
       f.componentInstance.aoAlterarNatureza({
-        target: { value: 'ACC' }
+        target: { value: 'ACC' },
       } as unknown as Event);
       f.detectChanges();
 

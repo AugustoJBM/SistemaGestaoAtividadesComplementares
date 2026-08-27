@@ -18,11 +18,7 @@ describe('ProgressoService', () => {
     TestBed.resetTestingModule();
 
     TestBed.configureTestingModule({
-      providers: [
-        ProgressoService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      providers: [ProgressoService, provideHttpClient(), provideHttpClientTesting()],
     });
 
     service = TestBed.inject(ProgressoService);
@@ -44,7 +40,7 @@ describe('ProgressoService', () => {
     expect(req.request.method).toBe('GET');
     req.flush({
       acc: { horasAcumuladas: 10, horasExigidas: 20, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasExigidas: 15, percentualConcluido: 33 }
+      acex: { horasAcumuladas: 5, horasExigidas: 15, percentualConcluido: 33 },
     });
   });
 
@@ -54,12 +50,24 @@ describe('ProgressoService', () => {
 
     httpMock.expectOne(PROGRESSO_URL).flush({
       acc: { horasAcumuladas: 10, horasPendentes: 4, horasExigidas: 20, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasPendentes: 2, horasExigidas: 15, percentualConcluido: 33 }
+      acex: { horasAcumuladas: 5, horasPendentes: 2, horasExigidas: 15, percentualConcluido: 33 },
     });
 
     expect(progresso).toEqual({
-      acc: { horasAcumuladas: 10, horasPendentes: 4, horasExigidas: 20, horasRestantes: 10, percentualConcluido: 50 },
-      acex: { horasAcumuladas: 5, horasPendentes: 2, horasExigidas: 15, horasRestantes: 10, percentualConcluido: 33 }
+      acc: {
+        horasAcumuladas: 10,
+        horasPendentes: 4,
+        horasExigidas: 20,
+        horasRestantes: 10,
+        percentualConcluido: 50,
+      },
+      acex: {
+        horasAcumuladas: 5,
+        horasPendentes: 2,
+        horasExigidas: 15,
+        horasRestantes: 10,
+        percentualConcluido: 33,
+      },
     });
   });
 
@@ -70,8 +78,20 @@ describe('ProgressoService', () => {
     httpMock.expectOne(PROGRESSO_URL).flush({ acc: null, acex: null });
 
     expect(progresso).toEqual({
-      acc: { horasAcumuladas: 0, horasPendentes: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 },
-      acex: { horasAcumuladas: 0, horasPendentes: 0, horasExigidas: 0, horasRestantes: 0, percentualConcluido: 0 }
+      acc: {
+        horasAcumuladas: 0,
+        horasPendentes: 0,
+        horasExigidas: 0,
+        horasRestantes: 0,
+        percentualConcluido: 0,
+      },
+      acex: {
+        horasAcumuladas: 0,
+        horasPendentes: 0,
+        horasExigidas: 0,
+        horasRestantes: 0,
+        percentualConcluido: 0,
+      },
     });
   });
 
@@ -79,7 +99,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock.expectOne(PROGRESSO_URL).flush({}, { status: 401, statusText: 'Unauthorized' });
@@ -91,7 +111,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock.expectOne(PROGRESSO_URL).error(new ProgressEvent('error'), { status: 0 });
@@ -99,19 +119,18 @@ describe('ProgressoService', () => {
     expect(mensagem).toContain('Não foi possível conectar ao servidor');
   });
 
-
   it('deve traduzir o status 403 usando a mensagem de texto puro do backend', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock
       .expectOne(PROGRESSO_URL)
       .flush('Apenas estudantes podem consultar o progresso de atividades.', {
         status: 403,
-        statusText: 'Forbidden'
+        statusText: 'Forbidden',
       });
 
     expect(mensagem).toBe('Apenas estudantes podem consultar o progresso de atividades.');
@@ -121,7 +140,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock.expectOne(PROGRESSO_URL).flush('', { status: 403, statusText: 'Forbidden' });
@@ -133,7 +152,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock
@@ -147,7 +166,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock
@@ -162,7 +181,7 @@ describe('ProgressoService', () => {
     let mensagem = '';
 
     service.obterProgresso().subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
 
     httpMock.expectOne(PROGRESSO_URL).flush({}, { status: 500, statusText: 'Server Error' });

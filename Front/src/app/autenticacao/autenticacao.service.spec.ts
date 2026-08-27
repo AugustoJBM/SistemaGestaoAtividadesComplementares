@@ -12,10 +12,18 @@ const createStorageMock = () => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = String(value); },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
-    get length() { return Object.keys(store).length; }
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
   };
 };
 
@@ -29,11 +37,7 @@ describe('AutenticacaoService', () => {
     vi.stubGlobal('sessionStorage', createStorageMock());
 
     TestBed.configureTestingModule({
-      providers: [
-        AutenticacaoService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      providers: [AutenticacaoService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(AutenticacaoService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -84,7 +88,7 @@ describe('AutenticacaoService', () => {
   it('deve traduzir o status 401 para mensagem de credenciais inválidas', () => {
     let mensagem = '';
     service.login({ email: 'errado@ufape.edu.br', senha: 'wrongpassword' }).subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
     httpMock.expectOne(LOGIN_URL).flush({}, { status: 401, statusText: 'Unauthorized' });
     expect(mensagem).toBe('Credenciais inválidas.');
@@ -93,7 +97,7 @@ describe('AutenticacaoService', () => {
   it('deve traduzir o status 0 para mensagem de falha de conexão', () => {
     let mensagem = '';
     service.login({ email: 'aluno@ufape.edu.br', senha: 'password123' }).subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
     httpMock.expectOne(LOGIN_URL).error(new ProgressEvent('error'), { status: 0 });
     expect(mensagem).toContain('Não foi possível conectar ao servidor');
@@ -102,7 +106,7 @@ describe('AutenticacaoService', () => {
   it('deve usar mensagem genérica quando o backend não informar detalhe', () => {
     let mensagem = '';
     service.login({ email: 'aluno@ufape.edu.br', senha: 'password123' }).subscribe({
-      error: (erro: Error) => (mensagem = erro.message)
+      error: (erro: Error) => (mensagem = erro.message),
     });
     httpMock.expectOne(LOGIN_URL).flush({}, { status: 500, statusText: 'Server Error' });
     expect(mensagem).toBe('Ocorreu um erro ao realizar o login. Tente novamente.');
