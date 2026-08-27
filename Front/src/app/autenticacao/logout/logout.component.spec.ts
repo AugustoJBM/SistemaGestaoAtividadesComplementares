@@ -14,10 +14,18 @@ const createStorageMock = () => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = String(value); },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
-    get length() { return Object.keys(store).length; }
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
   };
 };
 
@@ -36,8 +44,8 @@ describe('Componente de Logout', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: LogoutService, useValue: logoutServiceSpy }
-      ]
+        { provide: LogoutService, useValue: logoutServiceSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LogoutComponent);

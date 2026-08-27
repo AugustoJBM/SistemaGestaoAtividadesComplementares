@@ -11,26 +11,31 @@ if [ ! -f "$MVN_CMD" ]; then
     MVN_CMD="mvn"
 fi
 
-SONAR_TOKEN=${SONAR_TOKEN:-""}
-
+echo "=================================================="
+echo " [1/5] Formatando e lintando o Frontend..."
+echo "=================================================="
+cd Front
+npm run fix-all
+cd ..
 
 echo "=================================================="
-echo " [1/4] Formatando código e removendo imports (Spotless)..."
+echo " [2/5] Formatando código backend e removendo imports (Spotless)..."
 echo "=================================================="
+cd backend
 $MVN_CMD spotless:apply
 
 echo "=================================================="
-echo " [2/4] Aplicando melhorias automáticas (OpenRewrite)..."
+echo " [3/5] Aplicando melhorias automáticas no backend (OpenRewrite)..."
 echo "=================================================="
 $MVN_CMD rewrite:run || echo "OpenRewrite finalizado."
 
 echo "=================================================="
-echo " [3/4] Executando build, testes unitários e cobertura (JaCoCo)..."
+echo " [4/5] Executando build, testes unitários e cobertura do Backend (JaCoCo)..."
 echo "=================================================="
 $MVN_CMD clean verify
 
 echo "=================================================="
-echo " [4/4] Analisando e enviando para o SonarCloud..."
+echo " [5/5] Analisando e enviando para o SonarCloud..."
 echo "=================================================="
 if [ -z "$SONAR_TOKEN" ]; then
     echo "Aviso: Variável \$SONAR_TOKEN não definida. Pulando a análise do SonarCloud."
@@ -43,6 +48,7 @@ else
       -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 fi
 
+cd ..
 echo "=================================================="
-echo " SUCESSO! Pipeline de verificação concluído."
+echo " SUCESSO! Pipeline completo (Front + Back) concluído."
 echo "=================================================="

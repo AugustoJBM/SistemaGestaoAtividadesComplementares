@@ -17,8 +17,8 @@ describe('authGuard', () => {
     testInjector = Injector.create({
       providers: [
         { provide: AutenticacaoService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
-      ]
+        { provide: Router, useValue: routerSpy },
+      ],
     }) as EnvironmentInjector;
   });
 

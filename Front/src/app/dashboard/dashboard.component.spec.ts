@@ -15,12 +15,12 @@ const PROGRESSO_URL = `${API_BASE_URL}/atividades/progresso`;
 // DTO -> dominio feito pelo ProgressoService (horasRestantes derivada, ?? 0).
 const dtoCompleto: ProgressoCargaHorariaDTO = {
   acc: { horasAcumuladas: 30, horasPendentes: 5, horasExigidas: 60, percentualConcluido: 50 },
-  acex: { horasAcumuladas: 20, horasPendentes: 0, horasExigidas: 40, percentualConcluido: 50 }
+  acex: { horasAcumuladas: 20, horasPendentes: 0, horasExigidas: 40, percentualConcluido: 50 },
 };
 
 const dtoForaDaFaixa: ProgressoCargaHorariaDTO = {
   acc: { horasAcumuladas: 30, horasPendentes: 0, horasExigidas: 60, percentualConcluido: 140 },
-  acex: { horasAcumuladas: 20, horasPendentes: 0, horasExigidas: 40, percentualConcluido: -20 }
+  acex: { horasAcumuladas: 20, horasPendentes: 0, horasExigidas: 40, percentualConcluido: -20 },
 };
 
 describe('DashboardComponent', () => {
@@ -38,8 +38,8 @@ describe('DashboardComponent', () => {
         ProgressoService,
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([])
-      ]
+        provideRouter([]),
+      ],
     });
 
     fixture = TestBed.createComponent(DashboardComponent);
@@ -164,7 +164,7 @@ describe('DashboardComponent', () => {
 
     // Assert
     const rotulos = Array.from(elemento.querySelectorAll('[role="progressbar"]')).map((b) =>
-      b.getAttribute('aria-label')
+      b.getAttribute('aria-label'),
     );
     expect(rotulos).toEqual(['Progresso de ACC', 'Progresso de ACEX']);
   });

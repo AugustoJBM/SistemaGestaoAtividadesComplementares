@@ -1,13 +1,13 @@
 export enum Natureza {
   ACC = 'ACC',
-  ACEX = 'ACEX'
+  ACEX = 'ACEX',
 }
 
 export enum Categoria {
   PESQUISA = 'PESQUISA',
   EXTENSAO = 'EXTENSAO',
   ENSINO = 'ENSINO',
-  EVENTOS = 'EVENTOS'
+  EVENTOS = 'EVENTOS',
 }
 
 export interface AtividadeRequest {

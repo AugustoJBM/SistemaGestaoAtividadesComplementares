@@ -11,7 +11,7 @@ import { DetalheSolicitacaoComponent } from '../detalhe/detalhe-solicitacao.comp
   selector: 'app-acompanhamento-solicitacoes',
   standalone: true,
   imports: [CommonModule, RouterLink, DetalheSolicitacaoComponent],
-  templateUrl: './acompanhamento-solicitacoes.component.html'
+  templateUrl: './acompanhamento-solicitacoes.component.html',
 })
 export class AcompanhamentoSolicitacoesComponent implements OnInit {
   private readonly solicitacaoService = inject(SolicitacaoService);
@@ -41,7 +41,7 @@ export class AcompanhamentoSolicitacoesComponent implements OnInit {
       error: (erro: Error) => {
         this.mensagemErro.set(erro.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 
@@ -66,7 +66,7 @@ export class AcompanhamentoSolicitacoesComponent implements OnInit {
 
         this.erroDetalhe.set(erro.message);
         this.carregandoDetalhe.set(false);
-      }
+      },
     });
   }
 

@@ -9,7 +9,7 @@ import { rotuloStatus } from '../status-solicitacao';
   selector: 'app-submissao-solicitacao',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './submissao-solicitacao.component.html'
+  templateUrl: './submissao-solicitacao.component.html',
 })
 export class SubmissaoSolicitacaoComponent {
   private readonly solicitacaoService = inject(SolicitacaoService);
@@ -45,7 +45,7 @@ export class SubmissaoSolicitacaoComponent {
         this.mensagemErro.set(erro.message);
         this.confirmacaoAberta.set(false);
         this.enviando.set(false);
-      }
+      },
     });
   }
 

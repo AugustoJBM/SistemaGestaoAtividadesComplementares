@@ -1,27 +1,33 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Atividade, Categoria, FiltroAtividades, Natureza, ParecerResponseDTO } from '../atividade.model';
+import {
+  Atividade,
+  Categoria,
+  FiltroAtividades,
+  Natureza,
+  ParecerResponseDTO,
+} from '../atividade.model';
 import { AtividadeService } from '../atividade.service';
 import { ParecerCardComponent } from '../parecer/parecer-conformidade/parecer-card.component';
 
 const ROTULOS_NATUREZA: Record<string, string> = {
   ACC: 'ACC',
-  ACEX: 'ACEX'
+  ACEX: 'ACEX',
 };
 
 const ROTULOS_CATEGORIA: Record<string, string> = {
   PESQUISA: 'Pesquisa',
   EXTENSAO: 'Extensão',
   ENSINO: 'Ensino',
-  EVENTOS: 'Eventos'
+  EVENTOS: 'Eventos',
 };
 
 @Component({
   selector: 'app-listagem-atividades',
   standalone: true,
   imports: [CommonModule, RouterLink, ParecerCardComponent],
-  templateUrl: './listagem-atividades.component.html'
+  templateUrl: './listagem-atividades.component.html',
 })
 export class ListagemAtividadesComponent implements OnInit {
   private readonly atividadeService = inject(AtividadeService);
@@ -34,7 +40,7 @@ export class ListagemAtividadesComponent implements OnInit {
   readonly filtroNatureza = signal<Natureza | ''>('');
   readonly filtroCategoria = signal<Categoria | ''>('');
   readonly temFiltroAtivo = computed<boolean>(
-    () => this.filtroNatureza() !== '' || this.filtroCategoria() !== ''
+    () => this.filtroNatureza() !== '' || this.filtroCategoria() !== '',
   );
 
   readonly atividadeParaExcluir = signal<Atividade | null>(null);
@@ -51,7 +57,7 @@ export class ListagemAtividadesComponent implements OnInit {
   readonly opcoesNatureza = [
     { valor: '', rotulo: 'Todas as Naturezas' },
     { valor: Natureza.ACC, rotulo: 'ACC' },
-    { valor: Natureza.ACEX, rotulo: 'ACEX' }
+    { valor: Natureza.ACEX, rotulo: 'ACEX' },
   ];
 
   readonly opcoesCategoria = [
@@ -59,7 +65,7 @@ export class ListagemAtividadesComponent implements OnInit {
     { valor: Categoria.PESQUISA, rotulo: 'Pesquisa' },
     { valor: Categoria.EXTENSAO, rotulo: 'Extensão' },
     { valor: Categoria.ENSINO, rotulo: 'Ensino' },
-    { valor: Categoria.EVENTOS, rotulo: 'Eventos' }
+    { valor: Categoria.EVENTOS, rotulo: 'Eventos' },
   ];
 
   ngOnInit(): void {
@@ -87,7 +93,7 @@ export class ListagemAtividadesComponent implements OnInit {
       error: (erro: Error) => {
         this.mensagemErro.set(erro.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 
@@ -135,7 +141,7 @@ export class ListagemAtividadesComponent implements OnInit {
         this.mensagemErroExclusao.set(erro.message);
         this.atividadeParaExcluir.set(null);
         this.excluindo.set(false);
-      }
+      },
     });
   }
 
@@ -168,7 +174,7 @@ export class ListagemAtividadesComponent implements OnInit {
       error: (err: Error) => {
         this.carregandoParecer.set(false);
         this.erroParecer.set(err.message || 'Erro ao consultar parecer da IA.');
-      }
+      },
     });
   }
 

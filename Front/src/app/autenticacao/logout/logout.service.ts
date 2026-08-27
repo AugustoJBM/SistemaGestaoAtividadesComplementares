@@ -9,7 +9,7 @@ export interface LogoutResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LogoutService {
   private readonly http = inject(HttpClient);

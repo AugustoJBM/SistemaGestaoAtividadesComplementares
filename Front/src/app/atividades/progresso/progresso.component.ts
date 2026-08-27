@@ -14,7 +14,7 @@ interface CardProgresso {
   selector: 'app-progresso',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './progresso.component.html'
+  templateUrl: './progresso.component.html',
 })
 export class ProgressoComponent implements OnInit {
   private readonly progressoService = inject(ProgressoService);
@@ -30,7 +30,7 @@ export class ProgressoComponent implements OnInit {
     }
     return [
       { titulo: 'ACC', descricao: 'Atividades Complementares de Curso', dados: progresso.acc },
-      { titulo: 'ACEX', descricao: 'Atividades de Extensão', dados: progresso.acex }
+      { titulo: 'ACEX', descricao: 'Atividades de Extensão', dados: progresso.acex },
     ];
   });
 
@@ -41,9 +41,10 @@ export class ProgressoComponent implements OnInit {
     }
     return (
       progresso.acc.horasAcumuladas +
-      progresso.acc.horasPendentes +
-      progresso.acex.horasAcumuladas +
-      progresso.acex.horasPendentes === 0
+        progresso.acc.horasPendentes +
+        progresso.acex.horasAcumuladas +
+        progresso.acex.horasPendentes ===
+      0
     );
   });
 
@@ -67,7 +68,7 @@ export class ProgressoComponent implements OnInit {
       error: (erro: Error) => {
         this.mensagemErro.set(erro.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 }

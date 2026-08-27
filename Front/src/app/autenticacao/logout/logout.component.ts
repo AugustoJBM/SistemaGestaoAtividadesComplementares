@@ -8,7 +8,7 @@ import { AutenticacaoService } from '../autenticacao.service';
   selector: 'app-logout',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './logout.component.html'
+  templateUrl: './logout.component.html',
 })
 export class LogoutComponent {
   private readonly logoutService = inject(LogoutService);
@@ -28,7 +28,7 @@ export class LogoutComponent {
       error: () => {
         // Garante a saída do usuário mesmo em caso de falha na comunicação de rede
         this.clearSessionAndRedirect();
-      }
+      },
     });
   }
 

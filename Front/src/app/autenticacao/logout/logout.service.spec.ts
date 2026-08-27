@@ -15,9 +15,7 @@ describe('LogoutService', () => {
     httpSpy = { post: vi.fn().mockReturnValue(of(void 0)) };
 
     testInjector = Injector.create({
-      providers: [
-        { provide: HttpClient, useValue: httpSpy }
-      ]
+      providers: [{ provide: HttpClient, useValue: httpSpy }],
     }) as EnvironmentInjector;
 
     service = runInInjectionContext(testInjector, () => new LogoutService());

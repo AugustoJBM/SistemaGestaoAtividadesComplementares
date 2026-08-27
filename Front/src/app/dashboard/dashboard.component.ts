@@ -1,7 +1,10 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ProgressoCargaHoraria, ProgressoModalidade } from '../atividades/progresso/progresso.model';
+import {
+  ProgressoCargaHoraria,
+  ProgressoModalidade,
+} from '../atividades/progresso/progresso.model';
 import { ProgressoService } from '../atividades/progresso/progresso.service';
 
 interface ResumoModalidade {
@@ -14,7 +17,7 @@ interface ResumoModalidade {
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   private readonly progressoService = inject(ProgressoService);
@@ -30,7 +33,7 @@ export class DashboardComponent implements OnInit {
     }
     return [
       { titulo: 'ACC', descricao: 'Atividades Complementares de Curso', dados: progresso.acc },
-      { titulo: 'ACEX', descricao: 'Atividades de Extensão', dados: progresso.acex }
+      { titulo: 'ACEX', descricao: 'Atividades de Extensão', dados: progresso.acex },
     ];
   });
 
@@ -41,9 +44,10 @@ export class DashboardComponent implements OnInit {
     }
     return (
       progresso.acc.horasAcumuladas +
-      progresso.acc.horasPendentes +
-      progresso.acex.horasAcumuladas +
-      progresso.acex.horasPendentes === 0
+        progresso.acc.horasPendentes +
+        progresso.acex.horasAcumuladas +
+        progresso.acex.horasPendentes ===
+      0
     );
   });
 
@@ -71,7 +75,7 @@ export class DashboardComponent implements OnInit {
       error: (erro: Error) => {
         this.mensagemErro.set(erro.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 }

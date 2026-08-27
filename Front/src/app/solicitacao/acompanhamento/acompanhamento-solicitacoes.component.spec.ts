@@ -7,7 +7,13 @@ import { SolicitacaoDetalhe, SolicitacaoResumo } from '../solicitacao.model';
 
 const solicitacoesMock: SolicitacaoResumo[] = [
   { id: 7, status: 'SUBMETIDA', dataSubmissao: '2026-08-20T10:30:00', totalAtividades: 2 },
-  { id: 8, status: 'REJEITADA', dataSubmissao: '2026-07-01', dataAvaliacao: '2026-07-05', totalAtividades: 1 }
+  {
+    id: 8,
+    status: 'REJEITADA',
+    dataSubmissao: '2026-07-01',
+    dataAvaliacao: '2026-07-05',
+    totalAtividades: 1,
+  },
 ];
 
 const detalheMock: SolicitacaoDetalhe = {
@@ -17,13 +23,15 @@ const detalheMock: SolicitacaoDetalhe = {
   dataAvaliacao: '2026-07-05',
   totalAtividades: 1,
   justificativa: 'Certificado ilegível.',
-  itens: [{ atividadeId: 3, titulo: 'Monitoria', cargaHoraria: 30, natureza: 'ACC' }]
+  itens: [{ atividadeId: 3, titulo: 'Monitoria', cargaHoraria: 30, natureza: 'ACC' }],
 };
 
-function montar(duble: Partial<SolicitacaoService>): ComponentFixture<AcompanhamentoSolicitacoesComponent> {
+function montar(
+  duble: Partial<SolicitacaoService>,
+): ComponentFixture<AcompanhamentoSolicitacoesComponent> {
   TestBed.configureTestingModule({
     imports: [AcompanhamentoSolicitacoesComponent],
-    providers: [provideRouter([]), { provide: SolicitacaoService, useValue: duble }]
+    providers: [provideRouter([]), { provide: SolicitacaoService, useValue: duble }],
   });
   return TestBed.createComponent(AcompanhamentoSolicitacoesComponent);
 }
@@ -58,7 +66,9 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.semSolicitacoes()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Você ainda não submeteu nenhuma solicitação');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Você ainda não submeteu nenhuma solicitação',
+    );
     const atalho = fixture.nativeElement.querySelector('a[href="/relatorio"]');
     expect(atalho).toBeTruthy();
   });
@@ -101,12 +111,12 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
       id: 7,
       status: 'SUBMETIDA',
       justificativa: undefined,
-      itens: []
+      itens: [],
     };
 
     const fixture = montar({
       listar: () => of(solicitacoesMock),
-      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable()
+      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable(),
     });
     fixture.detectChanges();
 
@@ -125,15 +135,16 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
     const segundaResposta = new Subject<SolicitacaoDetalhe>();
     const detalheAntigo: SolicitacaoDetalhe = {
       ...detalheMock,
-      justificativa: 'Resposta antiga'
+      justificativa: 'Resposta antiga',
     };
 
     const fixture = montar({
       listar: () => of(solicitacoesMock),
       detalhar: (() => {
         const respostas = [primeiraResposta, segundaResposta];
-        return () => respostas.shift()?.asObservable() ?? throwError(() => new Error('Chamada inesperada'));
-      })()
+        return () =>
+          respostas.shift()?.asObservable() ?? throwError(() => new Error('Chamada inesperada'));
+      })(),
     });
     fixture.detectChanges();
 
@@ -152,7 +163,7 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
     const segundaResposta = new Subject<SolicitacaoDetalhe>();
     const fixture = montar({
       listar: () => of(solicitacoesMock),
-      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable()
+      detalhar: (id: number) => (id === 7 ? primeiraResposta : segundaResposta).asObservable(),
     });
     fixture.detectChanges();
 
@@ -170,7 +181,7 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
   it('limpa carregamento do detalhe ao fechar a visualizacao', () => {
     const fixture = montar({
       listar: () => of(solicitacoesMock),
-      detalhar: () => new Observable<SolicitacaoDetalhe>(() => {})
+      detalhar: () => new Observable<SolicitacaoDetalhe>(() => {}),
     });
     fixture.detectChanges();
 
@@ -188,7 +199,7 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
   it('exibe erro do detalhe sem derrubar a lista', () => {
     const fixture = montar({
       listar: () => of(solicitacoesMock),
-      detalhar: () => throwError(() => new Error('Solicitação não encontrada.'))
+      detalhar: () => throwError(() => new Error('Solicitação não encontrada.')),
     });
     fixture.detectChanges();
 
@@ -203,7 +214,7 @@ describe('AcompanhamentoSolicitacoesComponent', () => {
   it('mostra carregamento do detalhe enquanto a resposta nao chega', () => {
     const fixture = montar({
       listar: () => of(solicitacoesMock),
-      detalhar: () => new Observable<SolicitacaoDetalhe>(() => {})
+      detalhar: () => new Observable<SolicitacaoDetalhe>(() => {}),
     });
     fixture.detectChanges();
 

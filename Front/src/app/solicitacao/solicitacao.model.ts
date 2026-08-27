@@ -1,4 +1,9 @@
-export type StatusSolicitacao = 'SUBMETIDA' | 'EM_ANALISE' | 'COM_PENDENCIAS' | 'APROVADA' | 'REJEITADA';
+export type StatusSolicitacao =
+  | 'SUBMETIDA'
+  | 'EM_ANALISE'
+  | 'COM_PENDENCIAS'
+  | 'APROVADA'
+  | 'REJEITADA';
 
 export interface SolicitacaoItem {
   atividadeId: number;

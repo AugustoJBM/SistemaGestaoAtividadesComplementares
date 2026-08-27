@@ -12,7 +12,7 @@ describe('RelatorioService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [RelatorioService, provideHttpClient(), provideHttpClientTesting()]
+      providers: [RelatorioService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(RelatorioService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -37,16 +37,16 @@ describe('RelatorioService', () => {
                   titulo: 'Iniciacao Cientifica',
                   instituicaoResponsavel: 'UFAPE',
                   dataRealizacao: '2026-03-10',
-                  cargaHorariaEmHoras: 15
-                }
-              ]
-            }
-          ]
-        }
+                  cargaHorariaEmHoras: 15,
+                },
+              ],
+            },
+          ],
+        },
       ],
       totalHorasAcc: 15,
       totalHorasAcex: 0,
-      totalHorasGeral: 15
+      totalHorasGeral: 15,
     };
 
     let recebido: RelatorioAtividades | undefined;
@@ -81,7 +81,9 @@ describe('RelatorioService', () => {
     let erro: Error | undefined;
     service.obterRelatorio().subscribe({ error: (e: Error) => (erro = e) });
 
-    httpMock.expectOne(url).error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+    httpMock
+      .expectOne(url)
+      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
 
     expect(erro?.message).toBe('Não foi possível conectar ao servidor. Verifique sua conexão.');
   });
