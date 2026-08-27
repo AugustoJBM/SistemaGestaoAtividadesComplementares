@@ -10,7 +10,7 @@ const STATUS_COM_JUSTIFICATIVA: StatusSolicitacao[] = ['REJEITADA', 'COM_PENDENC
   selector: 'app-detalhe-solicitacao',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './detalhe-solicitacao.component.html'
+  templateUrl: './detalhe-solicitacao.component.html',
 })
 export class DetalheSolicitacaoComponent {
   readonly detalhe = input.required<SolicitacaoDetalhe>();

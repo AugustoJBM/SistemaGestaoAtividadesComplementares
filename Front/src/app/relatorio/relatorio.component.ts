@@ -9,14 +9,14 @@ const ROTULOS_CATEGORIA: Record<string, string> = {
   PESQUISA: 'Pesquisa',
   EXTENSAO: 'Extensão',
   ENSINO: 'Ensino',
-  EVENTOS: 'Eventos'
+  EVENTOS: 'Eventos',
 };
 
 @Component({
   selector: 'app-relatorio',
   standalone: true,
   imports: [CommonModule, RouterLink, SubmissaoSolicitacaoComponent],
-  templateUrl: './relatorio.component.html'
+  templateUrl: './relatorio.component.html',
 })
 export class RelatorioComponent implements OnInit {
   private readonly relatorioService = inject(RelatorioService);
@@ -41,7 +41,7 @@ export class RelatorioComponent implements OnInit {
       error: (erro: Error) => {
         this.mensagemErro.set(erro.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 

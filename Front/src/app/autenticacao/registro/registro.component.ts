@@ -6,7 +6,7 @@ import {
   FormGroup,
   Validators,
   AbstractControl,
-  ValidationErrors
+  ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RegistroService } from './registro.service';
@@ -15,7 +15,7 @@ import { RegistroService } from './registro.service';
   selector: 'app-registro',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './registro.component.html'
+  templateUrl: './registro.component.html',
 })
 export class RegistroComponent {
   private readonly fb = inject(FormBuilder);
@@ -32,9 +32,9 @@ export class RegistroComponent {
       fullName: ['', [Validators.required, Validators.minLength(3)]],
       emailOrRegistration: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
     },
-    { validators: this.passwordMatchValidator }
+    { validators: this.passwordMatchValidator },
   );
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -78,8 +78,12 @@ export class RegistroComponent {
       },
       error: (erro: Error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(erro?.message || (erro as unknown as { error?: string })?.error || 'Erro ao cadastrar. Tente novamente.');
-      }
+        this.errorMessage.set(
+          erro?.message ||
+            (erro as unknown as { error?: string })?.error ||
+            'Erro ao cadastrar. Tente novamente.',
+        );
+      },
     });
   }
 }

@@ -11,10 +11,18 @@ const createStorageMock = () => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = String(value); },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
-    get length() { return Object.keys(store).length; }
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
   };
 };
 
@@ -32,10 +40,10 @@ describe('AuthInterceptor', () => {
       providers: [
         provideHttpClient(withInterceptors([AuthInterceptor])),
         provideHttpClientTesting(),
-        provideRouter([])
-      ]
+        provideRouter([]),
+      ],
     });
-    
+
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AutenticacaoService);
@@ -49,7 +57,6 @@ describe('AuthInterceptor', () => {
   });
 
   it('deve anexar o header Authorization usando o tipo de token salvo', () => {
-
     authService.saveToken('token-123', 'Bearer');
     http.get('http://localhost:8080/atividades').subscribe();
 
@@ -59,7 +66,6 @@ describe('AuthInterceptor', () => {
   });
 
   it('não deve anexar o header Authorization quando não houver token', () => {
-
     http.get('http://localhost:8080/atividades').subscribe();
 
     const req = httpMock.expectOne('http://localhost:8080/atividades');
@@ -68,18 +74,15 @@ describe('AuthInterceptor', () => {
   });
 
   it('deve limpar o token e redirecionar para /login ao receber 401 em rota protegida', () => {
-
     const spyRouter = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     authService.saveToken('token-expirado', 'Bearer');
     sessionStorage.setItem('user-data', JSON.stringify({ nome: 'Teste' }));
 
-
     http.get('http://localhost:8080/atividades').subscribe({
-      error: () => undefined
+      error: () => undefined,
     });
     const req = httpMock.expectOne('http://localhost:8080/atividades');
     req.flush({ message: 'expirado' }, { status: 401, statusText: 'Unauthorized' });
-
 
     expect(localStorage.length).toBe(0);
     expect(sessionStorage.length).toBe(0);
@@ -87,16 +90,13 @@ describe('AuthInterceptor', () => {
   });
 
   it('não deve redirecionar ao receber 401 na própria rota de login', () => {
-
     const spyRouter = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-
     http.post('http://localhost:8080/auth/login', {}).subscribe({
-      error: () => undefined
+      error: () => undefined,
     });
     const req = httpMock.expectOne('http://localhost:8080/auth/login');
     req.flush({ message: 'credenciais inválidas' }, { status: 401, statusText: 'Unauthorized' });
-
 
     expect(spyRouter).not.toHaveBeenCalled();
   });

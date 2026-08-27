@@ -19,237 +19,354 @@
           <h1 class="text-2xl font-bold text-[#191c1d] tracking-tight mb-1">Minhas Atividades</h1>
           <p class="text-sm text-[#404945]">Atividades complementares que você cadastrou</p>
         </div>
-        <a routerLink="/atividades/cadastro"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#1b4d3e] transition-colors self-start sm:self-auto">
+        <a
+          routerLink="/atividades/cadastro"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#1b4d3e] transition-colors self-start sm:self-auto"
+        >
           <span>+ Cadastrar Atividade</span>
         </a>
       </div>
 
       <!-- Barra de Filtros -->
-      <section aria-label="Filtros de atividades"
-        class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-4 mb-6">
+      <section
+        aria-label="Filtros de atividades"
+        class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-4 mb-6"
+      >
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex-1">
-            <label for="filtro-natureza"
-              class="block text-xs font-semibold uppercase tracking-wider text-[#404945] mb-1">
+            <label
+              for="filtro-natureza"
+              class="block text-xs font-semibold uppercase tracking-wider text-[#404945] mb-1"
+            >
               Natureza
             </label>
-            <select id="filtro-natureza" [value]="filtroNatureza()" (change)="aoAlterarNatureza($event)"
-              class="w-full bg-[#f8f9fa] border border-[#c0c9c3] rounded-lg px-3 py-2 text-sm text-[#191c1d] focus:outline-none focus:border-[#003629] focus:ring-2 focus:ring-[#003629]/20">
+            <select
+              id="filtro-natureza"
+              [value]="filtroNatureza()"
+              (change)="aoAlterarNatureza($event)"
+              class="w-full bg-[#f8f9fa] border border-[#c0c9c3] rounded-lg px-3 py-2 text-sm text-[#191c1d] focus:outline-none focus:border-[#003629] focus:ring-2 focus:ring-[#003629]/20"
+            >
               @for (opcao of opcoesNatureza; track opcao.valor) {
-              <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
+                <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
               }
             </select>
           </div>
           <div class="flex-1">
-            <label for="filtro-categoria"
-              class="block text-xs font-semibold uppercase tracking-wider text-[#404945] mb-1">
+            <label
+              for="filtro-categoria"
+              class="block text-xs font-semibold uppercase tracking-wider text-[#404945] mb-1"
+            >
               Categoria
             </label>
-            <select id="filtro-categoria" [value]="filtroCategoria()" (change)="aoAlterarCategoria($event)"
-              class="w-full bg-[#f8f9fa] border border-[#c0c9c3] rounded-lg px-3 py-2 text-sm text-[#191c1d] focus:outline-none focus:border-[#003629] focus:ring-2 focus:ring-[#003629]/20">
+            <select
+              id="filtro-categoria"
+              [value]="filtroCategoria()"
+              (change)="aoAlterarCategoria($event)"
+              class="w-full bg-[#f8f9fa] border border-[#c0c9c3] rounded-lg px-3 py-2 text-sm text-[#191c1d] focus:outline-none focus:border-[#003629] focus:ring-2 focus:ring-[#003629]/20"
+            >
               @for (opcao of opcoesCategoria; track opcao.valor) {
-              <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
+                <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
               }
             </select>
           </div>
           @if (temFiltroAtivo()) {
-          <div class="sm:self-end">
-            <button type="button" id="btn-limpar-filtros" (click)="limparFiltros()"
-              class="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-[#ba1a1a] border border-[#ba1a1a]/30 rounded-lg hover:bg-[#ffdad6]/20 transition-colors">
-              Limpar filtros
-            </button>
-          </div>
+            <div class="sm:self-end">
+              <button
+                type="button"
+                id="btn-limpar-filtros"
+                (click)="limparFiltros()"
+                class="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-[#ba1a1a] border border-[#ba1a1a]/30 rounded-lg hover:bg-[#ffdad6]/20 transition-colors"
+              >
+                Limpar filtros
+              </button>
+            </div>
           }
         </div>
       </section>
 
       @if (mensagemSucesso()) {
-      <div role="status" class="mb-4 p-3 bg-[#e6efe9] text-[#003629] rounded-lg border border-[#c0c9c3] text-sm">
-        {{ mensagemSucesso() }}
-      </div>
+        <div
+          role="status"
+          class="mb-4 p-3 bg-[#e6efe9] text-[#003629] rounded-lg border border-[#c0c9c3] text-sm"
+        >
+          {{ mensagemSucesso() }}
+        </div>
       }
 
       @if (mensagemErroExclusao()) {
-      <div role="alert" class="mb-4 p-3 bg-[#ffdad6] text-[#93000a] rounded-lg border border-[#ba1a1a]/20 text-sm">
-        {{ mensagemErroExclusao() }}
-      </div>
+        <div
+          role="alert"
+          class="mb-4 p-3 bg-[#ffdad6] text-[#93000a] rounded-lg border border-[#ba1a1a]/20 text-sm"
+        >
+          {{ mensagemErroExclusao() }}
+        </div>
       }
 
       @if (carregando()) {
-      <div
-        class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-[#404945]">
-        <svg class="animate-spin h-8 w-8 text-[#003629]" xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-          </path>
-        </svg>
-        <p class="text-sm">Carregando suas atividades...</p>
-      </div>
-      } @else if (mensagemErro()) {
-      <div role="alert"
-        class="mb-6 p-4 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-start gap-3 border border-[#ba1a1a]/20 text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-[#ba1a1a] mt-0.5" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div class="flex-1">
-          <p>{{ mensagemErro() }}</p>
-          <button type="button"
-            class="mt-3 px-3 py-1.5 bg-[#ba1a1a] text-white text-xs font-semibold rounded-lg hover:bg-[#93000a] transition-colors"
-            (click)="buscarAtividades()">
-            Tentar novamente
-          </button>
+        <div
+          class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-[#404945]"
+        >
+          <svg
+            class="animate-spin h-8 w-8 text-[#003629]"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p class="text-sm">Carregando suas atividades...</p>
         </div>
-      </div>
-      } @else if (semAtividades()) {
-      <div
-        class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-[#003629]" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        @if (temFiltroAtivo()) {
-        <p class="text-sm font-semibold text-[#191c1d]">Nenhuma atividade encontrada com os filtros selecionados</p>
-        <p class="text-sm text-[#404945]">Tente alterar ou limpar os filtros para ver outras atividades.</p>
-        <button type="button" (click)="limparFiltros()"
-          class="mt-2 px-3 py-1.5 text-xs font-semibold text-[#003629] border border-[#003629] rounded-lg hover:bg-[#f3f4f5] transition-colors">
-          Limpar filtros
-        </button>
-        } @else {
-        <p class="text-sm font-semibold text-[#191c1d]">Você ainda não cadastrou atividades</p>
-        <p class="text-sm text-[#404945]">Cadastre sua primeira atividade complementar para acompanhá-la aqui.</p>
-        }
-      </div>
-      } @else {
-      <ul class="flex flex-col gap-4">
-        @for (atividade of atividades(); track atividade.id) {
-        <li class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-5">
-          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div class="min-w-0">
-              <h2 class="text-base font-bold text-[#191c1d] truncate">{{ atividade.titulo }}</h2>
-              <p class="text-xs text-[#404945] mt-1">{{ atividade.instituicaoResponsavel }}</p>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <span
-                class="inline-flex items-center text-[11px] font-semibold bg-[#e6efe9] text-[#003629] border border-[#c0c9c3] px-2.5 py-0.5 rounded-full">
-                {{ rotuloNatureza(atividade.natureza) }}
-              </span>
-              <span
-                class="inline-flex items-center text-[11px] font-semibold bg-[#f3f4f5] text-[#404945] border border-[#c0c9c3] px-2.5 py-0.5 rounded-full">
-                {{ rotuloCategoria(atividade.categoria) }}
-              </span>
-              <button type="button" (click)="abrirModalParecer(atividade)"
-                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] bg-[#e6efe9] border border-[#c0c9c3] rounded-lg hover:bg-[#003629] hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-[16px]">psychology</span>
-                <span>Parecer IA</span>
-              </button>
-              <a [routerLink]="['/atividades/edicao', atividade.id]"
-                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] border border-[#003629] rounded-lg hover:bg-[#003629] hover:text-white transition-colors"
-                [attr.aria-label]="'Editar atividade ' + atividade.titulo">
-                <span class="material-symbols-outlined text-[16px]">edit</span>
-                <span>Editar</span>
-              </a>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-1 text-center mt-4 bg-[#f8f9fa] p-3 rounded-lg border border-[#e1e3e4]">
-            <div>
-              <p class="text-base font-bold text-[#003629]">{{ atividade.cargaHorariaEmHoras }}h</p>
-              <p class="text-[9px] uppercase tracking-wider text-[#707974] font-semibold">Carga Horária</p>
-            </div>
-            <div>
-              <p class="text-base font-bold text-[#191c1d]">{{ dataFormatada(atividade.dataRealizacao) }}</p>
-              <p class="text-[9px] uppercase tracking-wider text-[#707974] font-semibold">Realização</p>
-            </div>
-          </div>
-          <div class="flex justify-end mt-3">
-            <button type="button"
-              class="px-3 py-1.5 text-xs font-semibold text-[#93000a] border border-[#ba1a1a]/30 rounded-lg hover:bg-[#ffdad6] transition-colors"
-              (click)="solicitarExclusao(atividade)">
-              Excluir
+      } @else if (mensagemErro()) {
+        <div
+          role="alert"
+          class="mb-6 p-4 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-start gap-3 border border-[#ba1a1a]/20 text-sm"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 shrink-0 text-[#ba1a1a] mt-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div class="flex-1">
+            <p>{{ mensagemErro() }}</p>
+            <button
+              type="button"
+              class="mt-3 px-3 py-1.5 bg-[#ba1a1a] text-white text-xs font-semibold rounded-lg hover:bg-[#93000a] transition-colors"
+              (click)="buscarAtividades()"
+            >
+              Tentar novamente
             </button>
           </div>
-        </li>
-        }
-      </ul>
+        </div>
+      } @else if (semAtividades()) {
+        <div
+          class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-10 flex flex-col items-center justify-center gap-3 text-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-10 h-10 text-[#003629]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          @if (temFiltroAtivo()) {
+            <p class="text-sm font-semibold text-[#191c1d]">
+              Nenhuma atividade encontrada com os filtros selecionados
+            </p>
+            <p class="text-sm text-[#404945]">
+              Tente alterar ou limpar os filtros para ver outras atividades.
+            </p>
+            <button
+              type="button"
+              (click)="limparFiltros()"
+              class="mt-2 px-3 py-1.5 text-xs font-semibold text-[#003629] border border-[#003629] rounded-lg hover:bg-[#f3f4f5] transition-colors"
+            >
+              Limpar filtros
+            </button>
+          } @else {
+            <p class="text-sm font-semibold text-[#191c1d]">Você ainda não cadastrou atividades</p>
+            <p class="text-sm text-[#404945]">
+              Cadastre sua primeira atividade complementar para acompanhá-la aqui.
+            </p>
+          }
+        </div>
+      } @else {
+        <ul class="flex flex-col gap-4">
+          @for (atividade of atividades(); track atividade.id) {
+            <li
+              class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#e1e3e4] p-5"
+            >
+              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h2 class="text-base font-bold text-[#191c1d] truncate">
+                    {{ atividade.titulo }}
+                  </h2>
+                  <p class="text-xs text-[#404945] mt-1">{{ atividade.instituicaoResponsavel }}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span
+                    class="inline-flex items-center text-[11px] font-semibold bg-[#e6efe9] text-[#003629] border border-[#c0c9c3] px-2.5 py-0.5 rounded-full"
+                  >
+                    {{ rotuloNatureza(atividade.natureza) }}
+                  </span>
+                  <span
+                    class="inline-flex items-center text-[11px] font-semibold bg-[#f3f4f5] text-[#404945] border border-[#c0c9c3] px-2.5 py-0.5 rounded-full"
+                  >
+                    {{ rotuloCategoria(atividade.categoria) }}
+                  </span>
+                  <button
+                    type="button"
+                    (click)="abrirModalParecer(atividade)"
+                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] bg-[#e6efe9] border border-[#c0c9c3] rounded-lg hover:bg-[#003629] hover:text-white transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">psychology</span>
+                    <span>Parecer IA</span>
+                  </button>
+                  <a
+                    [routerLink]="['/atividades/edicao', atividade.id]"
+                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-[#003629] border border-[#003629] rounded-lg hover:bg-[#003629] hover:text-white transition-colors"
+                    [attr.aria-label]="'Editar atividade ' + atividade.titulo"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Editar</span>
+                  </a>
+                </div>
+              </div>
+              <div
+                class="grid grid-cols-2 gap-1 text-center mt-4 bg-[#f8f9fa] p-3 rounded-lg border border-[#e1e3e4]"
+              >
+                <div>
+                  <p class="text-base font-bold text-[#003629]">
+                    {{ atividade.cargaHorariaEmHoras }}h
+                  </p>
+                  <p class="text-[9px] uppercase tracking-wider text-[#707974] font-semibold">
+                    Carga Horária
+                  </p>
+                </div>
+                <div>
+                  <p class="text-base font-bold text-[#191c1d]">
+                    {{ dataFormatada(atividade.dataRealizacao) }}
+                  </p>
+                  <p class="text-[9px] uppercase tracking-wider text-[#707974] font-semibold">
+                    Realização
+                  </p>
+                </div>
+              </div>
+              <div class="flex justify-end mt-3">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs font-semibold text-[#93000a] border border-[#ba1a1a]/30 rounded-lg hover:bg-[#ffdad6] transition-colors"
+                  (click)="solicitarExclusao(atividade)"
+                >
+                  Excluir
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
       }
     </div>
 
     <!-- Modal de Confirmação de Exclusão -->
     @if (atividadeParaExcluir(); as alvo) {
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div role="dialog" aria-modal="true" aria-labelledby="titulo-confirmacao-exclusao"
-        class="bg-white rounded-xl shadow-lg border border-[#e1e3e4] p-6 max-w-md w-full">
-        <h2 id="titulo-confirmacao-exclusao" class="text-base font-bold text-[#191c1d]">
-          Excluir atividade
-        </h2>
-        <p class="text-sm text-[#404945] mt-2">
-          Tem certeza que deseja excluir "{{ alvo.titulo }}"? Esta ação não pode ser desfeita.
-        </p>
-        <div class="flex justify-end gap-2 mt-5">
-          <button type="button" [disabled]="excluindo()"
-            class="px-4 py-2 text-xs font-semibold text-[#404945] border border-[#c0c9c3] rounded-lg hover:bg-[#f3f4f5] transition-colors disabled:opacity-60"
-            (click)="cancelarExclusao()">
-            Cancelar
-          </button>
-          <button type="button" [disabled]="excluindo()"
-            class="px-4 py-2 text-xs font-semibold text-white bg-[#ba1a1a] rounded-lg hover:bg-[#93000a] transition-colors disabled:opacity-60"
-            (click)="confirmarExclusao()">
-            {{ excluindo() ? 'Excluindo...' : 'Excluir' }}
-          </button>
+      <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-confirmacao-exclusao"
+          class="bg-white rounded-xl shadow-lg border border-[#e1e3e4] p-6 max-w-md w-full"
+        >
+          <h2 id="titulo-confirmacao-exclusao" class="text-base font-bold text-[#191c1d]">
+            Excluir atividade
+          </h2>
+          <p class="text-sm text-[#404945] mt-2">
+            Tem certeza que deseja excluir "{{ alvo.titulo }}"? Esta ação não pode ser desfeita.
+          </p>
+          <div class="flex justify-end gap-2 mt-5">
+            <button
+              type="button"
+              [disabled]="excluindo()"
+              class="px-4 py-2 text-xs font-semibold text-[#404945] border border-[#c0c9c3] rounded-lg hover:bg-[#f3f4f5] transition-colors disabled:opacity-60"
+              (click)="cancelarExclusao()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              [disabled]="excluindo()"
+              class="px-4 py-2 text-xs font-semibold text-white bg-[#ba1a1a] rounded-lg hover:bg-[#93000a] transition-colors disabled:opacity-60"
+              (click)="confirmarExclusao()"
+            >
+              {{ excluindo() ? 'Excluindo...' : 'Excluir' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     }
 
     <!-- Modal Parecer IA com Componente Reutilizável -->
     @if (modalParecerAberto()) {
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
-      (click)="fecharModalParecer()">
-      <div class="bg-white rounded-2xl border border-[#c0c9c3] shadow-2xl p-6 max-w-lg w-full space-y-4"
-        (click)="$event.stopPropagation()">
-        <div class="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-2xl text-[#003629]">verified_user</span>
-            <div>
-              <h3 class="text-base font-bold text-[#191c1d]">Parecer Técnico de Conformidade</h3>
-              <p class="text-[11px] text-[#707974]">Auditoria Regulamentar Automática (UFAPE)</p>
-            </div>
-          </div>
-          <button (click)="fecharModalParecer()" class="p-1 hover:bg-[#f3f4f5] rounded-full text-[#707974]"
-            aria-label="Fechar modal">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        @if (carregandoParecer()) {
-        <div class="flex flex-col items-center justify-center py-8 gap-3 text-[#404945]">
-          <span class="material-symbols-outlined animate-spin text-3xl text-[#003629]">progress_activity</span>
-          <p class="text-xs font-medium">Consultando o regulamento da UFAPE com a IA...</p>
-        </div>
-        } @else if (erroParecer()) {
+      <div
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+        (click)="fecharModalParecer()"
+      >
         <div
-          class="p-4 bg-[#ffdad6] text-[#93000a] rounded-xl text-xs font-medium flex items-start gap-2 border border-[#ba1a1a]/20">
-          <span class="material-symbols-outlined text-sm mt-0.5">error</span>
-          <div>
-            <p class="font-bold">Falha na Auditoria:</p>
-            <p>{{ erroParecer() }}</p>
+          class="bg-white rounded-2xl border border-[#c0c9c3] shadow-2xl p-6 max-w-lg w-full space-y-4"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl text-[#003629]">verified_user</span>
+              <div>
+                <h3 class="text-base font-bold text-[#191c1d]">Parecer Técnico de Conformidade</h3>
+                <p class="text-[11px] text-[#707974]">Auditoria Regulamentar Automática (UFAPE)</p>
+              </div>
+            </div>
+            <button
+              (click)="fecharModalParecer()"
+              class="p-1 hover:bg-[#f3f4f5] rounded-full text-[#707974]"
+              aria-label="Fechar modal"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
           </div>
+
+          @if (carregandoParecer()) {
+            <div class="flex flex-col items-center justify-center py-8 gap-3 text-[#404945]">
+              <span class="material-symbols-outlined animate-spin text-3xl text-[#003629]"
+                >progress_activity</span
+              >
+              <p class="text-xs font-medium">Consultando o regulamento da UFAPE com a IA...</p>
+            </div>
+          } @else if (erroParecer()) {
+            <div
+              class="p-4 bg-[#ffdad6] text-[#93000a] rounded-xl text-xs font-medium flex items-start gap-2 border border-[#ba1a1a]/20"
+            >
+              <span class="material-symbols-outlined text-sm mt-0.5">error</span>
+              <div>
+                <p class="font-bold">Falha na Auditoria:</p>
+                <p>{{ erroParecer() }}</p>
+              </div>
+            </div>
+          } @else if (parecerSelecionado(); as p) {
+            <app-parecer-card [parecer]="p" />
+          }
         </div>
-        } @else if (parecerSelecionado(); as p) {
-        <app-parecer-card [parecer]="p" />
-        }
       </div>
-    </div>
     }
   </main>
 
   <footer class="bg-[#e1e3e4] border-t border-[#c0c9c3] mt-auto">
     <div
-      class="w-full py-6 px-4 md:px-8 max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#404945]">
+      class="w-full py-6 px-4 md:px-8 max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#404945]"
+    >
       <div class="flex items-center gap-2 font-bold text-[#003629]">
         <span>SGAC</span>
       </div>

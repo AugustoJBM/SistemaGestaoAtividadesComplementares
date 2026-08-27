@@ -5,7 +5,7 @@ const ROTULOS_STATUS: Record<StatusSolicitacao, string> = {
   EM_ANALISE: 'Em análise',
   COM_PENDENCIAS: 'Com pendências',
   APROVADA: 'Aprovada',
-  REJEITADA: 'Rejeitada'
+  REJEITADA: 'Rejeitada',
 };
 
 const CLASSES_STATUS: Record<StatusSolicitacao, string> = {
@@ -13,7 +13,7 @@ const CLASSES_STATUS: Record<StatusSolicitacao, string> = {
   EM_ANALISE: 'bg-[#cfe6ff] text-[#00497d]',
   COM_PENDENCIAS: 'bg-[#ffdfa0] text-[#7a5900]',
   APROVADA: 'bg-[#c3ecd2] text-[#00522e]',
-  REJEITADA: 'bg-[#ffdad6] text-[#93000a]'
+  REJEITADA: 'bg-[#ffdad6] text-[#93000a]',
 };
 
 export function rotuloStatus(status: StatusSolicitacao): string {

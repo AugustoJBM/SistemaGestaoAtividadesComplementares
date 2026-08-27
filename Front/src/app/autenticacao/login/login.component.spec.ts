@@ -21,15 +21,12 @@ describe('LoginComponent', () => {
       login: vi.fn(),
       getRole: vi.fn().mockReturnValue('ESTUDANTE'),
       getToken: vi.fn().mockReturnValue('token-fake'),
-      estaAutenticado: vi.fn().mockReturnValue(true)
+      estaAutenticado: vi.fn().mockReturnValue(true),
     };
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
-      providers: [
-        provideRouter([]),
-        { provide: AutenticacaoService, useValue: authServiceSpy }
-      ]
+      providers: [provideRouter([]), { provide: AutenticacaoService, useValue: authServiceSpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -70,14 +67,14 @@ describe('LoginComponent', () => {
     component.loginForm.setValue({
       login: 'aluno@ufape.edu.br',
       password: 'senha1234',
-      rememberMe: false
+      rememberMe: false,
     });
 
     component.onSubmit();
 
     expect(authServiceSpy.login).toHaveBeenCalledWith({
       email: 'aluno@ufape.edu.br',
-      senha: 'senha1234'
+      senha: 'senha1234',
     });
     expect(component.isLoading()).toBeFalsy();
     expect(spyRouter).toHaveBeenCalledWith(['/dashboard']);
@@ -91,7 +88,7 @@ describe('LoginComponent', () => {
     component.loginForm.setValue({
       login: 'avaliador@ufape.edu.br',
       password: 'senha1234',
-      rememberMe: false
+      rememberMe: false,
     });
 
     component.onSubmit();
@@ -105,7 +102,7 @@ describe('LoginComponent', () => {
     component.loginForm.setValue({
       login: 'usuario@ufape.edu.br',
       password: 'senhaIncorreta',
-      rememberMe: false
+      rememberMe: false,
     });
 
     component.onSubmit();

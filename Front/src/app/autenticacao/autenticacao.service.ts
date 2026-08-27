@@ -10,26 +10,34 @@ const CHAVE_TOKEN = 'sgac_token';
 const CHAVE_TIPO_TOKEN = 'sgac_token_tipo';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AutenticacaoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${API_BASE_URL}/auth`;
 
   cadastrar(request: RegistroRequest): Observable<RegistroResponse> {
-    return this.http.post<RegistroResponse>(`${this.apiUrl}/cadastro`, request).pipe(
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroCadastro(error))))
-    );
+    return this.http
+      .post<RegistroResponse>(`${this.apiUrl}/cadastro`, request)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroCadastro(error))),
+        ),
+      );
   }
 
   login(credenciais: Credenciais): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, {
-      usuario: credenciais.email,
-      senha: credenciais.senha
-    }).pipe(
-      tap((resposta) => this.saveToken(resposta.token, resposta.tipo || 'Bearer')),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErroLogin(error))))
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/login`, {
+        usuario: credenciais.email,
+        senha: credenciais.senha,
+      })
+      .pipe(
+        tap((resposta) => this.saveToken(resposta.token, resposta.tipo || 'Bearer')),
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroLogin(error))),
+        ),
+      );
   }
 
   saveToken(token: string, tipo: string = 'Bearer'): void {

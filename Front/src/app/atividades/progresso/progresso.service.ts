@@ -6,12 +6,12 @@ import {
   ProgressoCargaHoraria,
   ProgressoCargaHorariaDTO,
   ProgressoModalidade,
-  ProgressoModalidadeDTO
+  ProgressoModalidadeDTO,
 } from './progresso.model';
 import { API_BASE_URL } from '../../api.config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProgressoService {
   private readonly http = inject(HttpClient);
@@ -21,14 +21,18 @@ export class ProgressoService {
     return this.http.get<ProgressoCargaHorariaDTO>(`${this.apiUrl}/progresso`).pipe(
       map((dto) => ({
         acc: this.paraProgressoModalidade(dto?.acc),
-        acex: this.paraProgressoModalidade(dto?.acex)
+        acex: this.paraProgressoModalidade(dto?.acex),
       })),
-      catchError((error: HttpErrorResponse) => throwError(() => new Error(this.traduzirErro(error))))
+      catchError((error: HttpErrorResponse) =>
+        throwError(() => new Error(this.traduzirErro(error))),
+      ),
     );
   }
 
   // Modalidade ausente/nula (estudante sem atividades) vira zeros, nunca undefined/NaN.
-  private paraProgressoModalidade(modalidade: ProgressoModalidadeDTO | null | undefined): ProgressoModalidade {
+  private paraProgressoModalidade(
+    modalidade: ProgressoModalidadeDTO | null | undefined,
+  ): ProgressoModalidade {
     const horasAcumuladas = modalidade?.horasAcumuladas ?? 0;
     const horasPendentes = modalidade?.horasPendentes ?? 0;
     const horasExigidas = modalidade?.horasExigidas ?? 0;
@@ -39,7 +43,7 @@ export class ProgressoService {
       horasPendentes,
       horasExigidas,
       horasRestantes: Math.max(0, horasExigidas - horasAcumuladas),
-      percentualConcluido
+      percentualConcluido,
     };
   }
 
@@ -55,14 +59,17 @@ export class ProgressoService {
       return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
     }
 
-
     if (error.status === 403) {
-      return this.mensagemDoBackend(error) ?? 'Apenas estudantes podem consultar o progresso de atividades.';
+      return (
+        this.mensagemDoBackend(error) ??
+        'Apenas estudantes podem consultar o progresso de atividades.'
+      );
     }
 
-    return this.mensagemDoBackend(error) ?? 'Não foi possível carregar seu progresso. Tente novamente.';
+    return (
+      this.mensagemDoBackend(error) ?? 'Não foi possível carregar seu progresso. Tente novamente.'
+    );
   }
-
 
   private mensagemDoBackend(error: HttpErrorResponse): string | null {
     const corpo: unknown = error.error;

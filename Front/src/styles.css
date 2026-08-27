@@ -4,136 +4,135 @@
 @tailwind utilities;
 
 @layer utilities {
+  .bg-surface {
+    background-color: #f8f9fa;
+  }
 
-    .bg-surface {
-        background-color: #f8f9fa;
-    }
+  .bg-surface-container-lowest {
+    background-color: #ffffff;
+  }
 
-    .bg-surface-container-lowest {
-        background-color: #ffffff;
-    }
+  .bg-surface-container-low {
+    background-color: #f3f4f5;
+  }
 
-    .bg-surface-container-low {
-        background-color: #f3f4f5;
-    }
+  .bg-surface-container {
+    background-color: #edeeef;
+  }
 
-    .bg-surface-container {
-        background-color: #edeeef;
-    }
+  .bg-surface-container-highest {
+    background-color: #e1e3e4;
+  }
 
-    .bg-surface-container-highest {
-        background-color: #e1e3e4;
-    }
+  .bg-primary {
+    background-color: #003629;
+  }
 
-    .bg-primary {
-        background-color: #003629;
-    }
+  .bg-primary-container {
+    background-color: #1b4d3e;
+  }
 
-    .bg-primary-container {
-        background-color: #1b4d3e;
-    }
+  .bg-error-container {
+    background-color: #ffdad6;
+  }
 
-    .bg-error-container {
-        background-color: #ffdad6;
-    }
+  .text-primary {
+    color: #003629;
+  }
 
-    .text-primary {
-        color: #003629;
-    }
+  .text-primary-container {
+    color: #1b4d3e;
+  }
 
-    .text-primary-container {
-        color: #1b4d3e;
-    }
+  .text-on-primary-container {
+    color: #ffffff;
+  }
 
-    .text-on-primary-container {
-        color: #ffffff;
-    }
+  .text-on-surface {
+    color: #191c1d;
+  }
 
-    .text-on-surface {
-        color: #191c1d;
-    }
+  .text-on-surface-variant {
+    color: #404945;
+  }
 
-    .text-on-surface-variant {
-        color: #404945;
-    }
+  .text-secondary {
+    color: #4e5e81;
+  }
 
-    .text-secondary {
-        color: #4e5e81;
-    }
+  .text-error {
+    color: #ba1a1a;
+  }
 
-    .text-error {
-        color: #ba1a1a;
-    }
+  .text-on-error-container {
+    color: #93000a;
+  }
 
-    .text-on-error-container {
-        color: #93000a;
-    }
+  .border-outline {
+    border-color: #707974;
+  }
 
-    .border-outline {
-        border-color: #707974;
-    }
+  .border-outline-variant {
+    border-color: #c0c9c3;
+  }
 
-    .border-outline-variant {
-        border-color: #c0c9c3;
-    }
+  .border-surface-variant {
+    border-color: #e1e3e4;
+  }
 
-    .border-surface-variant {
-        border-color: #e1e3e4;
-    }
+  .border-primary-container {
+    border-color: #1b4d3e;
+  }
 
-    .border-primary-container {
-        border-color: #1b4d3e;
-    }
+  .border-error {
+    border-color: #ba1a1a;
+  }
 
-    .border-error {
-        border-color: #ba1a1a;
-    }
+  /* Tipografia */
+  .font-headline-lg {
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
 
-    /* Tipografia */
-    .font-headline-lg {
-        font-size: 32px;
-        line-height: 40px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-    }
+  .font-headline-lg-mobile {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+  }
 
-    .font-headline-lg-mobile {
-        font-size: 24px;
-        line-height: 32px;
-        font-weight: 600;
-    }
+  .font-title-md {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+  }
 
-    .font-title-md {
-        font-size: 20px;
-        line-height: 28px;
-        font-weight: 600;
-    }
+  .font-body-md {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
 
-    .font-body-md {
-        font-size: 14px;
-        line-height: 20px;
-        font-weight: 400;
-    }
+  .font-label-sm {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
 
-    .font-label-sm {
-        font-size: 12px;
-        line-height: 16px;
-        font-weight: 500;
-        letter-spacing: 0.05em;
-    }
+  /* Espaçamentos e Container */
+  .px-margin-desktop {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
 
-    /* Espaçamentos e Container */
-    .px-margin-desktop {
-        padding-left: 32px;
-        padding-right: 32px;
-    }
+  .px-margin-mobile {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 
-    .px-margin-mobile {
-        padding-left: 16px;
-        padding-right: 16px;
-    }
-
-    .max-w-container-max {
-        max-width: 1280px;
-    }
+  .max-w-container-max {
+    max-width: 1280px;
+  }
 }
