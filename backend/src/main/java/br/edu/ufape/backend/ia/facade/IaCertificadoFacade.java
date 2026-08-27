@@ -12,35 +12,34 @@ import br.edu.ufape.backend.ia.dto.ParecerResponseDTO;
 @Component
 public class IaCertificadoFacade {
 
-    private final AuditoriaConformidadeService auditoriaService;
-    private final AtividadeComplementarService atividadeComplementarService;
+	private final AuditoriaConformidadeService auditoriaService;
+	private final AtividadeComplementarService atividadeComplementarService;
 
-    public IaCertificadoFacade(
-            AuditoriaConformidadeService auditoriaService,
-            AtividadeComplementarService atividadeComplementarService) {
-        this.auditoriaService = auditoriaService;
-        this.atividadeComplementarService = atividadeComplementarService;
-    }
+	public IaCertificadoFacade(AuditoriaConformidadeService auditoriaService,
+			AtividadeComplementarService atividadeComplementarService) {
+		this.auditoriaService = auditoriaService;
+		this.atividadeComplementarService = atividadeComplementarService;
+	}
 
-    public ExtracaoCertificadoResponseDTO extrairDadosCertificado(MultipartFile arquivo) {
-        return auditoriaService.extrairDadosArquivo(arquivo);
-    }
+	public ExtracaoCertificadoResponseDTO extrairDadosCertificado(MultipartFile arquivo) {
+		return auditoriaService.extrairDadosArquivo(arquivo);
+	}
 
-    public ParecerResponseDTO obterOuGerarParecer(Long atividadeId) {
-        AtividadeComplementar atividade = atividadeComplementarService.buscarPorId(atividadeId);
-        ParecerConformidade parecer = auditoriaService.auditarOuObterParecer(atividade);
-        return ParecerResponseDTO.fromEntity(parecer);
-    }
+	public ParecerResponseDTO obterOuGerarParecer(Long atividadeId) {
+		AtividadeComplementar atividade = atividadeComplementarService.buscarPorId(atividadeId);
+		ParecerConformidade parecer = auditoriaService.auditarOuObterParecer(atividade);
+		return ParecerResponseDTO.fromEntity(parecer);
+	}
 
-    public long contarAvaliadas() {
-        return auditoriaService.contarAvaliadas();
-    }
+	public long contarAvaliadas() {
+		return auditoriaService.contarAvaliadas();
+	}
 
-    public long contarConcordancias() {
-        return auditoriaService.contarConcordancias();
-    }
+	public long contarConcordancias() {
+		return auditoriaService.contarConcordancias();
+	}
 
-    public Double calcularTempoMedioMs() {
-        return auditoriaService.calcularTempoMedioMs();
-    }
+	public Double calcularTempoMedioMs() {
+		return auditoriaService.calcularTempoMedioMs();
+	}
 }

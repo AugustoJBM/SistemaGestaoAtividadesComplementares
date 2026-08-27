@@ -28,52 +28,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class RegulamentoIngestaoControllerTest {
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @Mock
-    private RegulamentoFacade regulamentoFacade;
+	@Mock
+	private RegulamentoFacade regulamentoFacade;
 
-    @InjectMocks
-    private RegulamentoIngestaoController controller;
+	@InjectMocks
+	private RegulamentoIngestaoController controller;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    }
+	@BeforeEach
+	void setUp() {
+		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+	}
 
-    @Test
-    @DisplayName("Deve ingerir documento normativo com sucesso e retornar DTO consolidado")
-    void deveIngerirDocumentoNormativo() throws Exception {
-        MockMultipartFile arquivo = new MockMultipartFile(
-                "arquivo", "ppc.pdf", MediaType.APPLICATION_PDF_VALUE, "PPC-TEXT".getBytes());
+	@Test
+	@DisplayName("Deve ingerir documento normativo com sucesso e retornar DTO consolidado")
+	void deveIngerirDocumentoNormativo() throws Exception {
+		MockMultipartFile arquivo = new MockMultipartFile("arquivo", "ppc.pdf", MediaType.APPLICATION_PDF_VALUE,
+				"PPC-TEXT".getBytes());
 
-        IngestaoNormativaResponseDTO responseDTO = new IngestaoNormativaResponseDTO(
-                "ppc.pdf", 5, "SUCESSO", "Vetorizado com sucesso.");
+		IngestaoNormativaResponseDTO responseDTO = new IngestaoNormativaResponseDTO("ppc.pdf", 5, "SUCESSO",
+				"Vetorizado com sucesso.");
 
-        when(regulamentoFacade.ingerirDocumentoNormativo(any(), eq(false))).thenReturn(responseDTO);
+		when(regulamentoFacade.ingerirDocumentoNormativo(any(), eq(false))).thenReturn(responseDTO);
 
-        mockMvc.perform(multipart("/api/v1/regulamentos/ingerir")
-                        .file(arquivo)
-                        .param("substituirExistentes", "false"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeDocumento").value("ppc.pdf"))
-                .andExpect(jsonPath("$.totalChunksExtraidos").value(5))
-                .andExpect(jsonPath("$.status").value("SUCESSO"));
-    }
+		mockMvc.perform(multipart("/api/v1/regulamentos/ingerir").file(arquivo).param("substituirExistentes", "false"))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.nomeDocumento").value("ppc.pdf"))
+				.andExpect(jsonPath("$.totalChunksExtraidos").value(5))
+				.andExpect(jsonPath("$.status").value("SUCESSO"));
+	}
 
-    @Test
-    @DisplayName("Deve listar todos os chunks regulatórios salvos no banco")
-    void deveListarChunksRegulamento() throws Exception {
-        RegulamentoChunkResponseDTO chunkDTO = new RegulamentoChunkResponseDTO(
-                1L, "Art. 12", "Atividades de Ensino valem 40h");
+	@Test
+	@DisplayName("Deve listar todos os chunks regulatórios salvos no banco")
+	void deveListarChunksRegulamento() throws Exception {
+		RegulamentoChunkResponseDTO chunkDTO = new RegulamentoChunkResponseDTO(1L, "Art. 12",
+				"Atividades de Ensino valem 40h");
 
-        when(regulamentoFacade.listarChunks()).thenReturn(List.of(chunkDTO));
+		when(regulamentoFacade.listarChunks()).thenReturn(List.of(chunkDTO));
 
-        mockMvc.perform(get("/api/v1/regulamentos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].artigo").value("Art. 12"))
-                .andExpect(jsonPath("$[0].conteudoTexto").value("Atividades de Ensino valem 40h"));
-    }
+		mockMvc.perform(get("/api/v1/regulamentos")).andExpect(status().isOk()).andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].artigo").value("Art. 12"))
+				.andExpect(jsonPath("$[0].conteudoTexto").value("Atividades de Ensino valem 40h"));
+	}
 }

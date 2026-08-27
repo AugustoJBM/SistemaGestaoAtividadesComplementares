@@ -7,41 +7,41 @@ import jakarta.persistence.Table;
 @Table(name = "avaliadores")
 public class Avaliador extends Usuario {
 
-    private String registro;
-    private String areaAtuacao;
-    private Integer solicitacoesPendentes = 0;
+	private String registro;
+	private String areaAtuacao;
+	private Integer solicitacoesPendentes = 0;
 
-    public Avaliador() {
-        super();
-    }
+	public Avaliador() {
+		super();
+	}
 
-    public Avaliador(String nome, String email, String senhaHash, String registro, String areaAtuacao) {
-        super(nome, email, senhaHash, Role.AVALIADOR);
-        this.registro = registro;
-        this.areaAtuacao = areaAtuacao;
-    }
+	public Avaliador(String nome, String email, String senhaHash, String registro, String areaAtuacao) {
+		super(nome, email, senhaHash, Role.AVALIADOR);
+		this.registro = registro;
+		this.areaAtuacao = areaAtuacao;
+	}
 
-    public String getRegistro() {
-        return registro;
-    }
+	public String getRegistro() {
+		return registro;
+	}
 
-    public void setRegistro(String registro) {
-        this.registro = registro;
-    }
+	public void setRegistro(String registro) {
+		this.registro = registro;
+	}
 
-    public String getAreaAtuacao() {
-        return areaAtuacao;
-    }
+	public String getAreaAtuacao() {
+		return areaAtuacao;
+	}
 
-    public void setAreaAtuacao(String areaAtuacao) {
-        this.areaAtuacao = areaAtuacao;
-    }
+	public void setAreaAtuacao(String areaAtuacao) {
+		this.areaAtuacao = areaAtuacao;
+	}
 
-    public Integer getSolicitacoesPendentes() {
-        return solicitacoesPendentes;
-    }
+	public Integer getSolicitacoesPendentes() {
+		return solicitacoesPendentes;
+	}
 
-    public void setSolicitacoesPendentes(Integer solicitacoesPendentes) {
-        this.solicitacoesPendentes = solicitacoesPendentes;
-    }
+	public void setSolicitacoesPendentes(Integer solicitacoesPendentes) {
+		this.solicitacoesPendentes = solicitacoesPendentes;
+	}
 }

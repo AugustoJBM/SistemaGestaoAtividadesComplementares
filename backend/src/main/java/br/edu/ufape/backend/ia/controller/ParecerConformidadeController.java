@@ -12,14 +12,14 @@ import br.edu.ufape.backend.ia.facade.IaCertificadoFacade;
 @RequestMapping("/api/v1/atividades")
 public class ParecerConformidadeController {
 
-    private final IaCertificadoFacade iaCertificadoFacade;
+	private final IaCertificadoFacade iaCertificadoFacade;
 
-    public ParecerConformidadeController(IaCertificadoFacade iaCertificadoFacade) {
-        this.iaCertificadoFacade = iaCertificadoFacade;
-    }
+	public ParecerConformidadeController(IaCertificadoFacade iaCertificadoFacade) {
+		this.iaCertificadoFacade = iaCertificadoFacade;
+	}
 
-    @GetMapping("/{id}/parecer")
-    public ResponseEntity<ParecerResponseDTO> obterParecer(@PathVariable Long id) {
-        return ResponseEntity.ok(iaCertificadoFacade.obterOuGerarParecer(id));
-    }
+	@GetMapping("/{id}/parecer")
+	public ResponseEntity<ParecerResponseDTO> obterParecer(@PathVariable Long id) {
+		return ResponseEntity.ok(iaCertificadoFacade.obterOuGerarParecer(id));
+	}
 }

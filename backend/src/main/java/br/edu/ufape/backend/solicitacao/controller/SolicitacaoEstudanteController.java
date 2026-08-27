@@ -20,39 +20,40 @@ import br.edu.ufape.backend.solicitacao.facade.SolicitacaoFacade;
 @RequestMapping("/api/v1/solicitacoes")
 public class SolicitacaoEstudanteController {
 
-    private final SolicitacaoFacade solicitacaoFacade;
+	private final SolicitacaoFacade solicitacaoFacade;
 
-    public SolicitacaoEstudanteController(SolicitacaoFacade solicitacaoFacade) {
-        this.solicitacaoFacade = solicitacaoFacade;
-    }
+	public SolicitacaoEstudanteController(SolicitacaoFacade solicitacaoFacade) {
+		this.solicitacaoFacade = solicitacaoFacade;
+	}
 
-    @PostMapping
-    public ResponseEntity<SolicitacaoResponseDTO> submeter(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        SolicitacaoResponseDTO response = solicitacaoFacade.submeter(emailEstudante);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+	@PostMapping
+	public ResponseEntity<SolicitacaoResponseDTO> submeter(Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		SolicitacaoResponseDTO response = solicitacaoFacade.submeter(emailEstudante);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
 
-    @GetMapping
-    public ResponseEntity<List<SolicitacaoResumoResponseDTO>> listar(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        List<SolicitacaoResumoResponseDTO> response = solicitacaoFacade.listarDoEstudante(emailEstudante);
-        return ResponseEntity.ok(response);
-    }
+	@GetMapping
+	public ResponseEntity<List<SolicitacaoResumoResponseDTO>> listar(Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		List<SolicitacaoResumoResponseDTO> response = solicitacaoFacade.listarDoEstudante(emailEstudante);
+		return ResponseEntity.ok(response);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SolicitacaoDetalheResponseDTO> detalhar(@PathVariable Long id, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String emailEstudante = authentication.getName();
-        SolicitacaoDetalheResponseDTO response = solicitacaoFacade.detalhar(emailEstudante, id);
-        return ResponseEntity.ok(response);
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<SolicitacaoDetalheResponseDTO> detalhar(@PathVariable Long id,
+			Authentication authentication) {
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String emailEstudante = authentication.getName();
+		SolicitacaoDetalheResponseDTO response = solicitacaoFacade.detalhar(emailEstudante, id);
+		return ResponseEntity.ok(response);
+	}
 }

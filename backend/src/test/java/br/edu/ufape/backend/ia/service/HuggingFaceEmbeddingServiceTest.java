@@ -3,53 +3,53 @@ package br.edu.ufape.backend.ia.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@ExtendWith(MockitoExtension.class)
 class HuggingFaceEmbeddingServiceTest {
 
-    @Spy
-    private HuggingFaceEmbeddingService service;
+	private HuggingFaceEmbeddingService service;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+	@BeforeEach
+	void setUp() {
+		service = new HuggingFaceEmbeddingService();
+	}
 
-    @Test
-    @DisplayName("Deve calcular similaridade cosseno perfeitamente entre vetores iguais")
-    void deveCalcularSimilaridadeCossenoVetoresIguais() {
-        float[] vetorA = new float[]{1.0f, 0.0f, 0.0f};
-        float[] vetorB = new float[]{1.0f, 0.0f, 0.0f};
+	@Test
+	@DisplayName("Branch: gerarEmbedding sem API key retorna vetor zerado de 384 posicoes")
+	void deveRetornarVetorZeradoSemApiKey() {
+		ReflectionTestUtils.setField(service, "apiKey", "");
+		float[] res = service.gerarEmbedding("texto");
+		assertEquals(384, res.length);
+		assertEquals(0.0f, res[0]);
+	}
 
-        double similaridade = service.calcularSimilaridadeCosseno(vetorA, vetorB);
+	@Test
+	@DisplayName("Branch: calcularSimilaridadeCosseno com vetores nulos ou tamanhos diferentes retorna 0.0")
+	void deveRetornarZeroComVetoresInvalidos() {
+		assertEquals(0.0, service.calcularSimilaridadeCosseno(null, new float[]{1.0f}));
+		assertEquals(0.0, service.calcularSimilaridadeCosseno(new float[]{1.0f}, null));
+		assertEquals(0.0, service.calcularSimilaridadeCosseno(new float[]{1.0f}, new float[]{1.0f, 2.0f}));
+	}
 
-        assertEquals(1.0, similaridade, 0.001);
-    }
+	@Test
+	@DisplayName("Branch: calcularSimilaridadeCosseno com vetores zerados retorna 0.0")
+	void deveRetornarZeroComVetoresZerados() {
+		float[] v1 = new float[]{0.0f, 0.0f};
+		float[] v2 = new float[]{1.0f, 1.0f};
+		assertEquals(0.0, service.calcularSimilaridadeCosseno(v1, v2));
+	}
 
-    @Test
-    @DisplayName("Deve retornar 0 para vetores ortogonais")
-    void deveCalcularSimilaridadeCossenoOrtogonais() {
-        float[] vetorA = new float[]{1.0f, 0.0f, 0.0f};
-        float[] vetorB = new float[]{0.0f, 1.0f, 0.0f};
+	@Test
+	@DisplayName("Branch: calcularSimilaridadeCosseno com vetores ortogonais e paralelos")
+	void deveCalcularSimilaridadeCorretamente() {
+		float[] v1 = new float[]{1.0f, 0.0f};
+		float[] v2 = new float[]{0.0f, 1.0f};
+		assertEquals(0.0, service.calcularSimilaridadeCosseno(v1, v2), 0.001);
 
-        double similaridade = service.calcularSimilaridadeCosseno(vetorA, vetorB);
-
-        assertEquals(0.0, similaridade, 0.001);
-    }
-
-    @Test
-    @DisplayName("Deve retornar vetor neutro de 384 dimensões quando não houver chave de API")
-    void deveRetornarVetorPadraoSemChave() {
-        float[] resultado = service.gerarEmbedding("Texto de teste");
-
-        assertNotNull(resultado, "O resultado não deveria ser nulo.");
-        assertEquals(384, resultado.length);
-    }
+		float[] v3 = new float[]{1.0f, 1.0f};
+		float[] v4 = new float[]{1.0f, 1.0f};
+		assertEquals(1.0, service.calcularSimilaridadeCosseno(v3, v4), 0.001);
+	}
 }

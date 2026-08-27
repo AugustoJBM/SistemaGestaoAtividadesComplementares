@@ -4,163 +4,166 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "parecer_conformidade")
 public class ParecerConformidade {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "atividade_id", nullable = false, unique = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private AtividadeComplementar atividade;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "atividade_id", nullable = false, unique = true)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private AtividadeComplementar atividade;
 
-    @Column(nullable = false, length = 50)
-    private String naturezaSugerida; // ACC ou ACEX
+	@Column(nullable = false, length = 50)
+	private String naturezaSugerida; // ACC ou ACEX
 
-    @Column(nullable = false, length = 50)
-    private String categoriaSugerida; // ENSINO, PESQUISA, EXTENSAO, EVENTOS
+	@Column(nullable = false, length = 50)
+	private String categoriaSugerida; // ENSINO, PESQUISA, EXTENSAO, EVENTOS
 
-    @Column(nullable = false)
-    private Integer cargaHorariaAproveitavel;
+	@Column(nullable = false)
+	private Integer cargaHorariaAproveitavel;
 
-    @Column(nullable = false, length = 100)
-    private String artigoRegulamento;
+	@Column(nullable = false, length = 100)
+	private String artigoRegulamento;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String justificativaTecnica;
+	@Column(columnDefinition = "TEXT", nullable = false)
+	private String justificativaTecnica;
 
-    @Column(nullable = false)
-    private Double scoreConfianca;
+	@Column(nullable = false)
+	private Double scoreConfianca;
 
-    @Column(nullable = false)
-    private Long tempoProcessamentoMs;
+	@Column(nullable = false)
+	private Long tempoProcessamentoMs;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DecisaoIA decisaoIA;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private DecisaoIA decisaoIA;
 
-    @Enumerated(EnumType.STRING)
-    private DecisaoAvaliador decisaoFinalAvaliador;
-    
-    private Boolean avaliadorConcordouComIA;
-    private LocalDateTime dataAnaliseIA = LocalDateTime.now();
+	@Enumerated(EnumType.STRING)
+	private DecisaoAvaliador decisaoFinalAvaliador;
 
-    public enum DecisaoIA {
-        DEFERIDO, INDEFERIDO, AMBIGUO
-    }
+	private Boolean avaliadorConcordouComIA;
+	private LocalDateTime dataAnaliseIA = LocalDateTime.now(ZoneId.of("America/Recife"));
 
-    public enum DecisaoAvaliador {
-        DEFERIDO, INDEFERIDO
-    }
+	public enum DecisaoIA {
+		DEFERIDO, INDEFERIDO, AMBIGUO
+	}
 
-    public ParecerConformidade() {
-    }
+	public enum DecisaoAvaliador {
+		DEFERIDO, INDEFERIDO
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public ParecerConformidade() {
+		// Construtor padrão obrigatório para instanciação via reflexão pela
+		// JPA/Hibernate
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public AtividadeComplementar getAtividade() {
-        return atividade;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setAtividade(AtividadeComplementar atividade) {
-        this.atividade = atividade;
-    }
+	public AtividadeComplementar getAtividade() {
+		return atividade;
+	}
 
-    public String getNaturezaSugerida() {
-        return naturezaSugerida;
-    }
+	public void setAtividade(AtividadeComplementar atividade) {
+		this.atividade = atividade;
+	}
 
-    public void setNaturezaSugerida(String naturezaSugerida) {
-        this.naturezaSugerida = naturezaSugerida;
-    }
+	public String getNaturezaSugerida() {
+		return naturezaSugerida;
+	}
 
-    public String getCategoriaSugerida() {
-        return categoriaSugerida;
-    }
+	public void setNaturezaSugerida(String naturezaSugerida) {
+		this.naturezaSugerida = naturezaSugerida;
+	}
 
-    public void setCategoriaSugerida(String categoriaSugerida) {
-        this.categoriaSugerida = categoriaSugerida;
-    }
+	public String getCategoriaSugerida() {
+		return categoriaSugerida;
+	}
 
-    public Integer getCargaHorariaAproveitavel() {
-        return cargaHorariaAproveitavel;
-    }
+	public void setCategoriaSugerida(String categoriaSugerida) {
+		this.categoriaSugerida = categoriaSugerida;
+	}
 
-    public void setCargaHorariaAproveitavel(Integer cargaHorariaAproveitavel) {
-        this.cargaHorariaAproveitavel = cargaHorariaAproveitavel;
-    }
+	public Integer getCargaHorariaAproveitavel() {
+		return cargaHorariaAproveitavel;
+	}
 
-    public String getArtigoRegulamento() {
-        return artigoRegulamento;
-    }
+	public void setCargaHorariaAproveitavel(Integer cargaHorariaAproveitavel) {
+		this.cargaHorariaAproveitavel = cargaHorariaAproveitavel;
+	}
 
-    public void setArtigoRegulamento(String artigoRegulamento) {
-        this.artigoRegulamento = artigoRegulamento;
-    }
+	public String getArtigoRegulamento() {
+		return artigoRegulamento;
+	}
 
-    public String getJustificativaTecnica() {
-        return justificativaTecnica;
-    }
+	public void setArtigoRegulamento(String artigoRegulamento) {
+		this.artigoRegulamento = artigoRegulamento;
+	}
 
-    public void setJustificativaTecnica(String justificativaTecnica) {
-        this.justificativaTecnica = justificativaTecnica;
-    }
+	public String getJustificativaTecnica() {
+		return justificativaTecnica;
+	}
 
-    public Double getScoreConfianca() {
-        return scoreConfianca;
-    }
+	public void setJustificativaTecnica(String justificativaTecnica) {
+		this.justificativaTecnica = justificativaTecnica;
+	}
 
-    public void setScoreConfianca(Double scoreConfianca) {
-        this.scoreConfianca = scoreConfianca;
-    }
+	public Double getScoreConfianca() {
+		return scoreConfianca;
+	}
 
-    public Long getTempoProcessamentoMs() {
-        return tempoProcessamentoMs;
-    }
+	public void setScoreConfianca(Double scoreConfianca) {
+		this.scoreConfianca = scoreConfianca;
+	}
 
-    public void setTempoProcessamentoMs(Long tempoProcessamentoMs) {
-        this.tempoProcessamentoMs = tempoProcessamentoMs;
-    }
+	public Long getTempoProcessamentoMs() {
+		return tempoProcessamentoMs;
+	}
 
-    public DecisaoIA getDecisaoIA() {
-        return decisaoIA;
-    }
+	public void setTempoProcessamentoMs(Long tempoProcessamentoMs) {
+		this.tempoProcessamentoMs = tempoProcessamentoMs;
+	}
 
-    public void setDecisaoIA(DecisaoIA decisaoIA) {
-        this.decisaoIA = decisaoIA;
-    }
+	public DecisaoIA getDecisaoIA() {
+		return decisaoIA;
+	}
 
-    public DecisaoAvaliador getDecisaoFinalAvaliador() {
-        return decisaoFinalAvaliador;
-    }
+	public void setDecisaoIA(DecisaoIA decisaoIA) {
+		this.decisaoIA = decisaoIA;
+	}
 
-    public void setDecisaoFinalAvaliador(DecisaoAvaliador decisaoFinalAvaliador) {
-        this.decisaoFinalAvaliador = decisaoFinalAvaliador;
-    }
+	public DecisaoAvaliador getDecisaoFinalAvaliador() {
+		return decisaoFinalAvaliador;
+	}
 
-    public Boolean getAvaliadorConcordouComIA() {
-        return avaliadorConcordouComIA;
-    }
+	public void setDecisaoFinalAvaliador(DecisaoAvaliador decisaoFinalAvaliador) {
+		this.decisaoFinalAvaliador = decisaoFinalAvaliador;
+	}
 
-    public void setAvaliadorConcordouComIA(Boolean avaliadorConcordouComIA) {
-        this.avaliadorConcordouComIA = avaliadorConcordouComIA;
-    }
+	public Boolean getAvaliadorConcordouComIA() {
+		return avaliadorConcordouComIA;
+	}
 
-    public LocalDateTime getDataAnaliseIA() {
-        return dataAnaliseIA;
-    }
+	public void setAvaliadorConcordouComIA(Boolean avaliadorConcordouComIA) {
+		this.avaliadorConcordouComIA = avaliadorConcordouComIA;
+	}
 
-    public void setDataAnaliseIA(LocalDateTime dataAnaliseIA) {
-        this.dataAnaliseIA = dataAnaliseIA;
-    }
+	public LocalDateTime getDataAnaliseIA() {
+		return dataAnaliseIA;
+	}
+
+	public void setDataAnaliseIA(LocalDateTime dataAnaliseIA) {
+		this.dataAnaliseIA = dataAnaliseIA;
+	}
 }

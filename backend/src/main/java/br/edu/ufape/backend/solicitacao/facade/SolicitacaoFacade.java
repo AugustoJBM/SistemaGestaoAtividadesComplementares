@@ -19,57 +19,56 @@ import br.edu.ufape.backend.usuario.model.Usuario;
 @Component
 public class SolicitacaoFacade {
 
-    private final SolicitacaoService solicitacaoService;
-    private final UsuarioContrato usuarioContrato;
+	private final SolicitacaoService solicitacaoService;
+	private final UsuarioContrato usuarioContrato;
 
-    public SolicitacaoFacade(SolicitacaoService solicitacaoService, UsuarioContrato usuarioContrato) {
-        this.solicitacaoService = solicitacaoService;
-        this.usuarioContrato = usuarioContrato;
-    }
+	public SolicitacaoFacade(SolicitacaoService solicitacaoService, UsuarioContrato usuarioContrato) {
+		this.solicitacaoService = solicitacaoService;
+		this.usuarioContrato = usuarioContrato;
+	}
 
-    // ---- Submissao pelo estudante ----
+	// ---- Submissao pelo estudante ----
 
-    public SolicitacaoResponseDTO submeter(String emailEstudante) {
-        Usuario usuario = obterEstudante(emailEstudante);
-        SolicitacaoValidacao solicitacao = solicitacaoService.submeter(usuario.getId());
-        return new SolicitacaoResponseDTO(solicitacao);
-    }
+	public SolicitacaoResponseDTO submeter(String emailEstudante) {
+		Usuario usuario = obterEstudante(emailEstudante);
+		SolicitacaoValidacao solicitacao = solicitacaoService.submeter(usuario.getId());
+		return new SolicitacaoResponseDTO(solicitacao);
+	}
 
-    public SolicitacaoResponseDTO submeter(Long estudanteId) {
-        SolicitacaoValidacao solicitacao = solicitacaoService.submeter(estudanteId);
-        return new SolicitacaoResponseDTO(solicitacao);
-    }
+	public SolicitacaoResponseDTO submeter(Long estudanteId) {
+		SolicitacaoValidacao solicitacao = solicitacaoService.submeter(estudanteId);
+		return new SolicitacaoResponseDTO(solicitacao);
+	}
 
-    public List<SolicitacaoResumoResponseDTO> listarDoEstudante(String emailEstudante) {
-        Usuario usuario = obterEstudante(emailEstudante);
-        return solicitacaoService.listarDoEstudante(usuario.getId());
-    }
+	public List<SolicitacaoResumoResponseDTO> listarDoEstudante(String emailEstudante) {
+		Usuario usuario = obterEstudante(emailEstudante);
+		return solicitacaoService.listarDoEstudante(usuario.getId());
+	}
 
-    public SolicitacaoDetalheResponseDTO detalhar(String emailEstudante, Long solicitacaoId) {
-        Usuario usuario = obterEstudante(emailEstudante);
-        SolicitacaoValidacao solicitacao = solicitacaoService.detalhar(usuario.getId(), solicitacaoId);
-        return new SolicitacaoDetalheResponseDTO(solicitacao);
-    }
+	public SolicitacaoDetalheResponseDTO detalhar(String emailEstudante, Long solicitacaoId) {
+		Usuario usuario = obterEstudante(emailEstudante);
+		SolicitacaoValidacao solicitacao = solicitacaoService.detalhar(usuario.getId(), solicitacaoId);
+		return new SolicitacaoDetalheResponseDTO(solicitacao);
+	}
 
-    // ---- Avaliacao pelo avaliador ----
+	// ---- Avaliacao pelo avaliador ----
 
-    public SolicitacaoDetalheResponseDTO avaliar(Long solicitacaoId, String avaliadorEmail,
-                                                  DecisaoAvaliacao decisao, String justificativa) {
-        Long avaliadorId = usuarioContrato.buscarPorEmail(avaliadorEmail)
-                .orElseThrow(() -> new UnauthorizedException("Avaliador nao encontrado ou nao autenticado."))
-                .getId();
+	public SolicitacaoDetalheResponseDTO avaliar(Long solicitacaoId, String avaliadorEmail, DecisaoAvaliacao decisao,
+			String justificativa) {
+		Long avaliadorId = usuarioContrato.buscarPorEmail(avaliadorEmail)
+				.orElseThrow(() -> new UnauthorizedException("Avaliador nao encontrado ou nao autenticado.")).getId();
 
-        SolicitacaoValidacao resultado = solicitacaoService.avaliar(solicitacaoId, avaliadorId, decisao, justificativa);
-        return new SolicitacaoDetalheResponseDTO(resultado);
-    }
+		SolicitacaoValidacao resultado = solicitacaoService.avaliar(solicitacaoId, avaliadorId, decisao, justificativa);
+		return new SolicitacaoDetalheResponseDTO(resultado);
+	}
 
-    private Usuario obterEstudante(String email) {
-        Usuario usuario = usuarioContrato.buscarPorEmail(email)
-                .orElseThrow(() -> new AcessoNegadoAtividadeException("Estudante não encontrado"));
+	private Usuario obterEstudante(String email) {
+		Usuario usuario = usuarioContrato.buscarPorEmail(email)
+				.orElseThrow(() -> new AcessoNegadoAtividadeException("Estudante não encontrado"));
 
-        if (!(usuario instanceof Estudante)) {
-            throw new AcessoNegadoAtividadeException("Apenas estudantes podem acessar solicitações.");
-        }
-        return usuario;
-    }
+		if (!(usuario instanceof Estudante)) {
+			throw new AcessoNegadoAtividadeException("Apenas estudantes podem acessar solicitações.");
+		}
+		return usuario;
+	}
 }
