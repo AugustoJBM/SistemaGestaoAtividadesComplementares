@@ -12,8 +12,9 @@ public record SolicitacaoDetalheResponseDTO(
         LocalDateTime dataSubmissao,
         LocalDateTime dataAvaliacao,
         String justificativa,
-        List<SolicitacaoAtividadeResponseDTO> itens
-) {
+        List<SolicitacaoAtividadeResponseDTO> itens,
+        Integer totalAtividades) {
+
     public SolicitacaoDetalheResponseDTO(SolicitacaoValidacao solicitacao) {
         this(
                 solicitacao.getId(),
@@ -23,7 +24,8 @@ public record SolicitacaoDetalheResponseDTO(
                 solicitacao.getJustificativa(),
                 solicitacao.getItens() != null
                         ? solicitacao.getItens().stream().map(SolicitacaoAtividadeResponseDTO::new).toList()
-                        : List.of()
+                        : List.of(),
+                solicitacao.getItens() != null ? solicitacao.getItens().size() : 0
         );
     }
 }

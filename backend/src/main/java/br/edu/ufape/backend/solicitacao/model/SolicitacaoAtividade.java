@@ -24,6 +24,8 @@ public class SolicitacaoAtividade {
     @Column(name = "carga_horaria", nullable = false)
     private Integer cargaHoraria;
 
+    // Armazenado como String (snapshot): desacoplado do enum Natureza para garantir imutabilidade historica.
+    // Mudancas futuras no enum nao afetam registros ja submetidos.
     @Column(name = "natureza", nullable = false)
     private String natureza;
 

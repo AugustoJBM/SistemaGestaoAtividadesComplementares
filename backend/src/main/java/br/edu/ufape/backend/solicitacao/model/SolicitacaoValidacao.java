@@ -16,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "solicitacoes_validacao")
@@ -25,9 +27,14 @@ public class SolicitacaoValidacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version = 0L;
+
     @Column(name = "estudante_id", nullable = false)
     private Long estudanteId;
 
+    @CreationTimestamp
     @Column(name = "data_submissao", nullable = false)
     private LocalDateTime dataSubmissao;
 
@@ -51,73 +58,45 @@ public class SolicitacaoValidacao {
     public SolicitacaoValidacao() {
     }
 
-    public SolicitacaoValidacao(Long estudanteId, LocalDateTime dataSubmissao, StatusSolicitacao status, List<SolicitacaoAtividade> itens) {
+    /** Construtor completo — usado pela camada de servico ao submeter. */
+    public SolicitacaoValidacao(Long estudanteId, LocalDateTime dataSubmissao,
+                                StatusSolicitacao status, List<SolicitacaoAtividade> itens) {
         this.estudanteId = estudanteId;
         this.dataSubmissao = dataSubmissao;
         this.status = status != null ? status : StatusSolicitacao.SUBMETIDA;
         this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getEstudanteId() {
-        return estudanteId;
-    }
-
-    public void setEstudanteId(Long estudanteId) {
+    /** Construtor simplificado — usado em testes e cenarios sem itens. */
+    public SolicitacaoValidacao(Long estudanteId) {
         this.estudanteId = estudanteId;
     }
 
-    public LocalDateTime getDataSubmissao() {
-        return dataSubmissao;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setDataSubmissao(LocalDateTime dataSubmissao) {
-        this.dataSubmissao = dataSubmissao;
-    }
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 
-    public StatusSolicitacao getStatus() {
-        return status;
-    }
+    public Long getEstudanteId() { return estudanteId; }
+    public void setEstudanteId(Long estudanteId) { this.estudanteId = estudanteId; }
 
-    public void setStatus(StatusSolicitacao status) {
-        this.status = status;
-    }
+    public LocalDateTime getDataSubmissao() { return dataSubmissao; }
+    public void setDataSubmissao(LocalDateTime dataSubmissao) { this.dataSubmissao = dataSubmissao; }
 
-    public String getJustificativa() {
-        return justificativa;
-    }
+    public StatusSolicitacao getStatus() { return status; }
+    public void setStatus(StatusSolicitacao status) { this.status = status; }
 
-    public void setJustificativa(String justificativa) {
-        this.justificativa = justificativa;
-    }
+    public String getJustificativa() { return justificativa; }
+    public void setJustificativa(String justificativa) { this.justificativa = justificativa; }
 
-    public Long getAvaliadorId() {
-        return avaliadorId;
-    }
+    public Long getAvaliadorId() { return avaliadorId; }
+    public void setAvaliadorId(Long avaliadorId) { this.avaliadorId = avaliadorId; }
 
-    public void setAvaliadorId(Long avaliadorId) {
-        this.avaliadorId = avaliadorId;
-    }
+    public LocalDateTime getDataAvaliacao() { return dataAvaliacao; }
+    public void setDataAvaliacao(LocalDateTime dataAvaliacao) { this.dataAvaliacao = dataAvaliacao; }
 
-    public LocalDateTime getDataAvaliacao() {
-        return dataAvaliacao;
-    }
-
-    public void setDataAvaliacao(LocalDateTime dataAvaliacao) {
-        this.dataAvaliacao = dataAvaliacao;
-    }
-
-    public List<SolicitacaoAtividade> getItens() {
-        return itens;
-    }
-
+    public List<SolicitacaoAtividade> getItens() { return itens; }
     public void setItens(List<SolicitacaoAtividade> itens) {
         this.itens = itens != null ? new ArrayList<>(itens) : new ArrayList<>();
     }

@@ -23,6 +23,7 @@ import br.edu.ufape.backend.certificados.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
+import br.edu.ufape.backend.solicitacao.exception.TransicaoEstadoInvalidaException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -98,6 +99,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SolicitacaoEmAbertoException.class)
     public ResponseEntity<ErroResponse> tratarSolicitacaoEmAberto(SolicitacaoEmAbertoException ex) {
+        ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(TransicaoEstadoInvalidaException.class)
+    public ResponseEntity<ErroResponse> tratarTransicaoEstadoInvalida(TransicaoEstadoInvalidaException ex) {
         ErroResponse erro = new ErroResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }

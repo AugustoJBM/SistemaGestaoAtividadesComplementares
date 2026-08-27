@@ -13,6 +13,7 @@ import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
+import br.edu.ufape.backend.solicitacao.model.DecisaoAvaliacao;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
 import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
@@ -31,22 +32,23 @@ public class SolicitacaoService {
         this.atividadeContrato = atividadeContrato;
     }
 
+    // ---- Submissao pelo estudante ----
+
     @Transactional
     public SolicitacaoValidacao submeter(Long estudanteId) {
-        // Regra 1: Verificar se ja existe solicitacao em aberto para este estudante
-        if (solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId, StatusSolicitacao.STATUS_EM_ABERTO)) {
-            throw new SolicitacaoEmAbertoException("Já existe uma solicitação de validação em aberto para este estudante.");
+        if (solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(
+                estudanteId, StatusSolicitacao.STATUS_EM_ABERTO)) {
+            throw new SolicitacaoEmAbertoException(
+                    "Ja existe uma solicitacao de validacao em aberto para este estudante.");
         }
 
-        // Regra 2: Buscar atividades via AtividadeContrato (interface publica do modulo de atividades)
         List<AtividadeResponseDTO> atividades = atividadeContrato.buscarPorEstudante(estudanteId);
 
-        // Regra 3: Se nao possuir nenhuma atividade, lancar excecao de negocio (422)
         if (atividades == null || atividades.isEmpty()) {
-            throw new EstudanteSemAtividadesException("Não é possível submeter solicitação sem atividades complementares cadastradas.");
+            throw new EstudanteSemAtividadesException(
+                    "Nao e possivel submeter solicitacao sem atividades complementares cadastradas.");
         }
 
-        // Regra 4: Criar SolicitacaoValidacao e converter atividades para snapshots imutaveis (SolicitacaoAtividade)
         List<SolicitacaoAtividade> itensSnapshot = atividades.stream()
                 .map(a -> new SolicitacaoAtividade(
                         a.id(),
@@ -65,6 +67,33 @@ public class SolicitacaoService {
 
         return solicitacaoValidacaoRepository.save(solicitacao);
     }
+
+    // ---- Avaliacao pelo avaliador ----
+
+    @Transactional
+    public SolicitacaoValidacao avaliar(Long solicitacaoId, Long avaliadorId,
+                                        DecisaoAvaliacao decisao, String justificativa) {
+        SolicitacaoValidacao solicitacao = solicitacaoValidacaoRepository.findById(solicitacaoId)
+                .orElseThrow(() -> new SolicitacaoNaoEncontradaException(solicitacaoId));
+
+        StatusSolicitacao novoStatus = decisao.toStatus();
+        MaquinaEstadosSolicitacao.validar(solicitacao.getStatus(), novoStatus);
+
+        if ((novoStatus == StatusSolicitacao.REJEITADA || novoStatus == StatusSolicitacao.COM_PENDENCIAS)
+                && (justificativa == null || justificativa.isBlank())) {
+            throw new IllegalArgumentException(
+                    "Justificativa e obrigatoria para decisao " + novoStatus);
+        }
+
+        solicitacao.setStatus(novoStatus);
+        solicitacao.setJustificativa(justificativa);
+        solicitacao.setAvaliadorId(avaliadorId);
+        solicitacao.setDataAvaliacao(LocalDateTime.now());
+
+        return solicitacaoValidacaoRepository.save(solicitacao);
+    }
+
+    // ---- Metodos do contrato publico ----
 
     @Transactional(readOnly = true)
     public List<SolicitacaoResumoResponseDTO> listarDoEstudante(Long estudanteId) {
