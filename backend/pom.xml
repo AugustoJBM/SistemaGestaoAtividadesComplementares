@@ -250,8 +250,7 @@
         <version>5.41.0</version>
         <configuration>
           <activeRecipes>
-            <!-- Exemplo de receita padrão para boas práticas em Java -->
-            <recipe>org.openrewrite.java.BestPractices</recipe>
+            <recipe>org.openrewrite.maven.BestPractices</recipe>
           </activeRecipes>
         </configuration>
       </plugin>
