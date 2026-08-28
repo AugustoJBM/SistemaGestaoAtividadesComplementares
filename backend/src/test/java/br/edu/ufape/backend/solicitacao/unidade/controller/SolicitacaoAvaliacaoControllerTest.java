@@ -2,6 +2,7 @@ package br.edu.ufape.backend.solicitacao.unidade.controller;
 
 import br.edu.ufape.backend.comum.exception.GlobalExceptionHandler;
 import br.edu.ufape.backend.solicitacao.controller.SolicitacaoAvaliacaoController;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
@@ -199,6 +200,36 @@ class SolicitacaoAvaliacaoControllerTest {
 				.content(toJson(Map.of("decisao", "REJEITADA", "justificativa", "Motivo")))
 				.principal(new UsernamePasswordAuthenticationToken("avaliador@ufape.edu.br", "pwd")))
 				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").exists());
+	}
+	// ---- 200 GET /{id}/avaliacao ----
+
+	@Test
+	@DisplayName("GET /{id}/avaliacao retorna 200 com detalhe completo para o avaliador")
+	void deveRetornar200DetalheParaAvaliacao() throws Exception {
+		SolicitacaoAvaliadorDetalheResponseDTO detalhe = new SolicitacaoAvaliadorDetalheResponseDTO(
+				10L, "Lucas Silva", "lucas@ufape.edu.br", LocalDateTime.now().minusDays(1),
+				StatusSolicitacao.SUBMETIDA, null, null, 20, List.of());
+
+		when(facade.detalharParaAvaliacao(10L)).thenReturn(detalhe);
+
+		mockMvc.perform(get("/api/v1/solicitacoes/10/avaliacao"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(10L))
+				.andExpect(jsonPath("$.estudanteNome").value("Lucas Silva"))
+				.andExpect(jsonPath("$.estudanteEmail").value("lucas@ufape.edu.br"))
+				.andExpect(jsonPath("$.status").value("SUBMETIDA"))
+				.andExpect(jsonPath("$.cargaHorariaTotal").value(20));
+	}
+
+	@Test
+	@DisplayName("GET /{id}/avaliacao com id inexistente retorna 404 em ErroResponse")
+	void deveRetornar404DetalheParaAvaliacaoInexistente() throws Exception {
+		when(facade.detalharParaAvaliacao(999L))
+				.thenThrow(new SolicitacaoNaoEncontradaException(999L));
+
+		mockMvc.perform(get("/api/v1/solicitacoes/999/avaliacao"))
+				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").exists());
 	}
 }

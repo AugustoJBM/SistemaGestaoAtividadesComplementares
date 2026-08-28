@@ -375,4 +375,28 @@ class SolicitacaoServiceTest {
 		assertEquals(2, resultado.size());
 		verify(solicitacaoValidacaoRepository).findByStatusOrderByDataSubmissaoDesc(null);
 	}
+	@Test
+	@DisplayName("Avaliador: deve detalhar solicitacao para avaliacao sem verificacao de dono")
+	void deveDetalharParaAvaliacao() {
+		SolicitacaoValidacao s = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
+		s.setId(50L);
+		when(solicitacaoValidacaoRepository.findByIdComItens(50L)).thenReturn(Optional.of(s));
+
+		SolicitacaoValidacao resultado = solicitacaoService.detalharParaAvaliacao(50L);
+
+		assertNotNull(resultado);
+		assertEquals(50L, resultado.getId());
+		verify(solicitacaoValidacaoRepository).findByIdComItens(50L);
+	}
+
+	@Test
+	@DisplayName("Avaliador: detalharParaAvaliacao deve lancar SolicitacaoNaoEncontradaException quando id nao existir")
+	void detalharParaAvaliacaoLancaExcecaoQuandoNaoExiste() {
+		when(solicitacaoValidacaoRepository.findByIdComItens(999L)).thenReturn(Optional.empty());
+
+		assertThrows(SolicitacaoNaoEncontradaException.class,
+				() -> solicitacaoService.detalharParaAvaliacao(999L));
+
+		verify(solicitacaoValidacaoRepository).findByIdComItens(999L);
+	}
 }

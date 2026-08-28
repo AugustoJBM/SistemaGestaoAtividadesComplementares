@@ -112,4 +112,10 @@ public class SolicitacaoService {
 	public List<SolicitacaoValidacao> listarParaAvaliacao(StatusSolicitacao status) {
 		return solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(status);
 	}
+
+	@Transactional(readOnly = true)
+	public SolicitacaoValidacao detalharParaAvaliacao(Long solicitacaoId) {
+		return solicitacaoValidacaoRepository.findByIdComItens(solicitacaoId)
+				.orElseThrow(() -> new SolicitacaoNaoEncontradaException(solicitacaoId));
+	}
 }

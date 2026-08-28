@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResponseDTO;
@@ -72,6 +73,14 @@ public class SolicitacaoFacade {
 					.orElse("Estudante Não Encontrado");
 			return new SolicitacaoAvaliadorResumoResponseDTO(solicitacao, estudanteNome);
 		}).toList();
+	}
+
+	public SolicitacaoAvaliadorDetalheResponseDTO detalharParaAvaliacao(Long solicitacaoId) {
+		SolicitacaoValidacao solicitacao = solicitacaoService.detalharParaAvaliacao(solicitacaoId);
+		Usuario usuario = usuarioContrato.buscarPorId(solicitacao.getEstudanteId()).orElse(null);
+		String estudanteNome = usuario != null ? usuario.getNome() : "Estudante Não Encontrado";
+		String estudanteEmail = usuario != null ? usuario.getEmail() : null;
+		return new SolicitacaoAvaliadorDetalheResponseDTO(solicitacao, estudanteNome, estudanteEmail);
 	}
 
 	private Usuario obterEstudante(String email) {

@@ -37,4 +37,7 @@ public interface SolicitacaoValidacaoRepository extends JpaRepository<Solicitaca
 			+ "WHERE (:status IS NULL OR s.status = :status) "
 			+ "ORDER BY s.dataSubmissao DESC, s.id DESC")
 	List<SolicitacaoValidacao> findByStatusOrderByDataSubmissaoDesc(@Param("status") StatusSolicitacao status);
+
+	@Query("SELECT s FROM SolicitacaoValidacao s LEFT JOIN FETCH s.itens WHERE s.id = :id")
+	Optional<SolicitacaoValidacao> findByIdComItens(@Param("id") Long id);
 }
