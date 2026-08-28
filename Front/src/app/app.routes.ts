@@ -13,6 +13,8 @@ import { EdicaoAtividadeComponent } from './atividades/edicao/edicao-atividade.c
 import { LandingComponent } from './landing/landing.component';
 import { GestaoRegulamentosComponent } from './regulamentos/gestao-regulamentos.component';
 import { roleGuard } from './autenticacao/role.guard';
+import { ConsultaSolicitacoesComponent } from './solicitacao/avaliacao/consulta/consulta-solicitacoes.component';
+import { DetalheAvaliacaoComponent } from './solicitacao/avaliacao/detalhe/detalhe-avaliacao.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -35,5 +37,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   { path: 'logout', component: LogoutComponent, canActivate: [authGuard] },
+  {
+    path: 'avaliacao/solicitacoes',
+    component: ConsultaSolicitacoesComponent,
+    canActivate: [authGuard, roleGuard(['AVALIADOR'])],
+  },
+  {
+    path: 'avaliacao/solicitacoes/:id',
+    component: DetalheAvaliacaoComponent,
+    canActivate: [authGuard, roleGuard(['AVALIADOR'])],
+  },
   { path: '**', redirectTo: 'login' },
 ];

@@ -85,6 +85,20 @@ describe('routes', () => {
     expect(rota?.canActivate).toEqual([authGuard]);
   });
 
+  it('deve proteger a rota avaliacao/solicitacoes com authGuard e roleGuard AVALIADOR', () => {
+    const rota = routes.find((r: Route) => r.path === 'avaliacao/solicitacoes');
+    expect(rota).toBeTruthy();
+    expect(rota?.canActivate?.length).toBe(2);
+    expect(rota?.canActivate).toContain(authGuard);
+  });
+
+  it('deve proteger a rota avaliacao/solicitacoes/:id com authGuard e roleGuard AVALIADOR', () => {
+    const rota = routes.find((r: Route) => r.path === 'avaliacao/solicitacoes/:id');
+    expect(rota).toBeTruthy();
+    expect(rota?.canActivate?.length).toBe(2);
+    expect(rota?.canActivate).toContain(authGuard);
+  });
+
   it('deve manter a rota curinga como a última entrada redirecionando para login', () => {
     const ultimaRota = routes[routes.length - 1];
     expect(ultimaRota.path).toBe('**');

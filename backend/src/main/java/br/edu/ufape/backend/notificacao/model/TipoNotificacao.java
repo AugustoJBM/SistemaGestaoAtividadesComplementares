@@ -1,0 +1,5 @@
+package br.edu.ufape.backend.notificacao.model;
+
+public enum TipoNotificacao {
+	SOLICITACAO_SUBMETIDA, SOLICITACAO_EM_ANALISE, SOLICITACAO_COM_PENDENCIAS, SOLICITACAO_APROVADA, SOLICITACAO_REJEITADA
+}
