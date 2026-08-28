@@ -26,6 +26,7 @@ public class NotificacaoService {
 		return notificacaoRepository.save(notificacao);
 	}
 
+	@Transactional(readOnly = true)
 	public List<Notificacao> listar(Long destinatarioId, Boolean apenasNaoLidas) {
 		if (apenasNaoLidas == null) {
 			return notificacaoRepository.findByDestinatarioIdOrderByDataCriacaoDesc(destinatarioId);
@@ -33,6 +34,7 @@ public class NotificacaoService {
 		return notificacaoRepository.findByDestinatarioIdAndLidaOrderByDataCriacaoDesc(destinatarioId, !apenasNaoLidas);
 	}
 
+	@Transactional(readOnly = true)
 	public long contarNaoLidas(Long destinatarioId) {
 		return notificacaoRepository.countByDestinatarioIdAndLidaFalse(destinatarioId);
 	}
@@ -41,14 +43,20 @@ public class NotificacaoService {
 	public Notificacao marcarComoLida(Long notificacaoId, Long destinatarioId) {
 		Notificacao notificacao = notificacaoRepository.findByIdAndDestinatarioId(notificacaoId, destinatarioId)
 				.orElseThrow(() -> new NotificacaoNaoEncontradaException(notificacaoId));
-		notificacao.setLida(true);
-		return notificacaoRepository.save(notificacao);
+		if (!notificacao.isLida()) {
+			notificacao.setLida(true);
+			return notificacaoRepository.save(notificacao);
+		}
+		return notificacao;
 	}
 
 	@Transactional
 	public int marcarTodasComoLidas(Long destinatarioId) {
 		List<Notificacao> naoLidas = notificacaoRepository
 				.findByDestinatarioIdAndLidaOrderByDataCriacaoDesc(destinatarioId, false);
+		if (naoLidas.isEmpty()) {
+			return 0;
+		}
 		naoLidas.forEach(notificacao -> notificacao.setLida(true));
 		notificacaoRepository.saveAll(naoLidas);
 		return naoLidas.size();
