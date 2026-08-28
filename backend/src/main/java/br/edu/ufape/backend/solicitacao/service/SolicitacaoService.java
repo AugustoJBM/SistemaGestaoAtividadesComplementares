@@ -107,4 +107,9 @@ public class SolicitacaoService {
 		return solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId,
 				StatusSolicitacao.STATUS_EM_ABERTO);
 	}
+
+	@Transactional(readOnly = true)
+	public List<SolicitacaoValidacao> listarParaAvaliacao(StatusSolicitacao status) {
+		return solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(status);
+	}
 }

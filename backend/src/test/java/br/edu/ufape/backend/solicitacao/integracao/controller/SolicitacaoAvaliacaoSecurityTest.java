@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,10 +95,38 @@ class SolicitacaoAvaliacaoSecurityTest {
 	}
 
 	@Test
-	@DisplayName("Requisicao sem autenticacao deve retornar 401 Unauthorized")
+	@DisplayName("Requisicao sem autenticacao deve retornar 401 Unauthorized ao avaliar")
 	void requisicaoSemAutenticacaoRetornaUnauthorized() throws Exception {
 		mockMvc.perform(patch("/api/v1/solicitacoes/1/avaliacao").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(Map.of("decisao", "APROVADA"))))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("AVALIADOR autenticado deve ter permissao (200) para listar solicitacoes em GET /avaliacao")
+	void avaliadorPodeListarSolicitacoesParaAvaliacao() throws Exception {
+		criarSolicitacaoSubmetida();
+		String tokenAvaliador = criarAvaliadorERetornarToken("avaliador.list.solic@ufape.edu.br");
+
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenAvaliador))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("ESTUDANTE autenticado deve receber 403 Forbidden ao acessar GET /avaliacao")
+	void estudanteNaoPodeListarSolicitacoesParaAvaliacao() throws Exception {
+		String tokenEstudante = criarEstudanteERetornarToken("estudante.list.solic@ufape.edu.br");
+
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Requisicao sem autenticacao deve retornar 401 Unauthorized em GET /avaliacao")
+	void requisicaoSemAutenticacaoListarRetornaUnauthorized() throws Exception {
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao"))
 				.andExpect(status().isUnauthorized());
 	}
 }

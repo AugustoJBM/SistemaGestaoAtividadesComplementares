@@ -54,6 +54,21 @@ class UsuarioContratoImplTest {
 	}
 
 	@Test
+	@DisplayName("Deve delegar busca por ID para o UsuarioService")
+	void deveDelegarBuscarPorId() {
+		Long id = 1L;
+		Estudante estudante = new Estudante("Maria", "maria@ufape.edu.br", "senhaHash");
+		estudante.setId(id);
+		when(usuarioService.buscarPorId(id)).thenReturn(Optional.of(estudante));
+
+		Optional<Usuario> resultado = usuarioContrato.buscarPorId(id);
+
+		assertTrue(resultado.isPresent());
+		assertEquals(id, resultado.get().getId());
+		verify(usuarioService, times(1)).buscarPorId(id);
+	}
+
+	@Test
     @DisplayName("Deve delegar verificacao de existencia por email para o UsuarioService")
     void deveDelegarExistePorEmail() {
         when(usuarioService.existePorEmail("maria@ufape.edu.br")).thenReturn(true);

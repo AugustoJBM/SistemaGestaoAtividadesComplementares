@@ -347,4 +347,32 @@ class SolicitacaoServiceTest {
 
                 assertFalse(solicitacaoService.existeSolicitacaoEmAbertoDoEstudante(100L));
         }
+	@Test
+	@DisplayName("Avaliador: deve listar solicitacoes para avaliacao filtradas por status")
+	void deveListarSolicitacoesParaAvaliacaoFiltradasPorStatus() {
+		SolicitacaoValidacao s1 = criarSolicitacao(StatusSolicitacao.APROVADA);
+		when(solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.APROVADA))
+				.thenReturn(List.of(s1));
+
+		List<SolicitacaoValidacao> resultado = solicitacaoService.listarParaAvaliacao(StatusSolicitacao.APROVADA);
+
+		assertNotNull(resultado);
+		assertEquals(1, resultado.size());
+		verify(solicitacaoValidacaoRepository).findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.APROVADA);
+	}
+
+	@Test
+	@DisplayName("Avaliador: deve listar todas as solicitacoes para avaliacao quando status for nulo")
+	void deveListarTodasSolicitacoesParaAvaliacaoQuandoStatusNulo() {
+		SolicitacaoValidacao s1 = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
+		SolicitacaoValidacao s2 = criarSolicitacao(StatusSolicitacao.APROVADA);
+		when(solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(null))
+				.thenReturn(List.of(s1, s2));
+
+		List<SolicitacaoValidacao> resultado = solicitacaoService.listarParaAvaliacao(null);
+
+		assertNotNull(resultado);
+		assertEquals(2, resultado.size());
+		verify(solicitacaoValidacaoRepository).findByStatusOrderByDataSubmissaoDesc(null);
+	}
 }

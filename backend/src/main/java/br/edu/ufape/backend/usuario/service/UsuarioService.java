@@ -21,6 +21,10 @@ public class UsuarioService {
 		return usuarioRepository.findByEmailIgnoreCase(email);
 	}
 
+	public Optional<Usuario> buscarPorId(Long id) {
+		return usuarioRepository.findById(id);
+	}
+
 	public boolean existePorEmail(String email) {
 		return usuarioRepository.existsByEmailIgnoreCase(email);
 	}
