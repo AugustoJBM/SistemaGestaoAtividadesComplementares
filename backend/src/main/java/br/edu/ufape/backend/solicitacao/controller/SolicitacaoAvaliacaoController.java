@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.ufape.backend.solicitacao.dto.AvaliacaoSolicitacaoRequestDTO;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.facade.SolicitacaoFacade;
@@ -45,6 +46,12 @@ public class SolicitacaoAvaliacaoController {
 	public ResponseEntity<List<SolicitacaoAvaliadorResumoResponseDTO>> listarParaAvaliacao(
 			@RequestParam(required = false) StatusSolicitacao status) {
 		List<SolicitacaoAvaliadorResumoResponseDTO> response = facade.listarParaAvaliacao(status);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{id}/avaliacao")
+	public ResponseEntity<SolicitacaoAvaliadorDetalheResponseDTO> detalharParaAvaliacao(@PathVariable Long id) {
+		SolicitacaoAvaliadorDetalheResponseDTO response = facade.detalharParaAvaliacao(id);
 		return ResponseEntity.ok(response);
 	}
 }

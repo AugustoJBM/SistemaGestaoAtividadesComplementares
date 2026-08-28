@@ -2,6 +2,7 @@ package br.edu.ufape.backend.solicitacao.unidade.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.facade.SolicitacaoFacade;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoAtividade;
@@ -71,7 +73,7 @@ class SolicitacaoFacadeTest {
 	}
 
 	@Test
-	@DisplayName("Deve usar fallback quando estudante for removido e nao quebrar requisicao")
+	@DisplayName("Deve usar fallback quando estudante for removido e nao quebrar requisicao na listagem")
 	void deveUsarFallbackQuandoEstudanteNaoEncontrado() {
 		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.APROVADA, List.of());
 		s1.setId(101L);
@@ -88,5 +90,49 @@ class SolicitacaoFacadeTest {
 		assertEquals("Estudante Não Encontrado", dto.estudanteNome());
 		assertEquals(0L, dto.totalAtividades());
 		assertEquals(0, dto.cargaHorariaTotal());
+	}
+
+	@Test
+	@DisplayName("Deve detalhar para avaliacao resolvendo nome e email do estudante com itens do snapshot")
+	void deveDetalharParaAvaliacaoResolvendoNomeEEmail() {
+		SolicitacaoAtividade item = new SolicitacaoAtividade(1L, "Curso A", 20, "ACC");
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(10L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA, List.of(item));
+		s1.setId(200L);
+
+		Estudante estudante = new Estudante("Lucas Silva", "lucas@ufape.edu.br", "hash");
+		estudante.setId(10L);
+
+		when(solicitacaoService.detalharParaAvaliacao(200L)).thenReturn(s1);
+		when(usuarioContrato.buscarPorId(10L)).thenReturn(Optional.of(estudante));
+
+		SolicitacaoAvaliadorDetalheResponseDTO resultado = facade.detalharParaAvaliacao(200L);
+
+		assertNotNull(resultado);
+		assertEquals(200L, resultado.id());
+		assertEquals("Lucas Silva", resultado.estudanteNome());
+		assertEquals("lucas@ufape.edu.br", resultado.estudanteEmail());
+		assertEquals(20, resultado.cargaHorariaTotal());
+		assertEquals(1, resultado.itens().size());
+		assertEquals("Curso A", resultado.itens().get(0).titulo());
+		verify(solicitacaoService).detalharParaAvaliacao(200L);
+		verify(usuarioContrato).buscarPorId(10L);
+	}
+
+	@Test
+	@DisplayName("Deve detalhar para avaliacao com fallback seguro quando estudante nao for encontrado")
+	void deveDetalharParaAvaliacaoComFallbackQuandoEstudanteNaoEncontrado() {
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA, List.of());
+		s1.setId(201L);
+
+		when(solicitacaoService.detalharParaAvaliacao(201L)).thenReturn(s1);
+		when(usuarioContrato.buscarPorId(999L)).thenReturn(Optional.empty());
+
+		SolicitacaoAvaliadorDetalheResponseDTO resultado = facade.detalharParaAvaliacao(201L);
+
+		assertNotNull(resultado);
+		assertEquals(201L, resultado.id());
+		assertEquals("Estudante Não Encontrado", resultado.estudanteNome());
+		assertNull(resultado.estudanteEmail());
+		assertEquals(0, resultado.cargaHorariaTotal());
 	}
 }

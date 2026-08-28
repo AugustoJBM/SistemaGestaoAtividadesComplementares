@@ -1,11 +1,13 @@
 package br.edu.ufape.backend.solicitacao.integracao.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,5 +78,26 @@ class SolicitacaoValidacaoRepositoryTest {
 
 		assertNotNull(resultado);
 		assertTrue(resultado.isEmpty());
+	}
+
+	@Test
+	@DisplayName("Deve buscar solicitacao por id com itens via findByIdComItens")
+	void deveBuscarSolicitacaoPorIdComItens() {
+		SolicitacaoAtividade item = new SolicitacaoAtividade(1L, "Curso A", 20, "ACC");
+		SolicitacaoValidacao s = criarSolicitacao(10L, StatusSolicitacao.SUBMETIDA, List.of(item));
+
+		Optional<SolicitacaoValidacao> opt = repository.findByIdComItens(s.getId());
+
+		assertTrue(opt.isPresent());
+		assertEquals(s.getId(), opt.get().getId());
+		assertEquals(1, opt.get().getItens().size());
+		assertEquals("Curso A", opt.get().getItens().get(0).getTitulo());
+	}
+
+	@Test
+	@DisplayName("findByIdComItens deve retornar vazio quando id nao existir")
+	void findByIdComItensRetornaVazioParaIdInexistente() {
+		Optional<SolicitacaoValidacao> opt = repository.findByIdComItens(9999L);
+		assertFalse(opt.isPresent());
 	}
 }
