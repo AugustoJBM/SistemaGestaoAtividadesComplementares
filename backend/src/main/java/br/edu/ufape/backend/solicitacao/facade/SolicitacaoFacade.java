@@ -6,11 +6,13 @@ import org.springframework.stereotype.Component;
 
 import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResponseDTO;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.model.DecisaoAvaliacao;
 import br.edu.ufape.backend.solicitacao.model.SolicitacaoValidacao;
+import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
 import br.edu.ufape.backend.solicitacao.service.SolicitacaoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
@@ -60,6 +62,16 @@ public class SolicitacaoFacade {
 
 		SolicitacaoValidacao resultado = solicitacaoService.avaliar(solicitacaoId, avaliadorId, decisao, justificativa);
 		return new SolicitacaoDetalheResponseDTO(resultado);
+	}
+
+	public List<SolicitacaoAvaliadorResumoResponseDTO> listarParaAvaliacao(StatusSolicitacao status) {
+		List<SolicitacaoValidacao> solicitacoes = solicitacaoService.listarParaAvaliacao(status);
+		return solicitacoes.stream().map(solicitacao -> {
+			String estudanteNome = usuarioContrato.buscarPorId(solicitacao.getEstudanteId())
+					.map(Usuario::getNome)
+					.orElse("Estudante Não Encontrado");
+			return new SolicitacaoAvaliadorResumoResponseDTO(solicitacao, estudanteNome);
+		}).toList();
 	}
 
 	private Usuario obterEstudante(String email) {

@@ -21,6 +21,11 @@ public class UsuarioContratoImpl implements UsuarioContrato {
 	}
 
 	@Override
+	public Optional<Usuario> buscarPorId(Long id) {
+		return usuarioService.buscarPorId(id);
+	}
+
+	@Override
 	public boolean existePorEmail(String email) {
 		return usuarioService.existePorEmail(email);
 	}

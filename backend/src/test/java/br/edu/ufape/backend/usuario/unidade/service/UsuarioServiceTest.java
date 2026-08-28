@@ -62,6 +62,22 @@ class UsuarioServiceTest {
 	}
 
 	@Test
+	@DisplayName("Deve buscar usuário por ID")
+	void deveBuscarUsuarioPorId() {
+		Long id = 1L;
+		Estudante estudante = new Estudante("Aluno Teste", "aluno@ufape.edu.br", "hash123");
+		estudante.setId(id);
+
+		when(usuarioRepository.findById(id)).thenReturn(Optional.of(estudante));
+
+		Optional<Usuario> resultado = usuarioService.buscarPorId(id);
+
+		assertTrue(resultado.isPresent());
+		assertEquals(id, resultado.get().getId());
+		verify(usuarioRepository, times(1)).findById(id);
+	}
+
+	@Test
 	@DisplayName("Deve verificar se e-mail existe ignorando maiúsculas/minúsculas")
 	void deveVerificarSeEmailExiste() {
 		String email = "aluno@ufape.edu.br";

@@ -1,13 +1,24 @@
 package br.edu.ufape.backend.solicitacao.controller;
 
-import br.edu.ufape.backend.solicitacao.dto.AvaliacaoSolicitacaoRequestDTO;
-import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
-import br.edu.ufape.backend.solicitacao.facade.SolicitacaoFacade;
-import jakarta.validation.Valid;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.edu.ufape.backend.solicitacao.dto.AvaliacaoSolicitacaoRequestDTO;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoAvaliadorResumoResponseDTO;
+import br.edu.ufape.backend.solicitacao.dto.SolicitacaoDetalheResponseDTO;
+import br.edu.ufape.backend.solicitacao.facade.SolicitacaoFacade;
+import br.edu.ufape.backend.solicitacao.model.StatusSolicitacao;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/solicitacoes")
@@ -27,6 +38,13 @@ public class SolicitacaoAvaliacaoController {
 		}
 		SolicitacaoDetalheResponseDTO response = facade.avaliar(id, authentication.getName(), request.decisao(),
 				request.justificativa());
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/avaliacao")
+	public ResponseEntity<List<SolicitacaoAvaliadorResumoResponseDTO>> listarParaAvaliacao(
+			@RequestParam(required = false) StatusSolicitacao status) {
+		List<SolicitacaoAvaliadorResumoResponseDTO> response = facade.listarParaAvaliacao(status);
 		return ResponseEntity.ok(response);
 	}
 }

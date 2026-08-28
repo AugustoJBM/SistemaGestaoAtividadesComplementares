@@ -32,4 +32,9 @@ public interface SolicitacaoValidacaoRepository extends JpaRepository<Solicitaca
 
 	@Query("SELECT s FROM SolicitacaoValidacao s LEFT JOIN FETCH s.itens WHERE s.id = :id AND s.estudanteId = :estudanteId")
 	Optional<SolicitacaoValidacao> findByIdAndEstudanteId(@Param("id") Long id, @Param("estudanteId") Long estudanteId);
+
+	@Query("SELECT DISTINCT s FROM SolicitacaoValidacao s LEFT JOIN FETCH s.itens "
+			+ "WHERE (:status IS NULL OR s.status = :status) "
+			+ "ORDER BY s.dataSubmissao DESC, s.id DESC")
+	List<SolicitacaoValidacao> findByStatusOrderByDataSubmissaoDesc(@Param("status") StatusSolicitacao status);
 }
