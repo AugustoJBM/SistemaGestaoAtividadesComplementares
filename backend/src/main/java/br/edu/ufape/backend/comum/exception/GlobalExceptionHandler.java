@@ -20,6 +20,7 @@ import br.edu.ufape.backend.autenticacao.exception.EmailJaCadastradoException;
 import br.edu.ufape.backend.autenticacao.exception.PerfilNaoPermitidoException;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
 import br.edu.ufape.backend.certificado.exception.CertificadoInvalidoException;
+import br.edu.ufape.backend.notificacao.exception.NotificacaoNaoEncontradaException;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
@@ -109,6 +110,12 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(SolicitacaoNaoEncontradaException.class)
 	public ResponseEntity<ErroResponse> tratarSolicitacaoNaoEncontrada(SolicitacaoNaoEncontradaException ex) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new ErroResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
+	}
+
+	@ExceptionHandler(NotificacaoNaoEncontradaException.class)
+	public ResponseEntity<ErroResponse> tratarNotificacaoNaoEncontrada(NotificacaoNaoEncontradaException ex) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(new ErroResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
 	}
