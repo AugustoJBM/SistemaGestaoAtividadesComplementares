@@ -1,51 +1,104 @@
 import { Routes } from '@angular/router';
-import { RegistroComponent } from './autenticacao/registro/registro.component';
-import { LogoutComponent } from './autenticacao/logout/logout.component';
-import { LoginComponent } from './autenticacao/login/login.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { ProgressoComponent } from './atividades/progresso/progresso.component';
 import { authGuard } from './autenticacao/auth.guard';
-import { CadastroAtividadeComponent } from './atividades/cadastro/cadastro-atividade.component';
-import { ListagemAtividadesComponent } from './atividades/listagem/listagem-atividades.component';
-import { RelatorioComponent } from './relatorio/relatorio.component';
-import { AcompanhamentoSolicitacoesComponent } from './solicitacao/acompanhamento/acompanhamento-solicitacoes.component';
-import { EdicaoAtividadeComponent } from './atividades/edicao/edicao-atividade.component';
-import { LandingComponent } from './landing/landing.component';
-import { GestaoRegulamentosComponent } from './regulamentos/gestao-regulamentos.component';
 import { roleGuard } from './autenticacao/role.guard';
-import { ConsultaSolicitacoesComponent } from './solicitacao/avaliacao/consulta/consulta-solicitacoes.component';
-import { DetalheAvaliacaoComponent } from './solicitacao/avaliacao/detalhe/detalhe-avaliacao.component';
 
 export const routes: Routes = [
-  { path: '', component: LandingComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'registro', component: RegistroComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'progresso', component: ProgressoComponent, canActivate: [authGuard] },
-  { path: 'atividades/cadastro', component: CadastroAtividadeComponent, canActivate: [authGuard] },
-  { path: 'atividades/edicao/:id', component: EdicaoAtividadeComponent, canActivate: [authGuard] },
-  { path: 'atividades', component: ListagemAtividadesComponent, canActivate: [authGuard] },
   {
-    path: 'regulamentos/gestao',
-    component: GestaoRegulamentosComponent,
-    canActivate: [authGuard, roleGuard(['ADMINISTRADOR', 'AVALIADOR'])],
+    path: '',
+    loadComponent: () => import('./landing/landing.component').then((m) => m.LandingComponent),
   },
-  { path: 'relatorio', component: RelatorioComponent, canActivate: [authGuard] },
   {
-    path: 'solicitacoes',
-    component: AcompanhamentoSolicitacoesComponent,
+    path: 'login',
+    loadComponent: () =>
+      import('./autenticacao/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'registro',
+    loadComponent: () =>
+      import('./autenticacao/registro/registro.component').then((m) => m.RegistroComponent),
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
     canActivate: [authGuard],
   },
-  { path: 'logout', component: LogoutComponent, canActivate: [authGuard] },
+  {
+    path: 'progresso',
+    loadComponent: () =>
+      import('./atividades/progresso/progresso.component').then((m) => m.ProgressoComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'atividades/cadastro',
+    loadComponent: () =>
+      import('./atividades/cadastro/cadastro-atividade.component').then(
+        (m) => m.CadastroAtividadeComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'atividades/edicao/:id',
+    loadComponent: () =>
+      import('./atividades/edicao/edicao-atividade.component').then(
+        (m) => m.EdicaoAtividadeComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'atividades',
+    loadComponent: () =>
+      import('./atividades/listagem/listagem-atividades.component').then(
+        (m) => m.ListagemAtividadesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'regulamentos/gestao',
+    loadComponent: () =>
+      import('./regulamentos/gestao-regulamentos.component').then(
+        (m) => m.GestaoRegulamentosComponent,
+      ),
+    canActivate: [authGuard, roleGuard(['ADMINISTRADOR', 'AVALIADOR'])],
+  },
+  {
+    path: 'relatorio',
+    loadComponent: () =>
+      import('./relatorio/relatorio.component').then((m) => m.RelatorioComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'solicitacoes',
+    loadComponent: () =>
+      import('./solicitacao/acompanhamento/acompanhamento-solicitacoes.component').then(
+        (m) => m.AcompanhamentoSolicitacoesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'logout',
+    loadComponent: () =>
+      import('./autenticacao/logout/logout.component').then((m) => m.LogoutComponent),
+    canActivate: [authGuard],
+  },
   {
     path: 'avaliacao/solicitacoes',
-    component: ConsultaSolicitacoesComponent,
+    loadComponent: () =>
+      import('./solicitacao/avaliacao/consulta/consulta-solicitacoes.component').then(
+        (m) => m.ConsultaSolicitacoesComponent,
+      ),
     canActivate: [authGuard, roleGuard(['AVALIADOR'])],
   },
   {
     path: 'avaliacao/solicitacoes/:id',
-    component: DetalheAvaliacaoComponent,
+    loadComponent: () =>
+      import('./solicitacao/avaliacao/detalhe/detalhe-avaliacao.component').then(
+        (m) => m.DetalheAvaliacaoComponent,
+      ),
     canActivate: [authGuard, roleGuard(['AVALIADOR'])],
   },
-  { path: '**', redirectTo: 'login' },
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
 ];

@@ -5,10 +5,15 @@ import { authGuard } from './autenticacao/auth.guard';
 import { LandingComponent } from './landing/landing.component';
 
 describe('routes', () => {
-  it('deve expor a Landing Page na rota raiz', () => {
+  it('deve expor a Landing Page na rota raiz', async () => {
     const raiz = routes.find((rota: Route) => rota.path === '');
+
     expect(raiz).toBeTruthy();
-    expect(raiz?.component).toBe(LandingComponent);
+    expect(raiz?.loadComponent).toBeTruthy();
+
+    const component = await raiz?.loadComponent?.();
+
+    expect(component).toBe(LandingComponent);
   });
 
   it('deve expor a rota login sem authGuard', () => {

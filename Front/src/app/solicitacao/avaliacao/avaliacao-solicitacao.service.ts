@@ -24,19 +24,20 @@ export class AvaliacaoSolicitacaoService {
   }
 
   detalhar(id: number): Observable<SolicitacaoAvaliadorDetalhe> {
-    return this.http.get<SolicitacaoAvaliadorDetalhe>(`${this.apiUrl}/${id}/avaliacao`).pipe(
-      catchError((error: HttpErrorResponse) =>
-        throwError(() => new Error(this.traduzirErroDetalhe(error))),
-      ),
-    );
+    return this.http
+      .get<SolicitacaoAvaliadorDetalhe>(`${this.apiUrl}/${id}/avaliacao`)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroDetalhe(error))),
+        ),
+      );
   }
 
   private traduzirErroConsulta(error: HttpErrorResponse): string {
     const comum = this.traduzirErroComum(error);
     if (comum) return comum;
     return (
-      this.mensagemDoBackend(error) ??
-      'Não foi possível carregar as solicitações. Tente novamente.'
+      this.mensagemDoBackend(error) ?? 'Não foi possível carregar as solicitações. Tente novamente.'
     );
   }
 

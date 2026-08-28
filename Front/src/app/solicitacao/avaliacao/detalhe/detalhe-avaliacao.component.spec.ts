@@ -74,8 +74,7 @@ describe('DetalheAvaliacaoComponent', () => {
 
   it('nao renderiza rotulo de justificativa quando o campo e nulo', () => {
     const fixture = montar({
-      detalhar: () =>
-        of({ ...detalheMock, justificativa: undefined, dataAvaliacao: undefined }),
+      detalhar: () => of({ ...detalheMock, justificativa: undefined, dataAvaliacao: undefined }),
     });
     fixture.detectChanges();
 
