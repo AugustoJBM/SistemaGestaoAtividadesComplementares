@@ -8,6 +8,7 @@ import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
 import br.edu.ufape.backend.certificado.exception.CertificadoInvalidoException;
 import br.edu.ufape.backend.comum.exception.ErroResponse;
 import br.edu.ufape.backend.comum.exception.GlobalExceptionHandler;
+import br.edu.ufape.backend.notificacao.exception.NotificacaoNaoEncontradaException;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoNaoEncontradaException;
@@ -67,6 +68,8 @@ class GlobalExceptionHandlerTest {
 				handler.tratarEstudanteSemAtividades(new EstudanteSemAtividadesException()).getStatusCode());
 		assertEquals(HttpStatus.NOT_FOUND,
 				handler.tratarSolicitacaoNaoEncontrada(new SolicitacaoNaoEncontradaException()).getStatusCode());
+		assertEquals(HttpStatus.NOT_FOUND,
+				handler.tratarNotificacaoNaoEncontrada(new NotificacaoNaoEncontradaException()).getStatusCode());
 		assertEquals(HttpStatus.UNAUTHORIZED,
 				handler.tratarUnauthorized(new UnauthorizedException("Não autorizado")).getStatusCode());
 		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, handler.tratarCatchAll(new Exception("erro")).getStatusCode());
