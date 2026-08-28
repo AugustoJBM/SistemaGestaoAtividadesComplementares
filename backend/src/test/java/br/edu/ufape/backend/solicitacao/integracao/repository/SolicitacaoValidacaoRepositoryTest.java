@@ -25,7 +25,8 @@ class SolicitacaoValidacaoRepositoryTest {
 	@Autowired
 	private SolicitacaoValidacaoRepository repository;
 
-	private SolicitacaoValidacao criarSolicitacao(Long estudanteId, StatusSolicitacao status, List<SolicitacaoAtividade> itens) {
+	private SolicitacaoValidacao criarSolicitacao(Long estudanteId, StatusSolicitacao status,
+			List<SolicitacaoAtividade> itens) {
 		SolicitacaoValidacao s = new SolicitacaoValidacao(estudanteId, LocalDateTime.now(), status, itens);
 		return repository.save(s);
 	}
@@ -61,7 +62,8 @@ class SolicitacaoValidacaoRepositoryTest {
 		SolicitacaoValidacao s2 = criarSolicitacao(11L, StatusSolicitacao.APROVADA, List.of());
 		criarSolicitacao(12L, StatusSolicitacao.REJEITADA, List.of());
 
-		List<SolicitacaoValidacao> resultado = repository.findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.APROVADA);
+		List<SolicitacaoValidacao> resultado = repository
+				.findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.APROVADA);
 
 		assertNotNull(resultado);
 		assertEquals(1, resultado.size());
@@ -74,7 +76,8 @@ class SolicitacaoValidacaoRepositoryTest {
 	void deveRetornarListaVaziaQuandoNenhumStatusCorresponder() {
 		criarSolicitacao(10L, StatusSolicitacao.SUBMETIDA, List.of());
 
-		List<SolicitacaoValidacao> resultado = repository.findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.COM_PENDENCIAS);
+		List<SolicitacaoValidacao> resultado = repository
+				.findByStatusOrderByDataSubmissaoDesc(StatusSolicitacao.COM_PENDENCIAS);
 
 		assertNotNull(resultado);
 		assertTrue(resultado.isEmpty());

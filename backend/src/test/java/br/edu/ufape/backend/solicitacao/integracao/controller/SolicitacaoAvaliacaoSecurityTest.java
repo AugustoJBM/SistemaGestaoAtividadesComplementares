@@ -108,8 +108,8 @@ class SolicitacaoAvaliacaoSecurityTest {
 		criarSolicitacaoSubmetida();
 		String tokenAvaliador = criarAvaliadorERetornarToken("avaliador.list.solic@ufape.edu.br");
 
-		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenAvaliador))
+		mockMvc.perform(
+				get("/api/v1/solicitacoes/avaliacao").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenAvaliador))
 				.andExpect(status().isOk());
 	}
 
@@ -118,16 +118,15 @@ class SolicitacaoAvaliacaoSecurityTest {
 	void estudanteNaoPodeListarSolicitacoesParaAvaliacao() throws Exception {
 		String tokenEstudante = criarEstudanteERetornarToken("estudante.list.solic@ufape.edu.br");
 
-		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante))
+		mockMvc.perform(
+				get("/api/v1/solicitacoes/avaliacao").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante))
 				.andExpect(status().isForbidden());
 	}
 
 	@Test
 	@DisplayName("Requisicao sem autenticacao deve retornar 401 Unauthorized em GET /avaliacao")
 	void requisicaoSemAutenticacaoListarRetornaUnauthorized() throws Exception {
-		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao"))
-				.andExpect(status().isUnauthorized());
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")).andExpect(status().isUnauthorized());
 	}
 	@Test
 	@DisplayName("AVALIADOR autenticado deve ter permissao (200) para detalhar solicitacao de qualquer estudante em GET /{id}/avaliacao")
@@ -136,8 +135,7 @@ class SolicitacaoAvaliacaoSecurityTest {
 		String tokenAvaliador = criarAvaliadorERetornarToken("avaliador.det.solic@ufape.edu.br");
 
 		mockMvc.perform(get("/api/v1/solicitacoes/" + solicitacao.getId() + "/avaliacao")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenAvaliador))
-				.andExpect(status().isOk())
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenAvaliador)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(solicitacao.getId()));
 	}
 
@@ -148,14 +146,12 @@ class SolicitacaoAvaliacaoSecurityTest {
 		String tokenEstudante = criarEstudanteERetornarToken("estudante.det.solic@ufape.edu.br");
 
 		mockMvc.perform(get("/api/v1/solicitacoes/" + solicitacao.getId() + "/avaliacao")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante))
-				.andExpect(status().isForbidden());
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenEstudante)).andExpect(status().isForbidden());
 	}
 
 	@Test
 	@DisplayName("Requisicao sem autenticacao deve retornar 401 Unauthorized em GET /{id}/avaliacao")
 	void requisicaoSemAutenticacaoDetalharRetornaUnauthorized() throws Exception {
-		mockMvc.perform(get("/api/v1/solicitacoes/1/avaliacao"))
-				.andExpect(status().isUnauthorized());
+		mockMvc.perform(get("/api/v1/solicitacoes/1/avaliacao")).andExpect(status().isUnauthorized());
 	}
 }

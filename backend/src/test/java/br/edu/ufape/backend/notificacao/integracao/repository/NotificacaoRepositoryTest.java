@@ -32,8 +32,10 @@ class NotificacaoRepositoryTest {
 	@DisplayName("Deve listar notificações do destinatário ordenadas por data de criação decrescente")
 	void deveOrdenarPorDataCriacaoDesc() {
 		Long destinatarioId = 1L;
-		Notificacao n1 = criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_SUBMETIDA, "Notificação 1", false);
-		Notificacao n2 = criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_EM_ANALISE, "Notificação 2", false);
+		Notificacao n1 = criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_SUBMETIDA, "Notificação 1",
+				false);
+		Notificacao n2 = criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_EM_ANALISE, "Notificação 2",
+				false);
 		Notificacao n3 = criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_APROVADA, "Notificação 3", true);
 
 		List<Notificacao> resultado = repository.findByDestinatarioIdOrderByDataCriacaoDesc(destinatarioId);
@@ -53,7 +55,8 @@ class NotificacaoRepositoryTest {
 		criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_EM_ANALISE, "Lida 1", true);
 		criarNotificacao(destinatarioId, TipoNotificacao.SOLICITACAO_APROVADA, "Nao lida 2", false);
 
-		List<Notificacao> naoLidas = repository.findByDestinatarioIdAndLidaOrderByDataCriacaoDesc(destinatarioId, false);
+		List<Notificacao> naoLidas = repository.findByDestinatarioIdAndLidaOrderByDataCriacaoDesc(destinatarioId,
+				false);
 
 		assertEquals(2, naoLidas.size());
 		assertTrue(naoLidas.stream().noneMatch(Notificacao::isLida));

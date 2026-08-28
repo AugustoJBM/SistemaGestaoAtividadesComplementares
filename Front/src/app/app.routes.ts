@@ -76,6 +76,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'notificacoes',
+    loadComponent: () =>
+      import('./notificacao/lista/lista-notificacoes.component').then(
+        (m) => m.ListaNotificacoesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'logout',
     loadComponent: () =>
       import('./autenticacao/logout/logout.component').then((m) => m.LogoutComponent),

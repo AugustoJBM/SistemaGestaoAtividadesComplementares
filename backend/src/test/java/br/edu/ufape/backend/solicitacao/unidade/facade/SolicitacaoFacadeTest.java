@@ -49,7 +49,8 @@ class SolicitacaoFacadeTest {
 		SolicitacaoAtividade item1 = new SolicitacaoAtividade(1L, "Curso A", 20, "ACC");
 		SolicitacaoAtividade item2 = new SolicitacaoAtividade(2L, "Curso B", 40, "ACEX");
 
-		SolicitacaoValidacao s1 = new SolicitacaoValidacao(10L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA, List.of(item1, item2));
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(10L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA,
+				List.of(item1, item2));
 		s1.setId(100L);
 
 		Estudante estudante = new Estudante("Lucas Silva", "lucas@ufape.edu.br", "hash");
@@ -75,7 +76,8 @@ class SolicitacaoFacadeTest {
 	@Test
 	@DisplayName("Deve usar fallback quando estudante for removido e nao quebrar requisicao na listagem")
 	void deveUsarFallbackQuandoEstudanteNaoEncontrado() {
-		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.APROVADA, List.of());
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.APROVADA,
+				List.of());
 		s1.setId(101L);
 
 		when(solicitacaoService.listarParaAvaliacao(null)).thenReturn(List.of(s1));
@@ -96,7 +98,8 @@ class SolicitacaoFacadeTest {
 	@DisplayName("Deve detalhar para avaliacao resolvendo nome e email do estudante com itens do snapshot")
 	void deveDetalharParaAvaliacaoResolvendoNomeEEmail() {
 		SolicitacaoAtividade item = new SolicitacaoAtividade(1L, "Curso A", 20, "ACC");
-		SolicitacaoValidacao s1 = new SolicitacaoValidacao(10L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA, List.of(item));
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(10L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA,
+				List.of(item));
 		s1.setId(200L);
 
 		Estudante estudante = new Estudante("Lucas Silva", "lucas@ufape.edu.br", "hash");
@@ -121,7 +124,8 @@ class SolicitacaoFacadeTest {
 	@Test
 	@DisplayName("Deve detalhar para avaliacao com fallback seguro quando estudante nao for encontrado")
 	void deveDetalharParaAvaliacaoComFallbackQuandoEstudanteNaoEncontrado() {
-		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA, List.of());
+		SolicitacaoValidacao s1 = new SolicitacaoValidacao(999L, LocalDateTime.now(), StatusSolicitacao.SUBMETIDA,
+				List.of());
 		s1.setId(201L);
 
 		when(solicitacaoService.detalharParaAvaliacao(201L)).thenReturn(s1);

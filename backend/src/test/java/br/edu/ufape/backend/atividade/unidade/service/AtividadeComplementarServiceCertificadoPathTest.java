@@ -103,7 +103,9 @@ class AtividadeComplementarServiceCertificadoPathTest {
 
 		assertTrue(resource.exists());
 		assertTrue(resource.isReadable());
-		try (java.io.InputStream is = resource.getInputStream()) { assertEquals("PDF-CONTENT", new String(is.readAllBytes())); }
+		try (java.io.InputStream is = resource.getInputStream()) {
+			assertEquals("PDF-CONTENT", new String(is.readAllBytes()));
+		}
 	}
 
 	@Test
@@ -152,7 +154,9 @@ class AtividadeComplementarServiceCertificadoPathTest {
 		Resource resource = service.obterArquivoCertificado(ID_ATIVIDADE, EMAIL);
 
 		assertTrue(resource.exists());
-		try (java.io.InputStream is = resource.getInputStream()) { assertEquals("PDF-INTERNO", new String(is.readAllBytes())); }
+		try (java.io.InputStream is = resource.getInputStream()) {
+			assertEquals("PDF-INTERNO", new String(is.readAllBytes()));
+		}
 	}
 
 	@Test
