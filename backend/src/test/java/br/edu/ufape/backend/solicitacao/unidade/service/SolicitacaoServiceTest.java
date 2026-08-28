@@ -366,8 +366,7 @@ class SolicitacaoServiceTest {
 	void deveListarTodasSolicitacoesParaAvaliacaoQuandoStatusNulo() {
 		SolicitacaoValidacao s1 = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
 		SolicitacaoValidacao s2 = criarSolicitacao(StatusSolicitacao.APROVADA);
-		when(solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(null))
-				.thenReturn(List.of(s1, s2));
+		when(solicitacaoValidacaoRepository.findByStatusOrderByDataSubmissaoDesc(null)).thenReturn(List.of(s1, s2));
 
 		List<SolicitacaoValidacao> resultado = solicitacaoService.listarParaAvaliacao(null);
 

@@ -88,8 +88,8 @@ public class SecurityConfig {
 					auth.requestMatchers(HttpMethod.POST, "/api/v1/solicitacoes").hasRole(ROLE_ESTUDANTE);
 					auth.requestMatchers(HttpMethod.GET, "/api/v1/solicitacoes", "/api/v1/solicitacoes/{id:[0-9]+}")
 							.hasRole(ROLE_ESTUDANTE);
-					auth.requestMatchers(HttpMethod.GET, "/api/v1/solicitacoes/avaliacao", "/api/v1/solicitacoes/*/avaliacao")
-							.hasRole(ROLE_AVALIADOR);
+					auth.requestMatchers(HttpMethod.GET, "/api/v1/solicitacoes/avaliacao",
+							"/api/v1/solicitacoes/*/avaliacao").hasRole(ROLE_AVALIADOR);
 
 					auth.anyRequest().authenticated();
 				}).exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint()))

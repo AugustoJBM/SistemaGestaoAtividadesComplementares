@@ -68,8 +68,7 @@ public class SolicitacaoFacade {
 	public List<SolicitacaoAvaliadorResumoResponseDTO> listarParaAvaliacao(StatusSolicitacao status) {
 		List<SolicitacaoValidacao> solicitacoes = solicitacaoService.listarParaAvaliacao(status);
 		return solicitacoes.stream().map(solicitacao -> {
-			String estudanteNome = usuarioContrato.buscarPorId(solicitacao.getEstudanteId())
-					.map(Usuario::getNome)
+			String estudanteNome = usuarioContrato.buscarPorId(solicitacao.getEstudanteId()).map(Usuario::getNome)
 					.orElse("Estudante Não Encontrado");
 			return new SolicitacaoAvaliadorResumoResponseDTO(solicitacao, estudanteNome);
 		}).toList();

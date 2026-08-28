@@ -80,22 +80,19 @@ class SolicitacaoAvaliacaoControllerTest {
 	@Test
 	@DisplayName("GET /avaliacao sem status retorna 200 com lista completa de solicitacoes")
 	void deveRetornar200ListaCompletaParaAvaliacao() throws Exception {
-		SolicitacaoAvaliadorResumoResponseDTO r1 = new SolicitacaoAvaliadorResumoResponseDTO(
-				1L, "Lucas Silva", LocalDateTime.now().minusDays(1), StatusSolicitacao.SUBMETIDA, null, 2L, 40);
-		SolicitacaoAvaliadorResumoResponseDTO r2 = new SolicitacaoAvaliadorResumoResponseDTO(
-				2L, "Maria Santos", LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, LocalDateTime.now(), 3L, 60);
+		SolicitacaoAvaliadorResumoResponseDTO r1 = new SolicitacaoAvaliadorResumoResponseDTO(1L, "Lucas Silva",
+				LocalDateTime.now().minusDays(1), StatusSolicitacao.SUBMETIDA, null, 2L, 40);
+		SolicitacaoAvaliadorResumoResponseDTO r2 = new SolicitacaoAvaliadorResumoResponseDTO(2L, "Maria Santos",
+				LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, LocalDateTime.now(), 3L, 60);
 
 		when(facade.listarParaAvaliacao(isNull())).thenReturn(List.of(r1, r2));
 
-		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(2))
-				.andExpect(jsonPath("$[0].id").value(1L))
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(2)).andExpect(jsonPath("$[0].id").value(1L))
 				.andExpect(jsonPath("$[0].estudanteNome").value("Lucas Silva"))
 				.andExpect(jsonPath("$[0].status").value("SUBMETIDA"))
 				.andExpect(jsonPath("$[0].totalAtividades").value(2))
-				.andExpect(jsonPath("$[0].cargaHorariaTotal").value(40))
-				.andExpect(jsonPath("$[1].id").value(2L))
+				.andExpect(jsonPath("$[0].cargaHorariaTotal").value(40)).andExpect(jsonPath("$[1].id").value(2L))
 				.andExpect(jsonPath("$[1].estudanteNome").value("Maria Santos"))
 				.andExpect(jsonPath("$[1].status").value("APROVADA"));
 	}
@@ -103,15 +100,13 @@ class SolicitacaoAvaliacaoControllerTest {
 	@Test
 	@DisplayName("GET /avaliacao com filtro ?status=APROVADA retorna 200 com lista filtrada")
 	void deveRetornar200ListaFiltradaPorStatus() throws Exception {
-		SolicitacaoAvaliadorResumoResponseDTO r2 = new SolicitacaoAvaliadorResumoResponseDTO(
-				2L, "Maria Santos", LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, LocalDateTime.now(), 3L, 60);
+		SolicitacaoAvaliadorResumoResponseDTO r2 = new SolicitacaoAvaliadorResumoResponseDTO(2L, "Maria Santos",
+				LocalDateTime.now().minusDays(2), StatusSolicitacao.APROVADA, LocalDateTime.now(), 3L, 60);
 
 		when(facade.listarParaAvaliacao(StatusSolicitacao.APROVADA)).thenReturn(List.of(r2));
 
-		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao").param("status", "APROVADA"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(1))
-				.andExpect(jsonPath("$[0].id").value(2L))
+		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao").param("status", "APROVADA")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(2L))
 				.andExpect(jsonPath("$[0].status").value("APROVADA"));
 	}
 
@@ -130,8 +125,7 @@ class SolicitacaoAvaliacaoControllerTest {
 	@DisplayName("GET /avaliacao com status invalido retorna 400 em ErroResponse")
 	void deveRetornar400ParaStatusInvalido() throws Exception {
 		mockMvc.perform(get("/api/v1/solicitacoes/avaliacao").param("status", "INEXISTENTE"))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").exists())
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").exists())
 				.andExpect(jsonPath("$.status").value(400));
 	}
 
@@ -207,16 +201,14 @@ class SolicitacaoAvaliacaoControllerTest {
 	@Test
 	@DisplayName("GET /{id}/avaliacao retorna 200 com detalhe completo para o avaliador")
 	void deveRetornar200DetalheParaAvaliacao() throws Exception {
-		SolicitacaoAvaliadorDetalheResponseDTO detalhe = new SolicitacaoAvaliadorDetalheResponseDTO(
-				10L, "Lucas Silva", "lucas@ufape.edu.br", LocalDateTime.now().minusDays(1),
-				StatusSolicitacao.SUBMETIDA, null, null, 20, List.of());
+		SolicitacaoAvaliadorDetalheResponseDTO detalhe = new SolicitacaoAvaliadorDetalheResponseDTO(10L, "Lucas Silva",
+				"lucas@ufape.edu.br", LocalDateTime.now().minusDays(1), StatusSolicitacao.SUBMETIDA, null, null, 20,
+				List.of());
 
 		when(facade.detalharParaAvaliacao(10L)).thenReturn(detalhe);
 
-		mockMvc.perform(get("/api/v1/solicitacoes/10/avaliacao"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(10L))
-				.andExpect(jsonPath("$.estudanteNome").value("Lucas Silva"))
+		mockMvc.perform(get("/api/v1/solicitacoes/10/avaliacao")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(10L)).andExpect(jsonPath("$.estudanteNome").value("Lucas Silva"))
 				.andExpect(jsonPath("$.estudanteEmail").value("lucas@ufape.edu.br"))
 				.andExpect(jsonPath("$.status").value("SUBMETIDA"))
 				.andExpect(jsonPath("$.cargaHorariaTotal").value(20));
