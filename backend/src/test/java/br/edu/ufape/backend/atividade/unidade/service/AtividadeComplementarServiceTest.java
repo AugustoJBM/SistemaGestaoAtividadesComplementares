@@ -44,6 +44,8 @@ import br.edu.ufape.backend.certificado.service.ArmazenamentoCertificadoService;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Avaliador;
 import br.edu.ufape.backend.usuario.model.Estudante;
+import br.edu.ufape.backend.atividade.exception.AtividadeVinculadaASolicitacaoException;
+import br.edu.ufape.backend.solicitacao.contrato.SolicitacaoContrato;
 
 @ExtendWith(MockitoExtension.class)
 class AtividadeComplementarServiceTest {
@@ -68,6 +70,9 @@ class AtividadeComplementarServiceTest {
 
 	@Mock
 	private ParecerConformidadeRepository parecerConformidadeRepository;
+
+    @Mock
+    private SolicitacaoContrato solicitacaoContrato;
 
 	@InjectMocks
 	private AtividadeComplementarService service;
@@ -509,4 +514,42 @@ class AtividadeComplementarServiceTest {
 		assertTrue(resultado.isEmpty());
 		verify(atividadeRepository).findByEstudante_Id(estudanteId);
 	}
+
+    @Test
+    @DisplayName("Deve bloquear atualizacao de atividade vinculada a solicitacao em aberto")
+    void deveBloquearAtualizacaoComSolicitacaoEmAberto() {
+        Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        estudante.setId(1L);
+
+        AtividadeComplementar atividadeOriginal = criarAtividadeComCertificado(estudante, "/tmp/certificado.pdf");
+        atividadeOriginal.setId(ID_ATIVIDADE);
+
+        AtualizarAtividadeRequestDTO request = new AtualizarAtividadeRequestDTO("Titulo", "Instituicao",
+                LocalDate.now(), 20, Natureza.ACC, Categoria.PESQUISA);
+
+        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
+        when(atividadeRepository.findById(ID_ATIVIDADE)).thenReturn(Optional.of(atividadeOriginal));
+        when(solicitacaoContrato.existeSolicitacaoEmAbertoComAtividade(ID_ATIVIDADE)).thenReturn(true);
+
+        assertThrows(AtividadeVinculadaASolicitacaoException.class,
+                () -> service.atualizarAtividade(ID_ATIVIDADE, request, null, EMAIL));
+
+        verify(atividadeRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve bloquear exclusao de atividade vinculada a solicitacao em aberto")
+    void deveBloquearExclusaoComSolicitacaoEmAberto() {
+        Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
+        AtividadeComplementar atividade = criarAtividade(Natureza.ACC, Categoria.PESQUISA, estudante);
+
+        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
+        when(atividadeRepository.findByIdAndEstudante(ID_ATIVIDADE, estudante)).thenReturn(Optional.of(atividade));
+        when(solicitacaoContrato.existeSolicitacaoEmAbertoComAtividade(ID_ATIVIDADE)).thenReturn(true);
+
+        assertThrows(AtividadeVinculadaASolicitacaoException.class,
+                () -> service.excluirAtividade(ID_ATIVIDADE, EMAIL));
+
+        verify(atividadeRepository, never()).delete(any());
+    }
 }
