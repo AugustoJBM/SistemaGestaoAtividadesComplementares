@@ -114,6 +114,7 @@ jobs:
     name: SonarCloud - Frontend Scan
     runs-on: ubuntu-latest
     needs: frontend
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
 
     steps:
       - name: Checkout
@@ -152,6 +153,7 @@ jobs:
     name: SonarCloud - Backend Scan
     runs-on: ubuntu-latest
     needs: backend
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
 
     steps:
       - name: Checkout
