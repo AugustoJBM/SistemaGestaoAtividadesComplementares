@@ -21,13 +21,13 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () =>
       import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'progresso',
     loadComponent: () =>
       import('./atividades/progresso/progresso.component').then((m) => m.ProgressoComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'atividades/cadastro',
@@ -35,7 +35,7 @@ export const routes: Routes = [
       import('./atividades/cadastro/cadastro-atividade.component').then(
         (m) => m.CadastroAtividadeComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'atividades/edicao/:id',
@@ -43,7 +43,7 @@ export const routes: Routes = [
       import('./atividades/edicao/edicao-atividade.component').then(
         (m) => m.EdicaoAtividadeComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'atividades',
@@ -51,7 +51,7 @@ export const routes: Routes = [
       import('./atividades/listagem/listagem-atividades.component').then(
         (m) => m.ListagemAtividadesComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'regulamentos/gestao',
@@ -65,7 +65,7 @@ export const routes: Routes = [
     path: 'relatorio',
     loadComponent: () =>
       import('./relatorio/relatorio.component').then((m) => m.RelatorioComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'solicitacoes',
@@ -73,7 +73,7 @@ export const routes: Routes = [
       import('./solicitacao/acompanhamento/acompanhamento-solicitacoes.component').then(
         (m) => m.AcompanhamentoSolicitacoesComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE'])],
   },
   {
     path: 'notificacoes',
@@ -81,7 +81,7 @@ export const routes: Routes = [
       import('./notificacao/lista/lista-notificacoes.component').then(
         (m) => m.ListaNotificacoesComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['ESTUDANTE', 'AVALIADOR', 'ADMINISTRADOR'])],
   },
   {
     path: 'logout',
@@ -95,7 +95,7 @@ export const routes: Routes = [
       import('./solicitacao/avaliacao/consulta/consulta-solicitacoes.component').then(
         (m) => m.ConsultaSolicitacoesComponent,
       ),
-    canActivate: [authGuard, roleGuard(['AVALIADOR'])],
+    canActivate: [authGuard, roleGuard(['AVALIADOR', 'ADMINISTRADOR'])],
   },
   {
     path: 'avaliacao/solicitacoes/:id',
@@ -103,7 +103,7 @@ export const routes: Routes = [
       import('./solicitacao/avaliacao/detalhe/detalhe-avaliacao.component').then(
         (m) => m.DetalheAvaliacaoComponent,
       ),
-    canActivate: [authGuard, roleGuard(['AVALIADOR'])],
+    canActivate: [authGuard, roleGuard(['AVALIADOR', 'ADMINISTRADOR'])],
   },
   {
     path: '**',

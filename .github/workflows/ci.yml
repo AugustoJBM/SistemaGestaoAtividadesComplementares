@@ -22,7 +22,7 @@ jobs:
   # ============================================================
 
   backend:
-    name: Backend - Build, Testes e Cobertura
+    name: Backend - Build, Testes
     runs-on: ubuntu-latest
 
     defaults:
@@ -68,12 +68,12 @@ jobs:
   # ============================================================
 
   frontend:
-    name: Frontend - Build, Testes e Cobertura
+    name: Frontend - Build, Testes
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: Front
+        working-directory: frontend
 
     steps:
       - name: Checkout
@@ -86,7 +86,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: Front/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Instalar dependências
         run: npm ci
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
-          path: Front/coverage/
+          path: frontend/coverage/
           if-no-files-found: warn
           retention-days: 14
 
@@ -126,7 +126,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-coverage
-          path: Front/coverage/
+          path: frontend/coverage/
 
       - name: Executar SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6

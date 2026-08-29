@@ -4,7 +4,7 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 set "ROOT_DIR=%~dp0"
-set "FRONT_DIR=%ROOT_DIR%Front"
+set "FRONT_DIR=%ROOT_DIR%frontend"
 set "BACK_DIR=%ROOT_DIR%backend"
 
 :: Força execução não interativa e bloqueia prompts
