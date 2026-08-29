@@ -1,3 +1,4 @@
+import { SituacaoSolicitacaoComponent } from './situacao-solicitacao/situacao-solicitacao.component';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -16,7 +17,7 @@ interface ResumoModalidade {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, SituacaoSolicitacaoComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {

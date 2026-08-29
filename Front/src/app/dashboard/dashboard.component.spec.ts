@@ -47,16 +47,22 @@ describe('DashboardComponent', () => {
   });
 
   afterEach(() => {
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
     httpMock.verify();
   });
 
   // Dispara o ngOnInit e, com ele, a requisicao de progresso.
   function iniciar(): void {
     fixture.detectChanges();
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
   }
 
   function responderCom(dto: ProgressoCargaHorariaDTO): void {
     httpMock.expectOne(PROGRESSO_URL).flush(dto);
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
     fixture.detectChanges();
   }
 
@@ -92,6 +98,8 @@ describe('DashboardComponent', () => {
     expect(elemento.textContent).toContain('Carregando seu progresso');
 
     requisicao.flush(dtoCompleto);
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
   });
 
   it('deve exibir o resumo de ACC e ACEX mapeado a partir do payload da API', () => {
@@ -176,6 +184,8 @@ describe('DashboardComponent', () => {
     // Act
     iniciar();
     httpMock.expectOne(PROGRESSO_URL).flush({}, { status: 401, statusText: 'Unauthorized' });
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
     fixture.detectChanges();
 
     // Assert
@@ -190,6 +200,8 @@ describe('DashboardComponent', () => {
     const elemento: HTMLElement = fixture.nativeElement;
     iniciar();
     httpMock.expectOne(PROGRESSO_URL).error(new ProgressEvent('error'), { status: 0 });
+    const pendentes = httpMock.match((req) => req.url.includes('/solicitacoes'));
+    pendentes.forEach((req) => req.flush([]));
     fixture.detectChanges();
     expect(elemento.textContent).toContain('Não foi possível conectar ao servidor');
 
