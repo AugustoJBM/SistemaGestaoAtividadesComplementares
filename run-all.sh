@@ -27,7 +27,7 @@ exit 1' ERR
 # Configuração
 # ------------------------------------------------------------
 
-FRONT_DIR="$ROOT_DIR/Front"
+FRONT_DIR="$ROOT_DIR/frontend"
 BACK_DIR="$ROOT_DIR/backend"
 
 # Força execução não interativa e bloqueia prompts

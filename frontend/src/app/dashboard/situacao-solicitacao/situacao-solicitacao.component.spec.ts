@@ -19,8 +19,8 @@ describe('SituacaoSolicitacaoComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
-        SolicitacaoService
-      ]
+        SolicitacaoService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SituacaoSolicitacaoComponent);
@@ -53,9 +53,7 @@ describe('SituacaoSolicitacaoComponent', () => {
   it('deve exibir solicitação em andamento (SUBMETIDA)', () => {
     fixture.detectChanges();
     const req = httpMock.expectOne(apiUrl);
-    req.flush([
-      { id: 1, status: 'SUBMETIDA', dataSubmissao: '2026-08-01', totalAtividades: 2 }
-    ]);
+    req.flush([{ id: 1, status: 'SUBMETIDA', dataSubmissao: '2026-08-01', totalAtividades: 2 }]);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -67,7 +65,7 @@ describe('SituacaoSolicitacaoComponent', () => {
     fixture.detectChanges();
     const req = httpMock.expectOne(apiUrl);
     req.flush([
-      { id: 1, status: 'COM_PENDENCIAS', dataSubmissao: '2026-08-01', totalAtividades: 2 }
+      { id: 1, status: 'COM_PENDENCIAS', dataSubmissao: '2026-08-01', totalAtividades: 2 },
     ]);
     fixture.detectChanges();
 

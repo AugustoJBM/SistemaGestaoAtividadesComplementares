@@ -1,8 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AutenticacaoService } from './autenticacao.service';
 import { API_BASE_URL } from '../api.config';
 
@@ -26,6 +25,12 @@ const createStorageMock = () => {
     },
   };
 };
+
+function gerarJwtFake(payload: Record<string, unknown>): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = btoa(JSON.stringify(payload));
+  return `${header}.${body}.assinatura_fake`;
+}
 
 describe('AutenticacaoService', () => {
   let service: AutenticacaoService;
@@ -110,5 +115,39 @@ describe('AutenticacaoService', () => {
     });
     httpMock.expectOne(LOGIN_URL).flush({}, { status: 500, statusText: 'Server Error' });
     expect(mensagem).toBe('Ocorreu um erro ao realizar o login. Tente novamente.');
+  });
+
+  describe('extração de perfil (Role)', () => {
+    it('deve extrair a role ESTUDANTE do payload JWT', () => {
+      const token = gerarJwtFake({ sub: 'aluno@ufape.edu.br', role: 'ESTUDANTE' });
+      service.saveToken(token);
+      expect(service.perfilAtual()).toBe('ESTUDANTE');
+      expect(service.getRole()).toBe('ESTUDANTE');
+    });
+
+    it('deve extrair a role do array roles quando formatado em lista', () => {
+      const token = gerarJwtFake({ sub: 'avaliador@ufape.edu.br', roles: ['AVALIADOR'] });
+      service.saveToken(token);
+      expect(service.perfilAtual()).toBe('AVALIADOR');
+      expect(service.getRole()).toBe('AVALIADOR');
+    });
+
+    it('deve retornar null quando não houver token salvo', () => {
+      expect(service.perfilAtual()).toBeNull();
+      expect(service.getRole()).toBeNull();
+    });
+
+    it('deve retornar null e não quebrar quando o token for malformado', () => {
+      service.saveToken('token_sem_estrutura_jwt');
+      expect(service.perfilAtual()).toBeNull();
+      expect(service.getRole()).toBeNull();
+    });
+
+    it('deve retornar null quando o payload não contiver campo de papel', () => {
+      const token = gerarJwtFake({ sub: 'semrole@ufape.edu.br' });
+      service.saveToken(token);
+      expect(service.perfilAtual()).toBeNull();
+      expect(service.getRole()).toBeNull();
+    });
   });
 });

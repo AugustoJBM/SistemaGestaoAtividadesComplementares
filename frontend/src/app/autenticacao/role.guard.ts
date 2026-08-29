@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AutenticacaoService } from './autenticacao.service';
+import { Role } from './autenticacao.model';
 
-export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
+export const roleGuard = (allowedRoles: Role[]): CanActivateFn => {
   return () => {
     const authService = inject(AutenticacaoService);
     const router = inject(Router);
@@ -11,10 +12,12 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
       return router.parseUrl('/login');
     }
 
-    const role = authService.getRole();
+    const role = authService.perfilAtual();
 
-    // Se a role não existir no token ou não estiver na lista permitida, bloqueia o acesso
     if (!role || !allowedRoles.includes(role)) {
+      if (role === 'AVALIADOR' || role === 'ADMINISTRADOR') {
+        return router.parseUrl('/avaliacao/solicitacoes');
+      }
       return router.parseUrl('/dashboard');
     }
 

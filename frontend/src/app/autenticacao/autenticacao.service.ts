@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { API_BASE_URL } from '../api.config';
-import { Credenciais, LoginResponse } from './autenticacao.model';
+import { Credenciais, LoginResponse, Role } from './autenticacao.model';
 import { RegistroRequest, RegistroResponse } from './registro/registro.model';
 
 const CHAVE_TOKEN = 'sgac_token';
@@ -65,7 +65,7 @@ export class AutenticacaoService {
     return localStorage.getItem(CHAVE_TIPO_TOKEN) ?? 'Bearer';
   }
 
-  getRole(): string | null {
+  perfilAtual(): Role | null {
     const token = this.getToken();
     if (!token) return null;
     try {
@@ -73,10 +73,15 @@ export class AutenticacaoService {
       if (!payloadBase64) return null;
       const json = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
       const parsed = JSON.parse(json);
-      return parsed.role ?? parsed.roles?.[0] ?? null;
+      const role = parsed.role ?? parsed.roles?.[0] ?? null;
+      return role as Role | null;
     } catch {
       return null;
     }
+  }
+
+  getRole(): string | null {
+    return this.perfilAtual();
   }
 
   isAuthenticated(): boolean {
