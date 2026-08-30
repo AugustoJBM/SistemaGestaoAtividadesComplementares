@@ -135,7 +135,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
-          projectBaseDir: Front
+          projectBaseDir: frontend
           args: >
             -Dsonar.organization=sgac-gestaoatividadecomplementarorg
             -Dsonar.projectKey=sgac-gestaoatividadecomplementarorg_gestaoatividadecomplementarorg-frontend
