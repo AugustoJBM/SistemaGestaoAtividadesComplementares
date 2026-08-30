@@ -1,6 +1,5 @@
 package br.edu.ufape.backend.atividade.service;
 
-import org.springframework.stereotype.Service;
 import br.edu.ufape.backend.atividade.config.ProgressoProperties;
 import br.edu.ufape.backend.atividade.dto.ProgressoModalidadeResponseDTO;
 import br.edu.ufape.backend.atividade.dto.ProgressoResponseDTO;
@@ -8,26 +7,34 @@ import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
+import br.edu.ufape.backend.curso.contrato.CursoContrato;
+import br.edu.ufape.backend.curso.dto.CursoDTO;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.model.Usuario;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ProgressoService {
 
 	private static final String MENSAGEM_ACESSO_NEGADO = "Apenas estudantes podem consultar o progresso de atividades.";
+
 	private final UsuarioContrato usuarioContrato;
 	private final AtividadeComplementarRepository atividadeComplementarRepository;
 	private final ProgressoProperties progressoProperties;
+	private final CursoContrato cursoContrato;
 
 	public ProgressoService(UsuarioContrato usuarioContrato,
-			AtividadeComplementarRepository atividadeComplementarRepository, ProgressoProperties progressoProperties) {
+			AtividadeComplementarRepository atividadeComplementarRepository, ProgressoProperties progressoProperties,
+			CursoContrato cursoContrato) {
 		this.usuarioContrato = usuarioContrato;
 		this.atividadeComplementarRepository = atividadeComplementarRepository;
 		this.progressoProperties = progressoProperties;
+		this.cursoContrato = cursoContrato;
 	}
 
 	public ProgressoResponseDTO obterProgresso(String emailEstudante) {
@@ -35,14 +42,24 @@ public class ProgressoService {
 
 		int horasAprovadasAcc = calcularHoras(estudante, Natureza.ACC, true);
 		int horasPendentesAcc = calcularHoras(estudante, Natureza.ACC, false);
-
 		int horasAprovadasAcex = calcularHoras(estudante, Natureza.ACEX, true);
 		int horasPendentesAcex = calcularHoras(estudante, Natureza.ACEX, false);
 
+		int metaAcc = progressoProperties.getAcc().getHorasExigidas();
+		int metaAcex = progressoProperties.getAcex().getHorasExigidas();
+
+		if (estudante.getCurso() != null && cursoContrato != null) {
+			Optional<CursoDTO> cursoOpt = cursoContrato.buscarPorNomeOuCodigo(estudante.getCurso());
+			if (cursoOpt.isPresent()) {
+				metaAcc = cursoOpt.get().horasAccExigidas();
+				metaAcex = cursoOpt.get().horasAcexExigidas();
+			}
+		}
+
 		ProgressoModalidadeResponseDTO acc = new ProgressoModalidadeResponseDTO(horasAprovadasAcc, horasPendentesAcc,
-				progressoProperties.getAcc().getHorasExigidas());
+				metaAcc);
 		ProgressoModalidadeResponseDTO acex = new ProgressoModalidadeResponseDTO(horasAprovadasAcex, horasPendentesAcex,
-				progressoProperties.getAcex().getHorasExigidas());
+				metaAcex);
 
 		return new ProgressoResponseDTO(acc, acex);
 	}

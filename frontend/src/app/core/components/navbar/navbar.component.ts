@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AutenticacaoService } from '../../../autenticacao/autenticacao.service';
 import { Role } from '../../../autenticacao/autenticacao.model';
+import { ContadorNotificacoesComponent } from '../../../notificacao/contador/contador-notificacoes.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, ContadorNotificacoesComponent],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
@@ -26,7 +27,10 @@ export class NavbarComponent {
   }
 
   get isAvaliador(): boolean {
-    const papel = this.perfil;
-    return papel === 'AVALIADOR' || papel === 'ADMINISTRADOR';
+    return this.perfil === 'AVALIADOR' || this.perfil === 'ADMINISTRADOR';
+  }
+
+  get isAdmin(): boolean {
+    return this.perfil === 'ADMINISTRADOR';
   }
 }

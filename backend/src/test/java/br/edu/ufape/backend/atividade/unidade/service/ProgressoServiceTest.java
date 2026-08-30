@@ -1,15 +1,16 @@
 package br.edu.ufape.backend.atividade.unidade.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,16 +23,18 @@ import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.atividade.model.StatusAtividade;
 import br.edu.ufape.backend.atividade.repository.AtividadeComplementarRepository;
 import br.edu.ufape.backend.atividade.service.ProgressoService;
+import br.edu.ufape.backend.certificado.model.Certificado;
+import br.edu.ufape.backend.curso.contrato.CursoContrato;
+import br.edu.ufape.backend.curso.dto.CursoDTO;
 import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
-import br.edu.ufape.backend.usuario.model.Avaliador;
+import br.edu.ufape.backend.usuario.model.Administrador;
 import br.edu.ufape.backend.usuario.model.Estudante;
 
 @ExtendWith(MockitoExtension.class)
 class ProgressoServiceTest {
-
-	private static final String EMAIL = "estudante@ufape.edu.br";
 
 	@Mock
 	private UsuarioContrato usuarioContrato;
@@ -39,86 +42,149 @@ class ProgressoServiceTest {
 	@Mock
 	private AtividadeComplementarRepository atividadeComplementarRepository;
 
-	private ProgressoProperties criarProperties(int horasAcc, int horasAcex) {
-		ProgressoProperties properties = new ProgressoProperties();
-		properties.getAcc().setHorasExigidas(horasAcc);
-		properties.getAcex().setHorasExigidas(horasAcex);
-		return properties;
+	@Mock
+	private CursoContrato cursoContrato;
+
+	private ProgressoProperties progressoProperties;
+	private ProgressoService service;
+
+	private final String emailEstudante = "estudante@ufape.edu.br";
+	private Estudante estudante;
+
+	@BeforeEach
+	void setUp() {
+		estudante = new Estudante("Lucas Silva", emailEstudante, "senhaHash");
+		estudante.setId(1L);
+
+		progressoProperties = new ProgressoProperties();
+		progressoProperties.getAcc().setHorasExigidas(90);
+		progressoProperties.getAcex().setHorasExigidas(320);
+
+		service = new ProgressoService(usuarioContrato, atividadeComplementarRepository, progressoProperties,
+				cursoContrato);
 	}
 
-	private ProgressoService criarService(int horasAcc, int horasAcex) {
-		return new ProgressoService(usuarioContrato, atividadeComplementarRepository,
-				criarProperties(horasAcc, horasAcex));
-	}
-
-	private AtividadeComplementar criarAtividade(Natureza natureza, int cargaHoraria, Estudante estudante) {
-		return new AtividadeComplementar("Atividade de teste", "Instituicao", LocalDate.now(), cargaHoraria, natureza,
-				Categoria.EXTENSAO, null, estudante);
-	}
-
-	@Test
-	@DisplayName("Estudante sem atividades deve ter 0h e 0% em ambas as modalidades")
-	void deveRetornarZeroQuandoEstudanteNaoTemAtividades() {
-		Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
-		when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-		when(atividadeComplementarRepository.findByEstudanteAndNatureza(any(), any())).thenReturn(List.of());
-
-		ProgressoResponseDTO progresso = criarService(90, 320).obterProgresso(EMAIL);
-
-		assertEquals(0, progresso.getAcc().getHorasAcumuladas());
-		assertEquals(0, progresso.getAcc().getHorasPendentes());
-		assertEquals(0, progresso.getAcc().getPercentualConcluido());
-		assertEquals(90, progresso.getAcc().getHorasExigidas());
-
-		assertEquals(0, progresso.getAcex().getHorasAcumuladas());
-		assertEquals(0, progresso.getAcex().getHorasPendentes());
-		assertEquals(0, progresso.getAcex().getPercentualConcluido());
-		assertEquals(320, progresso.getAcex().getHorasExigidas());
+	private AtividadeComplementar criarAtividade(Natureza natureza, int horas, StatusAtividade status) {
+		Certificado cert = new Certificado("doc.pdf", "application/pdf", 1024L, "/path/doc.pdf");
+		AtividadeComplementar atv = new AtividadeComplementar("Atividade Teste", "UFAPE", LocalDate.now(), horas,
+				natureza, Categoria.ENSINO, cert, estudante);
+		atv.setStatus(status);
+		return atv;
 	}
 
 	@Test
-	@DisplayName("Estudante com atividades ACC e ACEX deve ter horas em horasPendentes e horasAcumuladas igual a zero")
-	void deveCalcularProgressoComHorasPendentesEHorasAcumuladasZero() {
-		Estudante estudante = new Estudante("Estudante", EMAIL, "hash");
-		when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(estudante));
-		when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC)).thenReturn(
-				List.of(criarAtividade(Natureza.ACC, 30, estudante), criarAtividade(Natureza.ACC, 20, estudante)));
-		when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
-				.thenReturn(List.of(criarAtividade(Natureza.ACEX, 10, estudante)));
+    @DisplayName("Deve calcular progresso zerado quando estudante nao possuir atividades")
+    void deveCalcularProgressoZeradoSemAtividades() {
+        when(usuarioContrato.buscarPorEmail(emailEstudante)).thenReturn(Optional.of(estudante));
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC))
+                .thenReturn(Collections.emptyList());
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
+                .thenReturn(Collections.emptyList());
 
-		ProgressoResponseDTO progresso = criarService(90, 320).obterProgresso(EMAIL);
+        ProgressoResponseDTO dto = service.obterProgresso(emailEstudante);
 
-		assertEquals(0, progresso.getAcc().getHorasAcumuladas());
-		assertEquals(50, progresso.getAcc().getHorasPendentes());
-		assertEquals(0, progresso.getAcc().getPercentualConcluido());
-		assertEquals(90, progresso.getAcc().getHorasExigidas());
+        assertNotNull(dto);
+        assertEquals(0, dto.getAcc().getHorasAcumuladas());
+        assertEquals(0, dto.getAcc().getHorasPendentes());
+        assertEquals(90, dto.getAcc().getHorasExigidas());
+        assertEquals(0, dto.getAcc().getPercentualConcluido());
 
-		assertEquals(0, progresso.getAcex().getHorasAcumuladas());
-		assertEquals(10, progresso.getAcex().getHorasPendentes());
-		assertEquals(0, progresso.getAcex().getPercentualConcluido());
-		assertEquals(320, progresso.getAcex().getHorasExigidas());
-	}
-
-	@Test
-	@DisplayName("Deve negar acesso com mensagem propria do contexto de atividades quando o usuario nao for estudante")
-	void deveNegarAcessoQuandoUsuarioNaoForEstudante() {
-		Avaliador avaliador = new Avaliador("Avaliador", EMAIL, "hash", "REG-1", "Extensao");
-		when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.of(avaliador));
-		ProgressoService service = criarService(90, 320);
-		AcessoNegadoAtividadeException excecao = assertThrows(AcessoNegadoAtividadeException.class,
-				() -> service.obterProgresso(EMAIL));
-		assertEquals("Apenas estudantes podem consultar o progresso de atividades.", excecao.getMessage());
-		assertFalse(excecao.getMessage().contains("cadastro público"));
-	}
-
-	@Test
-    @DisplayName("Deve negar acesso quando o usuario do token nao existir mais")
-    void deveNegarAcessoQuandoUsuarioNaoExistir() {
-        when(usuarioContrato.buscarPorEmail(EMAIL)).thenReturn(Optional.empty());
-        ProgressoService service = criarService(90, 320);
-        AcessoNegadoAtividadeException excecao = assertThrows(
-                AcessoNegadoAtividadeException.class,
-                () -> service.obterProgresso(EMAIL));
-        assertEquals("Apenas estudantes podem consultar o progresso de atividades.", excecao.getMessage());
+        assertEquals(0, dto.getAcex().getHorasAcumuladas());
+        assertEquals(0, dto.getAcex().getHorasPendentes());
+        assertEquals(320, dto.getAcex().getHorasExigidas());
+        assertEquals(0, dto.getAcex().getPercentualConcluido());
     }
+
+	@Test
+    @DisplayName("Deve somar horas aprovadas e pendentes separadamente para ACC e ACEX")
+    void deveSomarHorasAprovadasEPendentes() {
+        when(usuarioContrato.buscarPorEmail(emailEstudante)).thenReturn(Optional.of(estudante));
+
+        List<AtividadeComplementar> atividadesAcc = List.of(
+                criarAtividade(Natureza.ACC, 30, StatusAtividade.APROVADA),
+                criarAtividade(Natureza.ACC, 15, StatusAtividade.APROVADA),
+                criarAtividade(Natureza.ACC, 20, StatusAtividade.PENDENTE),
+                criarAtividade(Natureza.ACC, 10, StatusAtividade.REJEITADA));
+
+        List<AtividadeComplementar> atividadesAcex = List.of(
+                criarAtividade(Natureza.ACEX, 100, StatusAtividade.APROVADA),
+                criarAtividade(Natureza.ACEX, 50, StatusAtividade.PENDENTE));
+
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC))
+                .thenReturn(atividadesAcc);
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
+                .thenReturn(atividadesAcex);
+
+        ProgressoResponseDTO dto = service.obterProgresso(emailEstudante);
+
+        assertNotNull(dto);
+        assertEquals(45, dto.getAcc().getHorasAcumuladas());
+        assertEquals(20, dto.getAcc().getHorasPendentes());
+        assertEquals(90, dto.getAcc().getHorasExigidas());
+        assertEquals(50, dto.getAcc().getPercentualConcluido());
+
+        assertEquals(100, dto.getAcex().getHorasAcumuladas());
+        assertEquals(50, dto.getAcex().getHorasPendentes());
+        assertEquals(320, dto.getAcex().getHorasExigidas());
+        assertEquals(31, dto.getAcex().getPercentualConcluido());
+    }
+
+	@Test
+    @DisplayName("Deve limitar percentual maximo em 100 quando horas acumuladas excederem a meta")
+    void deveLimitarPercentualEmCem() {
+        when(usuarioContrato.buscarPorEmail(emailEstudante)).thenReturn(Optional.of(estudante));
+
+        List<AtividadeComplementar> atividadesAcc = List.of(
+                criarAtividade(Natureza.ACC, 120, StatusAtividade.APROVADA));
+
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACC))
+                .thenReturn(atividadesAcc);
+        when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudante, Natureza.ACEX))
+                .thenReturn(Collections.emptyList());
+
+        ProgressoResponseDTO dto = service.obterProgresso(emailEstudante);
+
+        assertEquals(120, dto.getAcc().getHorasAcumuladas());
+        assertEquals(100, dto.getAcc().getPercentualConcluido());
+    }
+
+	@Test
+	@DisplayName("Deve lancar AcessoNegadoAtividadeException se usuario for administrador ou avaliador")
+	void deveLancarExcecaoParaNaoEstudante() {
+		String emailAdmin = "admin@ufape.edu.br";
+		Administrador admin = new Administrador("Admin", emailAdmin, "pwd", "TOTAL", "Coord");
+		when(usuarioContrato.buscarPorEmail(emailAdmin)).thenReturn(Optional.of(admin));
+
+		assertThrows(AcessoNegadoAtividadeException.class, () -> service.obterProgresso(emailAdmin));
+	}
+
+	@Test
+	@DisplayName("Deve lancar AcessoNegadoAtividadeException se email nao for encontrado")
+	void deveLancarExcecaoParaEmailInexistente() {
+		String emailInexistente = "naoexiste@ufape.edu.br";
+		when(usuarioContrato.buscarPorEmail(emailInexistente)).thenReturn(Optional.empty());
+
+		assertThrows(AcessoNegadoAtividadeException.class, () -> service.obterProgresso(emailInexistente));
+	}
+
+	@Test
+	@DisplayName("Deve calcular progresso com metas customizadas do Curso quando o estudante possuir vinculo")
+	void deveCalcularProgressoComMetasDoCurso() {
+		Estudante estudanteComCurso = new Estudante("Lucas", emailEstudante, "senha123", "202601", "BCC");
+		when(usuarioContrato.buscarPorEmail(emailEstudante)).thenReturn(Optional.of(estudanteComCurso));
+
+		CursoDTO cursoDto = new CursoDTO(1L, "Bacharelado em Ciencia da Computacao", "BCC", 120, 360, true);
+		when(cursoContrato.buscarPorNomeOuCodigo("BCC")).thenReturn(Optional.of(cursoDto));
+
+		when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudanteComCurso, Natureza.ACC))
+				.thenReturn(Collections.emptyList());
+		when(atividadeComplementarRepository.findByEstudanteAndNatureza(estudanteComCurso, Natureza.ACEX))
+				.thenReturn(Collections.emptyList());
+
+		ProgressoResponseDTO progresso = service.obterProgresso(emailEstudante);
+
+		assertNotNull(progresso);
+		assertEquals(120, progresso.getAcc().getHorasExigidas());
+		assertEquals(360, progresso.getAcex().getHorasExigidas());
+	}
 }

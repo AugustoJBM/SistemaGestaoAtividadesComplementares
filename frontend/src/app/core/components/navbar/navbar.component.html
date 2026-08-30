@@ -7,6 +7,7 @@
 
       @if (estaAutenticado) {
         <nav class="hidden md:flex items-center gap-4 text-sm font-medium">
+          <!-- Links de Estudante -->
           @if (isEstudante) {
             <a
               routerLink="/dashboard"
@@ -45,6 +46,7 @@
             </a>
           }
 
+          <!-- Links de Avaliador / Docente -->
           @if (isAvaliador) {
             <a
               routerLink="/avaliacao"
@@ -70,19 +72,31 @@
             </a>
           }
 
-          <a
-            routerLink="/notificacoes"
-            routerLinkActive="text-[#003629] font-bold border-b-2 border-[#003629]"
-            class="text-[#404945] hover:text-[#003629] py-1 transition-colors"
-          >
-            Notificações
-          </a>
+          <!-- Links exclusivos de Administrador -->
+          @if (isAdmin) {
+            <a
+              routerLink="/admin/usuarios"
+              routerLinkActive="text-[#003629] font-bold border-b-2 border-[#003629]"
+              class="text-[#404945] hover:text-[#003629] py-1 transition-colors"
+            >
+              Usuários
+            </a>
+            <a
+              routerLink="/admin/cursos"
+              routerLinkActive="text-[#003629] font-bold border-b-2 border-[#003629]"
+              class="text-[#404945] hover:text-[#003629] py-1 transition-colors"
+            >
+              Cursos
+            </a>
+          }
         </nav>
       }
     </div>
 
+    <!-- Ações e Perfil à Direita -->
     <div class="flex items-center gap-3">
       @if (estaAutenticado) {
+        <app-contador-notificacoes />
         <span
           data-testid="badge-perfil"
           class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6efe9] text-[#003629] border border-[#c0c9c3]"

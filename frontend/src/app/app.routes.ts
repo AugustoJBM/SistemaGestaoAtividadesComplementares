@@ -18,6 +18,18 @@ export const routes: Routes = [
       import('./autenticacao/registro/registro.component').then((m) => m.RegistroComponent),
   },
   {
+    path: 'admin/usuarios',
+    loadComponent: () =>
+      import('./admin/usuarios/gestao-usuarios.component').then((m) => m.GestaoUsuariosComponent),
+    canActivate: [authGuard, roleGuard(['ADMINISTRADOR'])],
+  },
+  {
+    path: 'admin/cursos',
+    loadComponent: () =>
+      import('./admin/cursos/gestao-cursos.component').then((m) => m.GestaoCursosComponent),
+    canActivate: [authGuard, roleGuard(['ADMINISTRADOR'])],
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),

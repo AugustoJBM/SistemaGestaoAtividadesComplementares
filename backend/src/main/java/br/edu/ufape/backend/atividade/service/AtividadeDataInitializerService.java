@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
+// import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import br.edu.ufape.backend.atividade.model.AtividadeComplementar;
@@ -21,7 +21,7 @@ import br.edu.ufape.backend.usuario.contrato.UsuarioContrato;
 import br.edu.ufape.backend.usuario.model.Estudante;
 
 @Service
-@Profile("dev")
+// @Profile("dev")
 @Order(2)
 public class AtividadeDataInitializerService implements ApplicationRunner {
 

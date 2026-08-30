@@ -90,6 +90,7 @@ public class SecurityConfig {
 							.hasRole(ROLE_ESTUDANTE);
 					auth.requestMatchers(HttpMethod.GET, "/api/v1/solicitacoes/avaliacao",
 							"/api/v1/solicitacoes/*/avaliacao").hasRole(ROLE_AVALIADOR);
+					auth.requestMatchers("/api/v1/admin/**").hasRole(ROLE_ADMIN);
 
 					auth.anyRequest().authenticated();
 				}).exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint()))

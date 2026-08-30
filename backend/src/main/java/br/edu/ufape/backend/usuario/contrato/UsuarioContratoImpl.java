@@ -1,5 +1,6 @@
 package br.edu.ufape.backend.usuario.contrato;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,11 @@ public class UsuarioContratoImpl implements UsuarioContrato {
 
 	public UsuarioContratoImpl(UsuarioService usuarioService) {
 		this.usuarioService = usuarioService;
+	}
+
+	@Override
+	public List<Usuario> listarTodos() {
+		return usuarioService.listarTodos();
 	}
 
 	@Override

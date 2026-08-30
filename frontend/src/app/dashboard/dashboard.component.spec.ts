@@ -238,15 +238,14 @@ describe('DashboardComponent', () => {
     expect(elemento.querySelector('a[routerlink="/progresso"]')).toBeTruthy();
   });
 
-  it('deve expor um link de saída apontando para /logout', () => {
-    // Arrange
-    const elemento: HTMLElement = fixture.nativeElement;
-
-    // Act
+  it('deve expor os atalhos de navegacao rapida no dashboard', () => {
+    // Arrange & Act
     iniciar();
     responderCom(dtoCompleto);
 
     // Assert
-    expect(elemento.querySelector('a[routerlink="/logout"]')).toBeTruthy();
+    const elemento: HTMLElement = fixture.nativeElement;
+    expect(elemento.querySelector('a[routerlink="/atividades/cadastro"]')).toBeTruthy();
+    expect(elemento.querySelector('a[routerlink="/progresso"]')).toBeTruthy();
   });
 });

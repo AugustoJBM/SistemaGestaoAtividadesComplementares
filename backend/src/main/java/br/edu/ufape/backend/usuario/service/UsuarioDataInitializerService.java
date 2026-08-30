@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
+// import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import br.edu.ufape.backend.usuario.model.Estudante;
 import br.edu.ufape.backend.usuario.repository.UsuarioRepository;
 
 @Service
-@Profile("dev")
+// @Profile("dev")
 @Order(1)
 public class UsuarioDataInitializerService implements ApplicationRunner {
 	private static final Logger log = LoggerFactory.getLogger(UsuarioDataInitializerService.class);
@@ -24,7 +24,7 @@ public class UsuarioDataInitializerService implements ApplicationRunner {
 	private final String senhaPadrao;
 
 	public UsuarioDataInitializerService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-			@Value("${sgac.init.default-password:default_dev_pwd_2026}") String senhaPadrao) {
+			@Value("${sgac.init.default-password:}") String senhaPadrao) {
 		this.usuarioRepository = usuarioRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.senhaPadrao = senhaPadrao;
