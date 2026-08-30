@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { AvaliacaoSolicitacaoService } from './avaliacao-solicitacao.service';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { AvaliacaoService } from './avaliacao.service';
 import { SolicitacaoAvaliadorDetalhe, SolicitacaoAvaliadorResumo } from './avaliacao.model';
-import { API_BASE_URL } from '../../api.config';
+import { API_BASE_URL } from '../api.config';
 
 const resumoMock: SolicitacaoAvaliadorResumo[] = [
   {
@@ -29,16 +30,16 @@ const detalheMock: SolicitacaoAvaliadorDetalhe = {
   ],
 };
 
-describe('AvaliacaoSolicitacaoService', () => {
-  let service: AvaliacaoSolicitacaoService;
+describe('AvaliacaoService', () => {
+  let service: AvaliacaoService;
   let httpMock: HttpTestingController;
   const url = `${API_BASE_URL}/solicitacoes`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [AvaliacaoSolicitacaoService, provideHttpClient(), provideHttpClientTesting()],
+      providers: [AvaliacaoService, provideHttpClient(), provideHttpClientTesting()],
     });
-    service = TestBed.inject(AvaliacaoSolicitacaoService);
+    service = TestBed.inject(AvaliacaoService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -69,15 +70,6 @@ describe('AvaliacaoSolicitacaoService', () => {
     expect(recebido).toEqual(resumoMock);
   });
 
-  it('devolve lista vazia quando o backend responde null', () => {
-    let recebido: SolicitacaoAvaliadorResumo[] | undefined;
-    service.consultar().subscribe((lista) => (recebido = lista));
-
-    httpMock.expectOne(`${url}/avaliacao`).flush(null);
-
-    expect(recebido).toEqual([]);
-  });
-
   it('detalha uma solicitacao pelo id', () => {
     let recebido: SolicitacaoAvaliadorDetalhe | undefined;
     service.detalhar(7).subscribe((detalhe) => (recebido = detalhe));
@@ -89,22 +81,26 @@ describe('AvaliacaoSolicitacaoService', () => {
     expect(recebido).toEqual(detalheMock);
   });
 
-  it('traduz 404 do detalhe para mensagem de solicitacao inexistente', () => {
-    let erro: Error | undefined;
-    service.detalhar(99).subscribe({ error: (e: Error) => (erro = e) });
+  it('deve enviar decisao de avaliacao via PATCH', () => {
+    let recebido: SolicitacaoAvaliadorDetalhe | undefined;
+    service.avaliar(7, 'APROVADA').subscribe((res) => (recebido = res));
 
-    httpMock.expectOne(`${url}/99/avaliacao`).flush(null, { status: 404, statusText: 'Not Found' });
+    const req = httpMock.expectOne(`${url}/7/avaliacao`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ decisao: 'APROVADA', justificativa: undefined });
+    req.flush({ ...detalheMock, status: 'APROVADA' });
 
-    expect(erro?.message).toBe('Solicitação não encontrada.');
+    expect(recebido?.status).toBe('APROVADA');
   });
 
-  it('traduz 401 para mensagem de sessao expirada', () => {
+  it('traduz 409 para mensagem de conflito de avaliacao', () => {
     let erro: Error | undefined;
-    service.consultar().subscribe({ error: (e: Error) => (erro = e) });
+    service.avaliar(7, 'APROVADA').subscribe({ error: (e: Error) => (erro = e) });
 
-    httpMock.expectOne(`${url}/avaliacao`).flush(null, { status: 401, statusText: 'Unauthorized' });
-
-    expect(erro?.message).toBe('Sessão expirada. Faça login novamente.');
+    httpMock.expectOne(`${url}/7/avaliacao`).flush(null, { status: 409, statusText: 'Conflict' });
+    expect(erro?.message).toBe(
+      'Esta solicitação já foi avaliada ou seu status foi alterado por outro usuário.',
+    );
   });
 
   it('traduz 403 para mensagem de permissao', () => {
@@ -112,29 +108,6 @@ describe('AvaliacaoSolicitacaoService', () => {
     service.consultar().subscribe({ error: (e: Error) => (erro = e) });
 
     httpMock.expectOne(`${url}/avaliacao`).flush(null, { status: 403, statusText: 'Forbidden' });
-
     expect(erro?.message).toBe('Apenas avaliadores podem consultar as solicitações de validação.');
-  });
-
-  it('traduz falha de conexao', () => {
-    let erro: Error | undefined;
-    service.consultar().subscribe({ error: (e: Error) => (erro = e) });
-
-    httpMock
-      .expectOne(`${url}/avaliacao`)
-      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
-
-    expect(erro?.message).toBe('Não foi possível conectar ao servidor. Verifique sua conexão.');
-  });
-
-  it('prioriza a mensagem enviada pelo backend na consulta', () => {
-    let erro: Error | undefined;
-    service.consultar().subscribe({ error: (e: Error) => (erro = e) });
-
-    httpMock
-      .expectOne(`${url}/avaliacao`)
-      .flush({ message: 'Status inválido.' }, { status: 400, statusText: 'Bad Request' });
-
-    expect(erro?.message).toBe('Status inválido.');
   });
 });

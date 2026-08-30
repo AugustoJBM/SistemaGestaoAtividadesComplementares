@@ -2,14 +2,19 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { API_BASE_URL } from '../../api.config';
-import { StatusSolicitacao } from '../solicitacao.model';
-import { SolicitacaoAvaliadorDetalhe, SolicitacaoAvaliadorResumo } from './avaliacao.model';
+import { API_BASE_URL } from '../api.config';
+import { StatusSolicitacao } from '../solicitacao/solicitacao.model';
+import {
+  AvaliacaoRequest,
+  DecisaoAvaliacao,
+  SolicitacaoAvaliadorDetalhe,
+  SolicitacaoAvaliadorResumo,
+} from './avaliacao.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AvaliacaoSolicitacaoService {
+export class AvaliacaoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${API_BASE_URL}/solicitacoes`;
 
@@ -23,12 +28,35 @@ export class AvaliacaoSolicitacaoService {
     );
   }
 
+  listarPendentes(): Observable<SolicitacaoAvaliadorResumo[]> {
+    return this.consultar();
+  }
+
   detalhar(id: number): Observable<SolicitacaoAvaliadorDetalhe> {
     return this.http
       .get<SolicitacaoAvaliadorDetalhe>(`${this.apiUrl}/${id}/avaliacao`)
       .pipe(
         catchError((error: HttpErrorResponse) =>
           throwError(() => new Error(this.traduzirErroDetalhe(error))),
+        ),
+      );
+  }
+
+  avaliar(
+    id: number,
+    decisao: DecisaoAvaliacao,
+    justificativa?: string,
+  ): Observable<SolicitacaoAvaliadorDetalhe> {
+    const payload: AvaliacaoRequest = {
+      decisao,
+      justificativa: justificativa?.trim() || undefined,
+    };
+
+    return this.http
+      .patch<SolicitacaoAvaliadorDetalhe>(`${this.apiUrl}/${id}/avaliacao`, payload)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(this.traduzirErroAvaliacao(error))),
         ),
       );
   }
@@ -50,6 +78,27 @@ export class AvaliacaoSolicitacaoService {
     return (
       this.mensagemDoBackend(error) ??
       'Não foi possível carregar os detalhes da solicitação. Tente novamente.'
+    );
+  }
+
+  private traduzirErroAvaliacao(error: HttpErrorResponse): string {
+    const comum = this.traduzirErroComum(error);
+    if (comum) return comum;
+    if (error.status === 409) {
+      return (
+        this.mensagemDoBackend(error) ??
+        'Esta solicitação já foi avaliada ou seu status foi alterado por outro usuário.'
+      );
+    }
+    if (error.status === 400) {
+      return this.mensagemDoBackend(error) ?? 'Dados da avaliação inválidos.';
+    }
+    if (error.status === 404) {
+      return this.mensagemDoBackend(error) ?? 'Solicitação não encontrada.';
+    }
+    return (
+      this.mensagemDoBackend(error) ??
+      'Não foi possível registrar a decisão da solicitação. Tente novamente.'
     );
   }
 

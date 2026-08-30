@@ -1,11 +1,11 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConsultaSolicitacoesComponent } from './consulta-solicitacoes.component';
-import { AvaliacaoSolicitacaoService } from '../avaliacao-solicitacao.service';
+import { AvaliacaoService } from '../avaliacao.service';
 import { SolicitacaoAvaliadorResumo } from '../avaliacao.model';
-import { StatusSolicitacao } from '../../solicitacao.model';
+import { StatusSolicitacao } from '../../solicitacao/solicitacao.model';
 
 const solicitacoesMock: SolicitacaoAvaliadorResumo[] = [
   {
@@ -27,12 +27,10 @@ const solicitacoesMock: SolicitacaoAvaliadorResumo[] = [
   },
 ];
 
-function montar(
-  duble: Partial<AvaliacaoSolicitacaoService>,
-): ComponentFixture<ConsultaSolicitacoesComponent> {
+function montar(duble: Partial<AvaliacaoService>): ComponentFixture<ConsultaSolicitacoesComponent> {
   TestBed.configureTestingModule({
     imports: [ConsultaSolicitacoesComponent],
-    providers: [provideRouter([]), { provide: AvaliacaoSolicitacaoService, useValue: duble }],
+    providers: [provideRouter([]), { provide: AvaliacaoService, useValue: duble }],
   });
   return TestBed.createComponent(ConsultaSolicitacoesComponent);
 }
@@ -43,7 +41,6 @@ describe('ConsultaSolicitacoesComponent', () => {
   it('lista as solicitacoes com estudante, data de submissao e status', () => {
     const fixture = montar({ consultar: () => of(solicitacoesMock) });
     fixture.detectChanges();
-
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('Ana Souza');
     expect(texto).toContain('Bruno Lima');
@@ -57,7 +54,6 @@ describe('ConsultaSolicitacoesComponent', () => {
       consultar: () => new Observable<SolicitacaoAvaliadorResumo[]>(() => {}),
     });
     fixture.detectChanges();
-
     expect(fixture.componentInstance.carregando()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Carregando');
   });
@@ -67,7 +63,6 @@ describe('ConsultaSolicitacoesComponent', () => {
       consultar: () => throwError(() => new Error('Falha ao carregar')),
     });
     fixture.detectChanges();
-
     const alerta = fixture.nativeElement.querySelector('[role="alert"]');
     expect(alerta).toBeTruthy();
     expect(alerta.textContent).toContain('Falha ao carregar');
@@ -76,7 +71,6 @@ describe('ConsultaSolicitacoesComponent', () => {
   it('mostra estado vazio quando nao ha solicitacoes', () => {
     const fixture = montar({ consultar: () => of([]) });
     fixture.detectChanges();
-
     expect(fixture.componentInstance.semSolicitacoes()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Nenhuma solicitação encontrada');
   });
@@ -90,9 +84,7 @@ describe('ConsultaSolicitacoesComponent', () => {
       },
     });
     fixture.detectChanges();
-
     fixture.componentInstance.alterarFiltro('REJEITADA');
-
     expect(statusRecebidos).toEqual([undefined, 'REJEITADA']);
     expect(fixture.componentInstance.filtroStatus()).toBe('REJEITADA');
   });
@@ -100,12 +92,9 @@ describe('ConsultaSolicitacoesComponent', () => {
   it('navega para o detalhe ao clicar em uma solicitacao', () => {
     const fixture = montar({ consultar: () => of(solicitacoesMock) });
     fixture.detectChanges();
-
     const router = TestBed.inject(Router);
     const navegarSpy = vi.spyOn(router, 'navigate');
-
     fixture.componentInstance.abrirDetalhe(solicitacoesMock[0]);
-
     expect(navegarSpy).toHaveBeenCalledWith(['/avaliacao/solicitacoes', 7]);
   });
 });

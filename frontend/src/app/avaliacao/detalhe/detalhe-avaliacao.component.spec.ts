@@ -1,8 +1,9 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
+import { afterEach, describe, expect, it } from 'vitest';
 import { DetalheAvaliacaoComponent } from './detalhe-avaliacao.component';
-import { AvaliacaoSolicitacaoService } from '../avaliacao-solicitacao.service';
+import { AvaliacaoService } from '../avaliacao.service';
 import { SolicitacaoAvaliadorDetalhe } from '../avaliacao.model';
 
 const detalheMock: SolicitacaoAvaliadorDetalhe = {
@@ -21,14 +22,14 @@ const detalheMock: SolicitacaoAvaliadorDetalhe = {
 };
 
 function montar(
-  duble: Partial<AvaliacaoSolicitacaoService>,
+  duble: Partial<AvaliacaoService>,
   id = '7',
 ): ComponentFixture<DetalheAvaliacaoComponent> {
   TestBed.configureTestingModule({
     imports: [DetalheAvaliacaoComponent],
     providers: [
       provideRouter([]),
-      { provide: AvaliacaoSolicitacaoService, useValue: duble },
+      { provide: AvaliacaoService, useValue: duble },
       {
         provide: ActivatedRoute,
         useValue: {
@@ -52,7 +53,6 @@ describe('DetalheAvaliacaoComponent', () => {
       detalhar: () => new Observable<SolicitacaoAvaliadorDetalhe>(() => {}),
     });
     fixture.detectChanges();
-
     expect(fixture.componentInstance.carregando()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Carregando');
   });
@@ -60,7 +60,6 @@ describe('DetalheAvaliacaoComponent', () => {
   it('renderiza o detalhe completo da solicitacao', () => {
     const fixture = montar({ detalhar: () => of(detalheMock) });
     fixture.detectChanges();
-
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('Ana Souza');
     expect(texto).toContain('ana.souza@ufape.edu.br');
@@ -77,7 +76,6 @@ describe('DetalheAvaliacaoComponent', () => {
       detalhar: () => of({ ...detalheMock, justificativa: undefined, dataAvaliacao: undefined }),
     });
     fixture.detectChanges();
-
     expect(fixture.nativeElement.querySelector('[data-testid="justificativa"]')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Data de avaliação');
   });
@@ -88,7 +86,6 @@ describe('DetalheAvaliacaoComponent', () => {
       '999',
     );
     fixture.detectChanges();
-
     const alerta = fixture.nativeElement.querySelector('[role="alert"]');
     expect(alerta).toBeTruthy();
     expect(alerta.textContent).toContain('Solicitação não encontrada.');

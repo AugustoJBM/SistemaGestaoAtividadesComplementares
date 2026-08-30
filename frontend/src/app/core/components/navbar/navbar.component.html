@@ -47,11 +47,19 @@
 
           @if (isAvaliador) {
             <a
+              routerLink="/avaliacao"
+              routerLinkActive="text-[#003629] font-bold border-b-2 border-[#003629]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="text-[#404945] hover:text-[#003629] py-1 transition-colors"
+            >
+              Fila de Avaliação
+            </a>
+            <a
               routerLink="/avaliacao/solicitacoes"
               routerLinkActive="text-[#003629] font-bold border-b-2 border-[#003629]"
               class="text-[#404945] hover:text-[#003629] py-1 transition-colors"
             >
-              Fila de Avaliação
+              Histórico
             </a>
             <a
               routerLink="/regulamentos/gestao"
