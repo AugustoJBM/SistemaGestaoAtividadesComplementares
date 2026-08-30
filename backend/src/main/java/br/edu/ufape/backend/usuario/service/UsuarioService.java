@@ -1,5 +1,6 @@
 package br.edu.ufape.backend.usuario.service;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import br.edu.ufape.backend.usuario.model.Usuario;
@@ -13,8 +14,8 @@ public class UsuarioService {
 		this.usuarioRepository = usuarioRepository;
 	}
 
-	public Usuario salvar(Usuario usuario) {
-		return usuarioRepository.save(usuario);
+	public List<Usuario> listarTodos() {
+		return usuarioRepository.findAll();
 	}
 
 	public Optional<Usuario> buscarPorEmail(String email) {
@@ -27,5 +28,9 @@ public class UsuarioService {
 
 	public boolean existePorEmail(String email) {
 		return usuarioRepository.existsByEmailIgnoreCase(email);
+	}
+
+	public Usuario salvar(Usuario usuario) {
+		return usuarioRepository.save(usuario);
 	}
 }

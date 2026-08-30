@@ -1,0 +1,170 @@
+<div class="min-h-screen flex flex-col bg-[#f8f9fa] text-[#191c1d]">
+  <main class="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-8 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-[#003629] tracking-tight">
+          Gestão de Usuários Institucionais
+        </h1>
+        <p class="text-xs text-[#404945] mt-1">
+          Cadastre e gerencie o acesso de avaliadores e administradores da UFAPE
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="abrirModal()"
+          class="px-4 py-2 bg-[#003629] text-white text-xs font-semibold rounded-lg hover:bg-[#1b4d3e] shadow-sm flex items-center gap-1.5"
+        >
+          <span class="material-symbols-outlined text-[16px]">person_add</span>
+          <span>Novo Servidor / Avaliador</span>
+        </button>
+      </div>
+    </div>
+
+    @if (mensagemSucesso()) {
+      <div
+        class="mb-4 p-4 bg-[#c3ecd2] text-[#00522e] rounded-xl flex items-center justify-between border border-[#00522e]/20 text-xs"
+      >
+        <span>{{ mensagemSucesso() }}</span>
+        <button
+          type="button"
+          (click)="mensagemSucesso.set(null)"
+          class="material-symbols-outlined text-sm"
+        >
+          close
+        </button>
+      </div>
+    }
+
+    @if (carregando()) {
+      <div class="flex flex-col items-center justify-center py-16 text-[#404945]">
+        <span class="material-symbols-outlined animate-spin text-3xl text-[#003629]"
+          >progress_activity</span
+        >
+        <p class="text-sm mt-2">Carregando usuários...</p>
+      </div>
+    } @else {
+      <div class="bg-white rounded-xl shadow-sm border border-[#e1e3e4] overflow-hidden">
+        <table class="w-full text-left text-xs">
+          <thead
+            class="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#404945] uppercase font-semibold"
+          >
+            <tr>
+              <th class="p-4">Nome</th>
+              <th class="p-4">E-mail</th>
+              <th class="p-4">Papel</th>
+              <th class="p-4">Detalhes</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#e1e3e4]">
+            @for (usuario of usuarios(); track usuario.id) {
+              <tr class="hover:bg-[#f8f9fa]/50">
+                <td class="p-4 font-semibold text-[#191c1d]">{{ usuario.nome }}</td>
+                <td class="p-4 text-[#404945]">{{ usuario.email }}</td>
+                <td class="p-4">
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    [ngClass]="{
+                      'bg-[#e6efe9] text-[#003629] border-[#003629]/30':
+                        usuario.role === 'ADMINISTRADOR',
+                      'bg-[#cfe6ff] text-[#00497d] border-[#00497d]/30':
+                        usuario.role === 'AVALIADOR',
+                      'bg-[#f3f4f5] text-[#404945] border-[#c0c9c3]': usuario.role === 'ESTUDANTE',
+                    }"
+                  >
+                    {{ usuario.role }}
+                  </span>
+                </td>
+                <td class="p-4 text-[#707974]">{{ usuario.detalheInstitucional }}</td>
+                <td class="p-4">
+                  <span
+                    class="inline-flex items-center gap-1 font-semibold"
+                    [ngClass]="usuario.ativo ? 'text-[#00522e]' : 'text-[#ba1a1a]'"
+                  >
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      [ngClass]="usuario.ativo ? 'bg-[#00522e]' : 'bg-[#ba1a1a]'"
+                    ></span>
+                    {{ usuario.ativo ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td class="p-4 text-right">
+                  <button
+                    type="button"
+                    (click)="alternarStatus(usuario)"
+                    class="text-xs font-semibold underline hover:opacity-80"
+                    [ngClass]="usuario.ativo ? 'text-[#ba1a1a]' : 'text-[#00522e]'"
+                  >
+                    {{ usuario.ativo ? 'Inativar' : 'Ativar' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Modal de Cadastro -->
+    @if (modalAberto()) {
+      <div
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      >
+        <div
+          class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 border border-[#c0c9c3]"
+        >
+          <h2 class="text-base font-bold text-[#003629]">Novo Usuário Institucional</h2>
+          <form [formGroup]="formUsuario" (ngSubmit)="salvarUsuario()" class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold mb-1">Nome Completo *</label>
+              <input
+                formControlName="nome"
+                class="w-full border rounded-lg p-2 bg-[#f8f9fa]"
+                placeholder="Ex: Prof. Dr. Silva"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">E-mail Institucional *</label>
+              <input
+                formControlName="email"
+                type="email"
+                class="w-full border rounded-lg p-2 bg-[#f8f9fa]"
+                placeholder="exemplo@ufape.edu.br"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Senha Inicial *</label>
+              <input
+                formControlName="senha"
+                type="password"
+                class="w-full border rounded-lg p-2 bg-[#f8f9fa]"
+                placeholder="Mínimo 8 caracteres"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Papel / Função *</label>
+              <select formControlName="role" class="w-full border rounded-lg p-2 bg-[#f8f9fa]">
+                <option value="AVALIADOR">Avaliador (Docente / Comissão)</option>
+                <option value="ADMINISTRADOR">Administrador Geral</option>
+              </select>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+              <button type="button" (click)="fecharModal()" class="px-4 py-2 border rounded-lg">
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="salvando()"
+                class="px-5 py-2 bg-[#003629] text-white rounded-lg font-bold"
+              >
+                {{ salvando() ? 'Salvando...' : 'Cadastrar' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  </main>
+</div>

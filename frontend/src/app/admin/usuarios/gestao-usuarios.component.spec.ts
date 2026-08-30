@@ -1,0 +1,62 @@
+import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { GestaoUsuariosComponent } from './gestao-usuarios.component';
+import { AdminService } from '../admin.service';
+import { UsuarioAdmin } from '../admin.model';
+
+const usuariosMock: UsuarioAdmin[] = [
+  {
+    id: 1,
+    nome: 'Docente Avaliador',
+    email: 'docente@ufape.edu.br',
+    role: 'AVALIADOR',
+    ativo: true,
+    detalheInstitucional: 'Computação',
+  },
+];
+
+describe('GestaoUsuariosComponent', () => {
+  let component: GestaoUsuariosComponent;
+  let fixture: ComponentFixture<GestaoUsuariosComponent>;
+  let adminServiceSpy: {
+    listarUsuarios: ReturnType<typeof vi.fn>;
+    alternarStatusUsuario: ReturnType<typeof vi.fn>;
+    cadastrarUsuarioInstitucional: ReturnType<typeof vi.fn>;
+  };
+
+  beforeEach(async () => {
+    adminServiceSpy = {
+      listarUsuarios: vi.fn().mockReturnValue(of(usuariosMock)),
+      alternarStatusUsuario: vi.fn(),
+      cadastrarUsuarioInstitucional: vi.fn(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [GestaoUsuariosComponent],
+      providers: [{ provide: AdminService, useValue: adminServiceSpy }],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(GestaoUsuariosComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('deve carregar e listar os usuarios cadastrados', () => {
+    expect(component).toBeTruthy();
+    expect(adminServiceSpy.listarUsuarios).toHaveBeenCalled();
+    expect(component.usuarios().length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Docente Avaliador');
+  });
+
+  it('deve alternar status do usuario com sucesso', () => {
+    const inativado = { ...usuariosMock[0], ativo: false };
+    adminServiceSpy.alternarStatusUsuario.mockReturnValue(of(inativado));
+
+    component.alternarStatus(usuariosMock[0]);
+    expect(adminServiceSpy.alternarStatusUsuario).toHaveBeenCalledWith(1);
+    expect(component.usuarios()[0].ativo).toBe(false);
+  });
+});
