@@ -53,7 +53,7 @@ describe('ContadorNotificacoesComponent', () => {
 
   it('deve falhar silenciosamente em caso de erro de rede sem quebrar o componente', () => {
     notificacaoServiceMock.contarNaoLidas.mockReturnValue(
-      throwError(() => new Error('Erro de rede'))
+      throwError(() => new Error('Erro de rede')),
     );
     fixture = TestBed.createComponent(ContadorNotificacoesComponent);
     component = fixture.componentInstance;

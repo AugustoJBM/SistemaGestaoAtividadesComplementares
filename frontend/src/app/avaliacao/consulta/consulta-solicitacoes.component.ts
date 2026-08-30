@@ -1,11 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { StatusSolicitacao } from '../../solicitacao.model';
+import { StatusSolicitacao } from '../../solicitacao/solicitacao.model';
 import { SolicitacaoAvaliadorResumo } from '../avaliacao.model';
-import { AvaliacaoSolicitacaoService } from '../avaliacao-solicitacao.service';
-import { classeStatus, rotuloStatus } from '../../status-solicitacao';
-import { dataFormatada } from '../../solicitacao.helpers';
+import { AvaliacaoService } from '../avaliacao.service';
+import { classeStatus, rotuloStatus } from '../../solicitacao/status-solicitacao';
+import { dataFormatada } from '../../solicitacao/solicitacao.helpers';
 
 interface OpcaoFiltroStatus {
   valor: StatusSolicitacao | '';
@@ -28,7 +28,7 @@ const OPCOES_FILTRO_STATUS: OpcaoFiltroStatus[] = [
   templateUrl: './consulta-solicitacoes.component.html',
 })
 export class ConsultaSolicitacoesComponent implements OnInit {
-  private readonly avaliacaoService = inject(AvaliacaoSolicitacaoService);
+  private readonly avaliacaoService = inject(AvaliacaoService);
   private readonly router = inject(Router);
 
   readonly opcoesFiltroStatus = OPCOES_FILTRO_STATUS;

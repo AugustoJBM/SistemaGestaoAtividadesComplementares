@@ -236,6 +236,7 @@
                   </p>
                 }
               </div>
+
               <div class="space-y-6">
                 <div class="space-y-2">
                   <label class="block font-label-sm text-label-sm text-on-surface" for="categoria">
@@ -267,6 +268,7 @@
                     </p>
                   }
                 </div>
+
                 <div class="space-y-2">
                   <label
                     class="block font-label-sm text-label-sm text-on-surface"
@@ -448,8 +450,7 @@
                     {{
                       arquivoAnexado()
                         ? 'Clique ou arraste outro arquivo para trocar'
-                        : 'Clique ou
-                                    arraste um novo arquivo para substituir manualmente'
+                        : 'Clique ou arraste um novo arquivo para substituir manualmente'
                     }}
                   </p>
                   <p class="font-label-sm text-label-sm text-on-surface-variant mt-1">
@@ -458,6 +459,7 @@
                 </div>
               </div>
             </div>
+
             @if (erroArquivo()) {
               <p class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-1">
                 <span class="material-symbols-outlined text-[16px]">error</span>
@@ -530,6 +532,7 @@
             <span class="material-symbols-outlined text-2xl">close</span>
           </button>
         </div>
+
         <div
           class="flex-grow bg-surface-container-low p-4 flex items-center justify-center overflow-auto relative"
         >
@@ -563,6 +566,7 @@
             }
           }
         </div>
+
         <div
           class="px-6 py-3 border-t border-surface-variant bg-surface-container-lowest flex justify-end"
         >

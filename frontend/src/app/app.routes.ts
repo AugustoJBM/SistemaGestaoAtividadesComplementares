@@ -90,9 +90,17 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'avaliacao',
+    loadComponent: () =>
+      import('./avaliacao/fila/fila-solicitacoes.component').then(
+        (m) => m.FilaSolicitacoesComponent,
+      ),
+    canActivate: [authGuard, roleGuard(['AVALIADOR', 'ADMINISTRADOR'])],
+  },
+  {
     path: 'avaliacao/solicitacoes',
     loadComponent: () =>
-      import('./solicitacao/avaliacao/consulta/consulta-solicitacoes.component').then(
+      import('./avaliacao/consulta/consulta-solicitacoes.component').then(
         (m) => m.ConsultaSolicitacoesComponent,
       ),
     canActivate: [authGuard, roleGuard(['AVALIADOR', 'ADMINISTRADOR'])],
@@ -100,7 +108,7 @@ export const routes: Routes = [
   {
     path: 'avaliacao/solicitacoes/:id',
     loadComponent: () =>
-      import('./solicitacao/avaliacao/detalhe/detalhe-avaliacao.component').then(
+      import('./avaliacao/detalhe/detalhe-avaliacao.component').then(
         (m) => m.DetalheAvaliacaoComponent,
       ),
     canActivate: [authGuard, roleGuard(['AVALIADOR', 'ADMINISTRADOR'])],

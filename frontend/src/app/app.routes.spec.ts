@@ -90,6 +90,13 @@ describe('routes', () => {
     expect(rota?.canActivate).toContain(authGuard);
   });
 
+  it('deve proteger a rota avaliacao com authGuard e roleGuard AVALIADOR', () => {
+    const rota = routes.find((r: Route) => r.path === 'avaliacao');
+    expect(rota).toBeTruthy();
+    expect(rota?.canActivate?.length).toBe(2);
+    expect(rota?.canActivate).toContain(authGuard);
+  });
+
   it('deve proteger a rota avaliacao/solicitacoes com authGuard e roleGuard AVALIADOR', () => {
     const rota = routes.find((r: Route) => r.path === 'avaliacao/solicitacoes');
     expect(rota).toBeTruthy();
