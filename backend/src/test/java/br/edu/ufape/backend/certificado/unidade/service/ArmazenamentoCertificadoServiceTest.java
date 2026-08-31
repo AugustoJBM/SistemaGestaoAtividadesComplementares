@@ -56,4 +56,35 @@ class ArmazenamentoCertificadoServiceTest {
 
 		assertThrows(CertificadoInvalidoException.class, () -> service.armazenar(arquivoSemNome));
 	}
+
+    @Test
+    @DisplayName("Deve lançar CertificadoInvalidoException para tipos de arquivo não permitidos")
+    void deveRejeitarTipoInvalido() {
+        ArmazenamentoCertificadoService service = new ArmazenamentoCertificadoService(tempDir.toString());
+        MockMultipartFile arquivoExe = new MockMultipartFile("arquivo", "script.exe", "application/x-msdownload", "malicioso".getBytes());
+
+        assertThrows(CertificadoInvalidoException.class, () -> service.armazenar(arquivoExe));
+    }
+
+    @Test
+    @DisplayName("Deve lançar CertificadoInvalidoException quando o arquivo exceder o tamanho limite de 5MB")
+    void deveRejeitarArquivoAcimaDoLimite() {
+        ArmazenamentoCertificadoService service = new ArmazenamentoCertificadoService(tempDir.toString());
+        byte[] conteudoGrande = new byte[6 * 1024 * 1024]; // 6MB
+        MockMultipartFile arquivoGrande = new MockMultipartFile("arquivo", "grande.pdf", "application/pdf", conteudoGrande);
+
+        assertThrows(CertificadoInvalidoException.class, () -> service.armazenar(arquivoGrande));
+    }
+
+    @Test
+    @DisplayName("Deve sanitizar nomes de arquivos com tentativas de path traversal")
+    void deveSanitizarNomeComPathTraversal() {
+        ArmazenamentoCertificadoService service = new ArmazenamentoCertificadoService(tempDir.toString());
+        MockMultipartFile arquivoMalicioso = new MockMultipartFile("arquivo", "../../etc/passwd", "application/pdf", "conteudo".getBytes());
+
+        Certificado certificado = service.armazenar(arquivoMalicioso);
+
+        assertNotNull(certificado);
+        assertTrue(Path.of(certificado.getReferencia()).startsWith(tempDir));
+    }
 }
