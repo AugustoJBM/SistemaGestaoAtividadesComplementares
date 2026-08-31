@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -57,7 +58,7 @@ public class AtividadeComplementarService {
             UsuarioContrato usuarioContrato, ArmazenamentoCertificadoService armazenamentoCertificadoService,
             AuditoriaConformidadeService auditoriaConformidadeService,
             ParecerConformidadeRepository parecerConformidadeRepository,
-            SolicitacaoContrato solicitacaoContrato,
+            @Lazy SolicitacaoContrato solicitacaoContrato,
             @Value("${sgac.certificados.diretorio:certificados}") String diretorioCertificados) {
         this.atividadeRepository = atividadeRepository;
         this.usuarioContrato = usuarioContrato;
@@ -179,7 +180,6 @@ public class AtividadeComplementarService {
         atividade.setNatureza(request.natureza());
         atividade.setCategoria(request.categoria());
 
-        // Reset de status para PENDENTE na edição para evitar inconsistência de horas
         atividade.setStatus(StatusAtividade.PENDENTE);
 
         Certificado certificadoAntigo = atividade.getCertificado();
@@ -194,7 +194,6 @@ public class AtividadeComplementarService {
         try {
             AtividadeComplementar atividadeSalva = atividadeRepository.save(atividade);
 
-            // Invalida o parecer antigo para forçar nova auditoria
             parecerConformidadeRepository.findByAtividadeId(id).ifPresent(parecerConformidadeRepository::delete);
 
             if (novoCertificado != null && certificadoAntigo != null) {
