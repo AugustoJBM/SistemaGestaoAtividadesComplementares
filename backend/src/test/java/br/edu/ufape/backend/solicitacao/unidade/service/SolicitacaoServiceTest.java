@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
+import br.edu.ufape.backend.notificacao.contrato.NotificacaoContrato;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
@@ -50,11 +52,15 @@ class SolicitacaoServiceTest {
 	@Mock
 	private AtividadeContrato atividadeContrato;
 
+	@Mock
+	private NotificacaoContrato notificacaoContrato;
+
 	private SolicitacaoService solicitacaoService;
 
 	@BeforeEach
 	void setUp() {
-		solicitacaoService = new SolicitacaoService(solicitacaoValidacaoRepository, atividadeContrato);
+		solicitacaoService = new SolicitacaoService(solicitacaoValidacaoRepository, atividadeContrato,
+				notificacaoContrato);
 	}
 
 	private SolicitacaoValidacao criarSolicitacao(StatusSolicitacao status) {
@@ -397,5 +403,79 @@ class SolicitacaoServiceTest {
 				() -> solicitacaoService.detalharParaAvaliacao(999L));
 
 		verify(solicitacaoValidacaoRepository).findByIdComItens(999L);
+	}
+
+	@Test
+	@DisplayName("Notificacao: submeter deve notificar mudanca de status para SUBMETIDA")
+	void submeterDeveNotificarMudancaStatusParaSubmetida() {
+		Long estudanteId = 5L;
+		when(solicitacaoValidacaoRepository.existsByEstudanteIdAndStatusIn(estudanteId,
+				StatusSolicitacao.STATUS_EM_ABERTO)).thenReturn(false);
+
+		List<AtividadeResponseDTO> atividades = List.of(new AtividadeResponseDTO(10L, "Curso de Java", "SENAI",
+				LocalDate.now(), 40, Natureza.ACC, Categoria.ENSINO, LocalDateTime.now(), "estudante@ufape.edu.br"));
+		when(atividadeContrato.buscarPorEstudante(estudanteId)).thenReturn(atividades);
+
+		when(solicitacaoValidacaoRepository.save(any(SolicitacaoValidacao.class))).thenAnswer(invocation -> {
+			SolicitacaoValidacao s = invocation.getArgument(0);
+			s.setId(50L);
+			return s;
+		});
+
+		SolicitacaoValidacao resultado = solicitacaoService.submeter(estudanteId);
+
+		assertNotNull(resultado);
+		verify(notificacaoContrato).notificarMudancaStatusSolicitacao(estudanteId, 50L, "SUBMETIDA", null);
+	}
+
+	@Test
+	@DisplayName("Notificacao: avaliar com APROVADA deve notificar mudanca de status")
+	void avaliarComAprovadaDeveNotificarMudancaStatus() {
+		SolicitacaoValidacao solicitacao = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
+		when(solicitacaoValidacaoRepository.findById(10L)).thenReturn(Optional.of(solicitacao));
+		when(solicitacaoValidacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		solicitacaoService.avaliar(10L, 99L, DecisaoAvaliacao.APROVADA, null);
+
+		verify(notificacaoContrato).notificarMudancaStatusSolicitacao(solicitacao.getEstudanteId(), 10L,
+				"APROVADA", null);
+	}
+
+	@Test
+	@DisplayName("Notificacao: avaliar com REJEITADA deve notificar mudanca de status com justificativa")
+	void avaliarComRejeitadaDeveNotificarMudancaStatusComJustificativa() {
+		SolicitacaoValidacao solicitacao = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
+		when(solicitacaoValidacaoRepository.findById(10L)).thenReturn(Optional.of(solicitacao));
+		when(solicitacaoValidacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		solicitacaoService.avaliar(10L, 99L, DecisaoAvaliacao.REJEITADA, "Documentacao incompleta");
+
+		verify(notificacaoContrato).notificarMudancaStatusSolicitacao(solicitacao.getEstudanteId(), 10L,
+				"REJEITADA", "Documentacao incompleta");
+	}
+
+	@Test
+	@DisplayName("Notificacao: avaliar com COM_PENDENCIAS deve notificar mudanca de status com justificativa")
+	void avaliarComPendenciasDeveNotificarMudancaStatusComJustificativa() {
+		SolicitacaoValidacao solicitacao = criarSolicitacao(StatusSolicitacao.SUBMETIDA);
+		when(solicitacaoValidacaoRepository.findById(10L)).thenReturn(Optional.of(solicitacao));
+		when(solicitacaoValidacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		solicitacaoService.avaliar(10L, 99L, DecisaoAvaliacao.COM_PENDENCIAS, "Falta assinatura");
+
+		verify(notificacaoContrato).notificarMudancaStatusSolicitacao(solicitacao.getEstudanteId(), 10L,
+				"COM_PENDENCIAS", "Falta assinatura");
+	}
+
+	@Test
+	@DisplayName("Notificacao: quando MaquinaEstadosSolicitacao lancar TransicaoEstadoInvalidaException, notificacaoContrato nunca e chamado")
+	void quandoTransicaoInvalidaNotificacaoNuncaEChamada() {
+		SolicitacaoValidacao solicitacao = criarSolicitacao(StatusSolicitacao.APROVADA);
+		when(solicitacaoValidacaoRepository.findById(10L)).thenReturn(Optional.of(solicitacao));
+
+		assertThrows(TransicaoEstadoInvalidaException.class,
+				() -> solicitacaoService.avaliar(10L, 99L, DecisaoAvaliacao.REJEITADA, "Justificativa qualquer"));
+
+		verifyNoInteractions(notificacaoContrato);
 	}
 }

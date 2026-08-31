@@ -6,6 +6,7 @@ import br.edu.ufape.backend.atividade.exception.AcessoNegadoAtividadeException;
 import br.edu.ufape.backend.atividade.model.Categoria;
 import br.edu.ufape.backend.atividade.model.Natureza;
 import br.edu.ufape.backend.autenticacao.exception.UnauthorizedException;
+import br.edu.ufape.backend.notificacao.contrato.NotificacaoContrato;
 import br.edu.ufape.backend.solicitacao.controller.SolicitacaoAvaliacaoController;
 import br.edu.ufape.backend.solicitacao.controller.SolicitacaoEstudanteController;
 import br.edu.ufape.backend.solicitacao.dto.AvaliacaoSolicitacaoRequestDTO;
@@ -41,6 +42,8 @@ class ComprehensiveSolicitacaoBranchTest {
 	private SolicitacaoValidacaoRepository repo;
 	@Mock
 	private AtividadeContrato atividadeContrato;
+	@Mock
+	private NotificacaoContrato notificacaoContrato;
 	@Mock
 	private UsuarioContrato usuarioContrato;
 

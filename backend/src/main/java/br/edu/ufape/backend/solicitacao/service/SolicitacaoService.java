@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufape.backend.atividade.contrato.AtividadeContrato;
 import br.edu.ufape.backend.atividade.dto.AtividadeResponseDTO;
+import br.edu.ufape.backend.notificacao.contrato.NotificacaoContrato;
 import br.edu.ufape.backend.solicitacao.dto.SolicitacaoResumoResponseDTO;
 import br.edu.ufape.backend.solicitacao.exception.EstudanteSemAtividadesException;
 import br.edu.ufape.backend.solicitacao.exception.SolicitacaoEmAbertoException;
@@ -25,11 +26,13 @@ public class SolicitacaoService {
 
 	private final SolicitacaoValidacaoRepository solicitacaoValidacaoRepository;
 	private final AtividadeContrato atividadeContrato;
+	private final NotificacaoContrato notificacaoContrato;
 
 	public SolicitacaoService(SolicitacaoValidacaoRepository solicitacaoValidacaoRepository,
-			AtividadeContrato atividadeContrato) {
+			AtividadeContrato atividadeContrato, NotificacaoContrato notificacaoContrato) {
 		this.solicitacaoValidacaoRepository = solicitacaoValidacaoRepository;
 		this.atividadeContrato = atividadeContrato;
+		this.notificacaoContrato = notificacaoContrato;
 	}
 
 	// ---- Submissao pelo estudante ----
@@ -56,7 +59,10 @@ public class SolicitacaoService {
 				LocalDateTime.now(ZoneId.of("America/Recife")), StatusSolicitacao.SUBMETIDA,
 				new ArrayList<>(itensSnapshot));
 
-		return solicitacaoValidacaoRepository.save(solicitacao);
+		SolicitacaoValidacao solicitacaoSalva = solicitacaoValidacaoRepository.save(solicitacao);
+		notificacaoContrato.notificarMudancaStatusSolicitacao(solicitacaoSalva.getEstudanteId(), solicitacaoSalva.getId(),
+				solicitacaoSalva.getStatus().name(), null);
+		return solicitacaoSalva;
 	}
 
 	// ---- Avaliacao pelo avaliador ----
@@ -80,7 +86,10 @@ public class SolicitacaoService {
 		solicitacao.setAvaliadorId(avaliadorId);
 		solicitacao.setDataAvaliacao(LocalDateTime.now(ZoneId.of("America/Recife")));
 
-		return solicitacaoValidacaoRepository.save(solicitacao);
+		SolicitacaoValidacao solicitacaoSalva = solicitacaoValidacaoRepository.save(solicitacao);
+		notificacaoContrato.notificarMudancaStatusSolicitacao(solicitacaoSalva.getEstudanteId(), solicitacaoSalva.getId(),
+				novoStatus.name(), justificativa);
+		return solicitacaoSalva;
 	}
 
 	// ---- Metodos do contrato publico ----
