@@ -31,6 +31,15 @@ public class ArmazenamentoCertificadoService {
 			throw new CertificadoInvalidoException("Arquivo de certificado não pode ser vazio");
 		}
 
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new CertificadoInvalidoException("O tamanho do arquivo excede o limite máximo permitido de 5MB");
+        }
+
+        String tipo = arquivo.getContentType();
+        if (tipo == null || !(tipo.equals("application/pdf") || tipo.equals("image/png") || tipo.equals("image/jpeg") || tipo.equals("image/jpg"))) {
+            throw new CertificadoInvalidoException("Certificado inválido. Aceitos: PDF, PNG ou JPEG");
+        }
+
 		String nomeOriginal = arquivo.getOriginalFilename();
 		if (nomeOriginal == null || nomeOriginal.isBlank()) {
 			throw new CertificadoInvalidoException("Nome de arquivo inválido");
